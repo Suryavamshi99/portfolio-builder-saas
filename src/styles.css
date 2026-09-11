@@ -1,0 +1,55 @@
+@import "tailwindcss" source(none);
+@source "../src";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Placeholder neutral theme — Antigravity owns final visual design.
+ * Kept minimal so shadcn/ui primitives (Button, Input, Textarea) used by
+ * the Studio editor render sanely without a design system in place yet.
+ */
+
+@theme inline {
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+  --color-border: rgb(var(--border));
+  --color-input: rgb(var(--border));
+  --color-ring: rgb(var(--ring));
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-primary: rgb(var(--primary));
+  --color-primary-foreground: rgb(var(--primary-foreground));
+  --color-accent: rgb(var(--accent));
+  --color-accent-foreground: rgb(var(--accent-foreground));
+}
+
+:root {
+  --background: 255 255 255;
+  --foreground: 15 15 20;
+  --border: 226 226 230;
+  --ring: 46 63 229;
+  --muted: 244 244 246;
+  --muted-foreground: 107 107 112;
+  --primary: 15 15 20;
+  --primary-foreground: 255 255 255;
+  --accent: 46 63 229;
+  --accent-foreground: 255 255 255;
+}
+
+.dark {
+  --background: 12 12 15;
+  --foreground: 245 245 247;
+  --border: 42 42 48;
+  --ring: 99 112 255;
+  --muted: 26 26 31;
+  --muted-foreground: 160 160 168;
+  --primary: 245 245 247;
+  --primary-foreground: 12 12 15;
+  --accent: 99 112 255;
+  --accent-foreground: 12 12 15;
+}
+
+body {
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
