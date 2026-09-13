@@ -9,6 +9,11 @@ create extension if not exists pg_cron with schema extensions;
 -- a live site ever references them after generation.
 -- ---------------------------------------------------------------------
 
+-- NOTE: superseded by 0003_storage_cleanup.sql, which redefines both purge
+-- functions below (via `create or replace`) to also delete the matching
+-- Storage object, not just the row. Left as originally written here for
+-- history; read 0003 for what actually runs.
+
 create or replace function public.purge_post_generation_uploads()
 returns void
 language plpgsql
@@ -22,10 +27,6 @@ begin
     and g.status = 'succeeded'
     and g.created_at < now() - interval '48 hours'
     and (u.id = g.resume_upload_id or u.user_id = g.user_id and u.kind = 'visual_reference');
-  -- NOTE: this deletes the DB row only. The actual Storage object must be
-  -- removed by whatever process runs this (an Edge Function invoked by
-  -- cron, not raw SQL, since Storage deletion is an API call, not a SQL
-  -- statement) — see the TODO below.
 end;
 $$;
 
@@ -82,13 +83,6 @@ begin
   on conflict (user_id) do nothing;
 end;
 $$;
-
--- TODO(milestone 2b): both purge functions above only delete the
--- `public.uploads` row. The matching Supabase Storage object must also
--- be removed, which needs an API call (storage.objects delete), not a
--- SQL statement — wire this as a `pg_net` HTTP call to a service-role
--- Edge Function once uploads actually exist. Left unfinished here on
--- purpose rather than guessing at Storage internals.
 
 select cron.schedule('purge-post-generation-uploads', '0 * * * *', 'select public.purge_post_generation_uploads();');
 select cron.schedule('purge-stale-draft-uploads', '0 3 * * *', 'select public.purge_stale_draft_uploads();');

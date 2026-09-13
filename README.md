@@ -47,6 +47,17 @@ you:
 3. Copy `.env.example` to `.env` and fill in the Supabase URL + keys (Project
    Settings → API) and a generated `ENCRYPTION_KEY` (command is in the
    example file's comment).
+4. Deploy the Storage-cleanup Edge Function the retention cron depends on:
+   ```sh
+   supabase functions deploy purge-storage-objects
+   supabase secrets set CRON_SECRET=$(node -e "console.log(require('node:crypto').randomBytes(24).toString('base64url'))")
+   ```
+   Then populate `public.app_config` (SQL Editor) with that same secret and
+   the function's URL — see the comment at the top of
+   `0003_storage_cleanup.sql` for the exact `insert` statement. Skipping this
+   step doesn't break anything else; the retention cron just logs a warning
+   and leaves Storage objects orphaned (safe, just not reclaimed) until it's
+   done.
 
 ## The contract
 
@@ -57,15 +68,34 @@ schema or server internals.
 
 ## Status
 
-Milestones 1, 2, and 2b are live: `GET /api/me`, `GET/PUT /api/content`,
-`POST/GET /api/uploads`, `DELETE /api/uploads/:id` — all backed by real
+Milestones 1, 2, 2b, 3, and 4 are live: `GET /api/me`, `GET/PUT /api/content`,
+`POST/GET /api/uploads`, `DELETE /api/uploads/:id`, `POST/GET /api/byok-keys`,
+`DELETE /api/byok-keys/:provider`, `POST /api/generate` — all backed by real
 Supabase tables, RLS policies, and Storage. Uploads are validated server-side
 by magic-byte sniffing (never client-reported type), size-capped, quota- and
 rate-limited, and images are stripped of EXIF/GPS via `sharp` before storage
-(`src/server/uploads.ts`). Not yet built: BYOK extraction (3), rate limiting
-on generation (4), Vercel OAuth + publish (5) — see `API.md`'s Changelog for
-exactly what's shipped vs. stubbed. There is no login UI yet (Antigravity's
-job); `/studio` will show "sign in to edit" for anyone without a Supabase
-session. One known gap: the retention cron's Storage-object deletion is a
-TODO in `0002_retention_cron.sql` — it deletes the DB row but not yet the
-underlying file, pending an Edge Function.
+(`src/server/uploads.ts`). BYOK keys are AES-256-GCM encrypted at rest
+(`src/lib/crypto.ts`); `/api/generate` extracts resume text server-side
+(`pdf-parse`/`mammoth`) before it ever reaches an LLM, applies the guardrail
+system prompt verbatim, and validates the model's output against the same
+zod schema Studio uses before saving it as a draft. Both upload and
+generation rate limits are real rolling-hour checks (`src/server/rate-limit.ts`),
+not estimates. Not yet built: Vercel OAuth + publish (5) — see `API.md`'s
+Changelog for exact shape details as each piece shipped. There is no login UI
+yet (Antigravity's job); `/studio` will show "sign in to edit" for anyone
+without a Supabase session.
+
+The retention cron's Storage-object deletion gap is closed:
+`supabase/functions/purge-storage-objects/` (a Deno Edge Function, deployed
+separately — see Setup step 4) is invoked via `pg_net` from
+`0003_storage_cleanup.sql`. It's best-effort/fire-and-forget by design — a
+failed call leaves an orphaned Storage object with no DB row pointing at it,
+which is safe (nothing references it) but not immediately reclaimed.
+
+**Not runtime-verified**: none of milestones 1–4 have been exercised against
+a live Supabase project or real provider API keys — no credentials exist in
+this environment. Verified so far: `vite build` (client+SSR) and
+`tsc --noEmit` clean after every change, plus a standalone smoke test
+confirming `pdf-parse` actually extracts text from a real (hand-built)
+PDF buffer. DOCX extraction via `mammoth` and all three LLM provider calls
+are implementation-reviewed but not executed.

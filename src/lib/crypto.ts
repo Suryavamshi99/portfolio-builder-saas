@@ -39,3 +39,17 @@ export function decryptSecret(ciphertext: Buffer, nonce: Buffer): string {
   decipher.setAuthTag(authTag);
   return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
 }
+
+/**
+ * PostgREST represents Postgres `bytea` columns as a `\x`-prefixed hex
+ * string over JSON, both directions — never raw binary. These convert
+ * between that wire format and the Buffers encryptSecret/decryptSecret use.
+ */
+export function bufferToBytea(buffer: Buffer): string {
+  return `\\x${buffer.toString("hex")}`;
+}
+
+export function byteaToBuffer(bytea: string): Buffer {
+  const hex = bytea.startsWith("\\x") ? bytea.slice(2) : bytea;
+  return Buffer.from(hex, "hex");
+}

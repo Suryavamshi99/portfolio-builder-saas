@@ -17,6 +17,20 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-13 (3)** — Milestone 3 (BYOK + resume extraction) shipped:
+  `POST/GET /api/byok-keys`, `DELETE /api/byok-keys/:provider`,
+  `POST /api/generate`. Milestone 4's generation rate limit shipped alongside
+  it (same endpoint, couldn't responsibly ship one without the other) — both
+  milestone 4 bullets are now ✅. Shape refinements from the original stub:
+  the single documented `401` became two codes (`byok_key_missing` vs.
+  `byok_key_invalid`), a new `502 llm_provider_error` covers provider-side
+  failures distinct from both of those, and every `429` (uploads and
+  generate) now carries a real `retryAfterSeconds` computed from the rolling
+  window, not a placeholder. Also closed the Storage-cleanup gap flagged in
+  the previous entry — see `supabase/functions/purge-storage-objects/` and
+  `0003_storage_cleanup.sql`; not an API.md endpoint (internal cron
+  infrastructure), so no contract change, just noting it's no longer a known
+  gap.
 - **2026-09-13 (2)** — Milestone 2b (file uploads) shipped: `POST/GET
   /api/uploads`, `DELETE /api/uploads/:id`. Shape changes from the original
   stub: the 409 response now uses two distinct codes — `upload_limit_exceeded`
@@ -258,39 +272,50 @@ Response `200`:
 
 ## Milestone 3 — BYOK key management + resume extraction
 
-### `POST /api/byok-keys` — 🚧 Stub
+### `POST /api/byok-keys` — ✅ Shipped
 
 **Auth:** required.
 
 Body: `{ "provider": "anthropic" | "openai" | "google", "apiKey": "sk-..." }`.
-Key is encrypted at rest immediately; never logged, never echoed back in any
-response.
+Key is encrypted at rest immediately (AES-256-GCM, key lives only in this
+app's env — never in Postgres); never logged, never echoed back in any
+response. Calling this again for a provider you've already connected
+**rotates** the key (upsert) rather than erroring.
 
-Response `200`: `{ "provider": "anthropic", "connectedAt": "2026-09-11T00:00:00Z" }`
+Response `200`: `{ "provider": "anthropic", "connectedAt": "2026-09-13T00:00:00Z" }`
 
-### `GET /api/byok-keys` — 🚧 Stub
+Response `400`: `{ "error": { "code": "invalid_provider" | "invalid_api_key", "message": "..." } }`
+
+### `GET /api/byok-keys` — ✅ Shipped
 
 **Auth:** required. Response `200`:
 
 ```json
-{ "keys": [ { "provider": "anthropic", "connectedAt": "2026-09-11T00:00:00Z" } ] }
+{ "keys": [ { "provider": "anthropic", "connectedAt": "2026-09-13T00:00:00Z" } ] }
 ```
 
-Never includes the actual key material.
+Never includes the actual key material — the query behind this doesn't even
+select the encrypted columns.
 
-### `DELETE /api/byok-keys/:provider` — 🚧 Stub
+### `DELETE /api/byok-keys/:provider` — ✅ Shipped
 
-**Auth:** required. `204` on success.
+**Auth:** required. `204` on success (also 204 if that provider wasn't
+connected — delete is idempotent, not "not found").
 
-### `POST /api/generate` — 🚧 Stub
+### `POST /api/generate` — ✅ Shipped
 
 **Auth:** required.
 
-The core BYOK extraction call. Takes an already-uploaded resume plus free-text
-"any other specifics," calls the user's own key with the guardrail system
-prompt (verbatim, see project brief — content-integrity rules are non-
-negotiable and identical regardless of provider), and returns data validated
-against `contentSchema` — never raw HTML.
+The core BYOK extraction call. Takes an already-uploaded resume (PDF/DOCX —
+text is extracted server-side with `pdf-parse`/`mammoth` before it ever
+reaches the LLM, so the same code path works identically across providers)
+plus free-text "any other specifics," calls the user's own key with the
+guardrail system prompt **verbatim** (content-integrity rules are non-
+negotiable and identical regardless of provider — see
+`src/server/llm/guardrail-prompt.ts`), and returns data validated against
+`contentSchema` — never raw HTML. The model is asked to emit JSON matching a
+JSON Schema generated from that same zod schema (`zod-to-json-schema`), not a
+hand-written duplicate.
 
 Body:
 
@@ -306,11 +331,14 @@ Response `200` (extraction succeeded and passed server-side validation — saved
 as the user's new draft, same row `PUT /api/content` writes to):
 
 ```json
-{ "content": { "profile": { "...": "..." }, "projects": [] }, "updatedAt": "2026-09-11T00:00:00Z" }
+{ "content": { "profile": { "...": "..." }, "projects": [] }, "updatedAt": "2026-09-13T00:12:03Z" }
 ```
 
-Response `422` (model output didn't validate against the schema — surfaced to
-the user rather than silently retried with relaxed rules):
+Response `422` — two distinct causes, same code:
+
+```json
+{ "error": { "code": "generation_invalid_output", "message": "Model output wasn't valid JSON" } }
+```
 
 ```json
 {
@@ -319,27 +347,53 @@ the user rather than silently retried with relaxed rules):
 }
 ```
 
-Response `401` (BYOK key missing/invalid — distinct from our own auth 401):
+Response `400`: `{ "error": { "code": "invalid_provider" | "invalid_request" | "resume_not_found", "message": "..." } }`
+— `resume_not_found` covers both a bad id and an id that isn't a `kind: "resume"` upload owned by you.
+
+Response `401` — two distinct codes, since they mean different things to the UI:
 
 ```json
 { "error": { "code": "byok_key_missing", "message": "Connect an Anthropic/OpenAI/Google API key first" } }
 ```
 
+```json
+{ "error": { "code": "byok_key_invalid", "message": "Your API key was rejected by the provider" } }
+```
+
+Response `502` (the provider's API itself failed — network error, 5xx, rate
+limited on their end — distinct from anything about the key or our schema):
+
+```json
+{ "error": { "code": "llm_provider_error", "message": "..." } }
+```
+
 Response `429`: rate limited — see milestone 4.
+
+A "succeeded" generation is recorded (starting the 48h resume-retention
+clock) as soon as the LLM call itself completes, even if the output then
+fails our schema validation — the resume has been used for an attempt
+either way. Only a provider-call failure (`byok_key_invalid`,
+`llm_provider_error`) records "failed."
 
 ---
 
 ## Milestone 4 — Rate limiting
 
-Not a separate endpoint — behavior layered onto the above. Documented here so
-the UI knows what to expect and render (never to re-implement the limit
-itself):
+Not a separate endpoint — behavior layered onto the above, from the same
+rolling-hour check (`src/server/rate-limit.ts`). Documented here so the UI
+knows what to expect and render (never to re-implement the limit itself):
 
-- `POST /api/generate`: capped per account per hour (our compute cost even
-  though the LLM cost is the user's own key). Exceeding it returns `429` with
-  `{ "error": { "code": "rate_limited", "message": "...", "retryAfterSeconds": 1800 } }`.
-- `POST /api/uploads`: capped at ~10/hour per account, separately from the
-  above (see milestone 2b).
+- `POST /api/generate`: capped at 5/hour per account (our compute cost even
+  though the LLM cost is the user's own key) — ✅ Shipped, built alongside
+  milestone 3 rather than separately, since generate couldn't responsibly
+  ship without it.
+- `POST /api/uploads`: capped at 10/hour per account, separately from the
+  above — ✅ Shipped (see milestone 2b).
+
+Both return `429` with the same shape:
+`{ "error": { "code": "rate_limited", "message": "...", "retryAfterSeconds": 1800 } }`.
+`retryAfterSeconds` is computed from the oldest request in the current
+rolling window, not a fixed reset time.
 
 ---
 

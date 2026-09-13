@@ -4,14 +4,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { getOrCreateAppUser } from "@/server/users";
 import { isUploadKind, sanitizeFilename, stripImageMetadataIfNeeded, validateUpload } from "@/server/uploads";
+import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { UPLOAD_LIMITS, UPLOADS_PER_HOUR_LIMIT, type UploadKind } from "@/config/uploads";
 import { PLAN_STORAGE_QUOTA_BYTES } from "@/config/plans";
 
 const BUCKET = "uploads";
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
-function errorResponse(status: number, code: string, message: string) {
-  return Response.json({ error: { code, message } }, { status });
+function errorResponse(status: number, code: string, message: string, extra?: Record<string, unknown>) {
+  return Response.json({ error: { code, message, ...extra } }, { status });
 }
 
 export const Route = createFileRoute("/api/uploads")({
@@ -90,14 +91,11 @@ export const Route = createFileRoute("/api/uploads")({
         if (!validated.ok) return errorResponse(400, validated.error.code, validated.error.message);
 
         // 2. hourly upload rate limit, separate from the LLM generation limit.
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-        const { count: recentCount } = await supabase
-          .from("uploads")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .gte("created_at", oneHourAgo);
-        if ((recentCount ?? 0) >= UPLOADS_PER_HOUR_LIMIT) {
-          return errorResponse(429, "rate_limited", "Upload limit reached, try again later");
+        const rateLimit = await checkHourlyRateLimit(supabase, "uploads", user.id, UPLOADS_PER_HOUR_LIMIT);
+        if (rateLimit.limited) {
+          return errorResponse(429, "rate_limited", "Upload limit reached, try again later", {
+            retryAfterSeconds: rateLimit.retryAfterSeconds,
+          });
         }
 
         // 3. remaining quota — storage bytes and per-kind count.

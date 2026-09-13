@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as ApiByokKeysRouteImport } from './routes/api/byok-keys'
 import { Route as ApiContentRouteImport } from './routes/api/content'
+import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
+import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -26,9 +29,19 @@ const StudioRoute = StudioRouteImport.update({
   path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiByokKeysRoute = ApiByokKeysRouteImport.update({
+  id: '/api/byok-keys',
+  path: '/api/byok-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiContentRoute = ApiContentRouteImport.update({
   id: '/api/content',
   path: '/api/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateRoute = ApiGenerateRouteImport.update({
+  id: '/api/generate',
+  path: '/api/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMeRoute = ApiMeRouteImport.update({
@@ -41,6 +54,11 @@ const ApiUploadsRoute = ApiUploadsRouteImport.update({
   path: '/api/uploads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
+  id: '/$provider',
+  path: '/$provider',
+  getParentRoute: () => ApiByokKeysRoute,
+} as any)
 const ApiUploadsIdRoute = ApiUploadsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -50,26 +68,35 @@ const ApiUploadsIdRoute = ApiUploadsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
+  '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
+  '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
+  '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
+  '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
+  '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
+  '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
 }
 export interface FileRouteTypes {
@@ -77,32 +104,43 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/studio'
+    | '/api/byok-keys'
     | '/api/content'
+    | '/api/generate'
     | '/api/me'
     | '/api/uploads'
+    | '/api/byok-keys/$provider'
     | '/api/uploads/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/studio'
+    | '/api/byok-keys'
     | '/api/content'
+    | '/api/generate'
     | '/api/me'
     | '/api/uploads'
+    | '/api/byok-keys/$provider'
     | '/api/uploads/$id'
   id:
     | '__root__'
     | '/'
     | '/studio'
+    | '/api/byok-keys'
     | '/api/content'
+    | '/api/generate'
     | '/api/me'
     | '/api/uploads'
+    | '/api/byok-keys/$provider'
     | '/api/uploads/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StudioRoute: typeof StudioRoute
+  ApiByokKeysRoute: typeof ApiByokKeysRouteWithChildren
   ApiContentRoute: typeof ApiContentRoute
+  ApiGenerateRoute: typeof ApiGenerateRoute
   ApiMeRoute: typeof ApiMeRoute
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
 }
@@ -123,11 +161,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/byok-keys': {
+      id: '/api/byok-keys'
+      path: '/api/byok-keys'
+      fullPath: '/api/byok-keys'
+      preLoaderRoute: typeof ApiByokKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/content': {
       id: '/api/content'
       path: '/api/content'
       fullPath: '/api/content'
       preLoaderRoute: typeof ApiContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate': {
+      id: '/api/generate'
+      path: '/api/generate'
+      fullPath: '/api/generate'
+      preLoaderRoute: typeof ApiGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/me': {
@@ -144,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/byok-keys/$provider': {
+      id: '/api/byok-keys/$provider'
+      path: '/$provider'
+      fullPath: '/api/byok-keys/$provider'
+      preLoaderRoute: typeof ApiByokKeysProviderRouteImport
+      parentRoute: typeof ApiByokKeysRoute
+    }
     '/api/uploads/$id': {
       id: '/api/uploads/$id'
       path: '/$id'
@@ -153,6 +212,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ApiByokKeysRouteChildren {
+  ApiByokKeysProviderRoute: typeof ApiByokKeysProviderRoute
+}
+
+const ApiByokKeysRouteChildren: ApiByokKeysRouteChildren = {
+  ApiByokKeysProviderRoute: ApiByokKeysProviderRoute,
+}
+
+const ApiByokKeysRouteWithChildren = ApiByokKeysRoute._addFileChildren(
+  ApiByokKeysRouteChildren,
+)
 
 interface ApiUploadsRouteChildren {
   ApiUploadsIdRoute: typeof ApiUploadsIdRoute
@@ -169,7 +240,9 @@ const ApiUploadsRouteWithChildren = ApiUploadsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StudioRoute: StudioRoute,
+  ApiByokKeysRoute: ApiByokKeysRouteWithChildren,
   ApiContentRoute: ApiContentRoute,
+  ApiGenerateRoute: ApiGenerateRoute,
   ApiMeRoute: ApiMeRoute,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
 }
