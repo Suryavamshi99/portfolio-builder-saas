@@ -31,10 +31,13 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------
--- Rule 2: profile/project/certification images on an unpublished or
--- abandoned draft are deleted after 30 days of inactivity. `published`
--- must be false — a currently-published site's images are never
--- auto-deleted while live.
+-- Rule 2: profile/project/certification images are deleted after 30 days
+-- of inactivity — whether the draft was ever published or not. A
+-- published site's images are protected by milestone 5's Publish step
+-- copying their bytes into the Vercel deploy bundle, not by an exemption
+-- here — once that copy exists, the live site no longer depends on this
+-- row, so 30-day inactivity applies uniformly. (This function is further
+-- corrected in 0003_storage_cleanup.sql; read that version.)
 -- ---------------------------------------------------------------------
 
 create or replace function public.purge_stale_draft_uploads()
@@ -47,7 +50,6 @@ begin
   delete from public.uploads u
   using public.portfolios p
   where u.kind in ('photo', 'project_image')
-    and u.published = false
     and u.user_id = p.user_id
     and p.updated_at < now() - interval '30 days';
 end;
@@ -77,7 +79,6 @@ begin
   from public.uploads u
   join public.portfolios p on p.user_id = u.user_id
   where u.kind in ('photo', 'project_image')
-    and u.published = false
     and p.updated_at < now() - interval '27 days'
     and p.updated_at >= now() - interval '28 days'
   on conflict (user_id) do nothing;

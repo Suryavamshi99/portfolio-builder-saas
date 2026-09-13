@@ -17,6 +17,22 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-13 (4)** — Milestone 5 (Vercel OAuth + publish) shipped:
+  `GET /api/vercel/oauth/{start,callback}`, `GET /api/vercel/status`,
+  `DELETE /api/vercel`, `POST /api/publish`, `GET /api/publish/status`. New
+  `404 no_publications` on the status endpoint (not in the original stub —
+  the real first-call case needed a shape). Also corrected a retention-cron
+  bug from milestone 1: `uploads.published` was implemented to permanently
+  exempt a row from the 30-day inactivity purge, but the brief's actual
+  intent (re-read carefully once publish existed to clarify it) is that
+  publish copying bytes into the Vercel bundle is what protects a live
+  site — once that's done, our copy is disposable under the same 30-day
+  rule as any draft. Fixed in `0001`–`0003`'s migrations; not an API.md
+  contract change (internal cron behavior). Flagging clearly: the Vercel
+  OAuth/Deployments API endpoint shapes in `src/config/vercel.ts` and
+  `src/server/vercel/*` are unverified against live traffic — isolated
+  there specifically so a correction doesn't ripple into the `/api/vercel/*`
+  contract below.
 - **2026-09-13 (3)** — Milestone 3 (BYOK + resume extraction) shipped:
   `POST/GET /api/byok-keys`, `DELETE /api/byok-keys/:provider`,
   `POST /api/generate`. Milestone 4's generation rate limit shipped alongside
@@ -402,39 +418,67 @@ rolling window, not a fixed reset time.
 Studio's **Save** (`PUT /api/content`) only ever updates the draft. Nothing
 below is triggered by Save — only by an explicit Publish action.
 
-### `GET /api/vercel/oauth/start` — 🚧 Stub
+**Uncertainty flag**: the Vercel OAuth and Deployments API endpoints/shapes
+below are implemented against my best understanding of Vercel's current API,
+NOT confirmed against live traffic (no Vercel OAuth app or test account in
+this environment). If they need correcting, it's contained to
+`src/config/vercel.ts` and `src/server/vercel/{oauth,deploy}.ts` — the
+`/api/vercel/*` and `/api/publish*` contracts below (request/response shapes
+Antigravity builds against) should not need to change even if the internals
+do.
+
+### `GET /api/vercel/oauth/start` — ✅ Shipped
 
 **Auth:** required. Redirects the browser into Vercel's OAuth consent screen.
 Not a JSON endpoint — the UI should navigate the top-level window to this URL,
 not `fetch()` it.
 
-### `GET /api/vercel/oauth/callback` — 🚧 Stub
+### `GET /api/vercel/oauth/callback` — ✅ Shipped
 
-Vercel redirects back here with a `code`; this exchanges it for a token
-(encrypted at rest), then redirects the browser to a UI-owned "connected"
-page.
+Vercel redirects back here with `code` + `state`. Requires an active session
+whose user id matches the one embedded in `state` (a self-signed, 10-minute-
+TTL token — no server-side session store needed for this). Exchanges the code
+for a token (AES-256-GCM at rest, same scheme as BYOK keys), then redirects
+the browser to `${APP_ORIGIN}/?vercel=connected` — a placeholder; Antigravity
+owns the real "connected" landing page and can request a different redirect
+target be made configurable if needed.
 
-### `GET /api/vercel/status` — 🚧 Stub
+Response `400` (state missing/expired/mismatched): `{ "error": { "code": "invalid_oauth_state", "message": "..." } }`
+
+Response `502` (Vercel's token endpoint rejected the exchange): `{ "error": { "code": "vercel_oauth_failed", "message": "..." } }`
+
+### `GET /api/vercel/status` — ✅ Shipped
 
 **Auth:** required. Response `200`:
 
 ```json
-{ "connected": true, "vercelUsername": "suryavamshi", "connectedAt": "2026-09-11T00:00:00Z" }
+{ "connected": true, "vercelUsername": "suryavamshi", "connectedAt": "2026-09-13T00:00:00Z" }
 ```
 
-### `DELETE /api/vercel` — 🚧 Stub
+or `{ "connected": false }` if never connected.
 
-**Auth:** required. Disconnects (revokes/discards the stored token). `204`.
+### `DELETE /api/vercel` — ✅ Shipped
 
-### `POST /api/publish` — 🚧 Stub
+**Auth:** required. Deletes our copy of the token; `204` always (idempotent —
+also 204 if nothing was connected). Does **not** call Vercel to revoke the
+token server-side (its exact revocation endpoint wasn't confirmed) — it
+remains valid on Vercel's side until it expires or the user revokes it from
+their own Vercel account settings. Deleting our copy is what actually
+matters: we can no longer deploy on their behalf either way.
+
+### `POST /api/publish` — ✅ Shipped
 
 **Auth:** required. Requires Vercel connected.
 
-Renders the user's current `Content` through the shared template into static
-HTML/CSS/JS, copies any referenced images into the deploy bundle itself (not
-links back to our Storage — the live site never depends on our storage
-staying populated), and pushes it via Vercel's Deployments API to the user's
-own account.
+Renders the user's current `Content` through the shared template
+(`src/server/template/render.ts` — one static HTML file, embedded CSS, no
+build step) into static HTML, copies any images that resolve to our own
+Storage into the deploy bundle itself (external image URLs are left as
+references — see `src/server/template/images.ts` for exactly what counts as
+"ours"), and pushes the result via Vercel's Deployments API to the user's own
+account. Marks the uploads whose bytes got embedded as `published: true`
+(informational — see the retention cron's comments in
+`0003_storage_cleanup.sql` for why this doesn't exempt them from anything).
 
 Response `202` (deployment kicked off — this is not necessarily synchronous):
 
@@ -448,17 +492,26 @@ Response `409` (Vercel not connected):
 { "error": { "code": "vercel_not_connected", "message": "Connect your Vercel account first" } }
 ```
 
-### `GET /api/publish/status` — 🚧 Stub
+Response `502` (Vercel's deployment API itself failed): `{ "error": { "code": "vercel_deploy_failed", "message": "..." } }`
 
-**Auth:** required. Poll the last publish's status.
+### `GET /api/publish/status` — ✅ Shipped
+
+**Auth:** required. Poll the last publish's status — a terminal state
+(`ready`/`error`) is served from our own record; a non-terminal one
+(`queued`/`building`) re-polls Vercel's API live and updates our record
+before responding, so this is always current, not stale-until-next-webhook
+(there's no webhook receiver in this phase).
 
 Response `200`:
 
 ```json
-{ "deploymentId": "dpl_uuid", "status": "ready", "url": "https://their-site.vercel.app", "finishedAt": "2026-09-11T00:03:00Z" }
+{ "deploymentId": "dpl_uuid", "status": "ready", "url": "https://their-site.vercel.app", "finishedAt": "2026-09-13T00:03:00Z" }
 ```
 
 `status` is one of `queued | building | ready | error`.
+
+Response `404` (nothing published yet — not in the original stub, added
+since it's the real first-call case): `{ "error": { "code": "no_publications", "message": "This account hasn't published yet" } }`
 
 ---
 

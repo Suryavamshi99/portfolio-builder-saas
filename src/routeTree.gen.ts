@@ -15,9 +15,15 @@ import { Route as ApiByokKeysRouteImport } from './routes/api/byok-keys'
 import { Route as ApiContentRouteImport } from './routes/api/content'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiMeRouteImport } from './routes/api/me'
+import { Route as ApiPublishRouteImport } from './routes/api/publish'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
+import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
+import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
+import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
+import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
+import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -49,9 +55,19 @@ const ApiMeRoute = ApiMeRouteImport.update({
   path: '/api/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublishRoute = ApiPublishRouteImport.update({
+  id: '/api/publish',
+  path: '/api/publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiUploadsRoute = ApiUploadsRouteImport.update({
   id: '/api/uploads',
   path: '/api/uploads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVercelRoute = ApiVercelRouteImport.update({
+  id: '/api/vercel',
+  path: '/api/vercel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
@@ -59,10 +75,30 @@ const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
   path: '/$provider',
   getParentRoute: () => ApiByokKeysRoute,
 } as any)
+const ApiPublishStatusRoute = ApiPublishStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => ApiPublishRoute,
+} as any)
 const ApiUploadsIdRoute = ApiUploadsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ApiUploadsRoute,
+} as any)
+const ApiVercelStatusRoute = ApiVercelStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => ApiVercelRoute,
+} as any)
+const ApiVercelOauthCallbackRoute = ApiVercelOauthCallbackRouteImport.update({
+  id: '/oauth/callback',
+  path: '/oauth/callback',
+  getParentRoute: () => ApiVercelRoute,
+} as any)
+const ApiVercelOauthStartRoute = ApiVercelOauthStartRouteImport.update({
+  id: '/oauth/start',
+  path: '/oauth/start',
+  getParentRoute: () => ApiVercelRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -72,9 +108,15 @@ export interface FileRoutesByFullPath {
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
+  '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/uploads': typeof ApiUploadsRouteWithChildren
+  '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
+  '/api/vercel/status': typeof ApiVercelStatusRoute
+  '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
+  '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,9 +125,15 @@ export interface FileRoutesByTo {
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
+  '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/uploads': typeof ApiUploadsRouteWithChildren
+  '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
+  '/api/vercel/status': typeof ApiVercelStatusRoute
+  '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
+  '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +143,15 @@ export interface FileRoutesById {
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
+  '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/uploads': typeof ApiUploadsRouteWithChildren
+  '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
+  '/api/vercel/status': typeof ApiVercelStatusRoute
+  '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
+  '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,9 +162,15 @@ export interface FileRouteTypes {
     | '/api/content'
     | '/api/generate'
     | '/api/me'
+    | '/api/publish'
     | '/api/uploads'
+    | '/api/vercel'
     | '/api/byok-keys/$provider'
+    | '/api/publish/status'
     | '/api/uploads/$id'
+    | '/api/vercel/status'
+    | '/api/vercel/oauth/callback'
+    | '/api/vercel/oauth/start'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,9 +179,15 @@ export interface FileRouteTypes {
     | '/api/content'
     | '/api/generate'
     | '/api/me'
+    | '/api/publish'
     | '/api/uploads'
+    | '/api/vercel'
     | '/api/byok-keys/$provider'
+    | '/api/publish/status'
     | '/api/uploads/$id'
+    | '/api/vercel/status'
+    | '/api/vercel/oauth/callback'
+    | '/api/vercel/oauth/start'
   id:
     | '__root__'
     | '/'
@@ -130,9 +196,15 @@ export interface FileRouteTypes {
     | '/api/content'
     | '/api/generate'
     | '/api/me'
+    | '/api/publish'
     | '/api/uploads'
+    | '/api/vercel'
     | '/api/byok-keys/$provider'
+    | '/api/publish/status'
     | '/api/uploads/$id'
+    | '/api/vercel/status'
+    | '/api/vercel/oauth/callback'
+    | '/api/vercel/oauth/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,7 +214,9 @@ export interface RootRouteChildren {
   ApiContentRoute: typeof ApiContentRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
   ApiMeRoute: typeof ApiMeRoute
+  ApiPublishRoute: typeof ApiPublishRouteWithChildren
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
+  ApiVercelRoute: typeof ApiVercelRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -189,11 +263,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/publish': {
+      id: '/api/publish'
+      path: '/api/publish'
+      fullPath: '/api/publish'
+      preLoaderRoute: typeof ApiPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/uploads': {
       id: '/api/uploads'
       path: '/api/uploads'
       fullPath: '/api/uploads'
       preLoaderRoute: typeof ApiUploadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vercel': {
+      id: '/api/vercel'
+      path: '/api/vercel'
+      fullPath: '/api/vercel'
+      preLoaderRoute: typeof ApiVercelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/byok-keys/$provider': {
@@ -203,12 +291,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiByokKeysProviderRouteImport
       parentRoute: typeof ApiByokKeysRoute
     }
+    '/api/publish/status': {
+      id: '/api/publish/status'
+      path: '/status'
+      fullPath: '/api/publish/status'
+      preLoaderRoute: typeof ApiPublishStatusRouteImport
+      parentRoute: typeof ApiPublishRoute
+    }
     '/api/uploads/$id': {
       id: '/api/uploads/$id'
       path: '/$id'
       fullPath: '/api/uploads/$id'
       preLoaderRoute: typeof ApiUploadsIdRouteImport
       parentRoute: typeof ApiUploadsRoute
+    }
+    '/api/vercel/status': {
+      id: '/api/vercel/status'
+      path: '/status'
+      fullPath: '/api/vercel/status'
+      preLoaderRoute: typeof ApiVercelStatusRouteImport
+      parentRoute: typeof ApiVercelRoute
+    }
+    '/api/vercel/oauth/callback': {
+      id: '/api/vercel/oauth/callback'
+      path: '/oauth/callback'
+      fullPath: '/api/vercel/oauth/callback'
+      preLoaderRoute: typeof ApiVercelOauthCallbackRouteImport
+      parentRoute: typeof ApiVercelRoute
+    }
+    '/api/vercel/oauth/start': {
+      id: '/api/vercel/oauth/start'
+      path: '/oauth/start'
+      fullPath: '/api/vercel/oauth/start'
+      preLoaderRoute: typeof ApiVercelOauthStartRouteImport
+      parentRoute: typeof ApiVercelRoute
     }
   }
 }
@@ -225,6 +341,18 @@ const ApiByokKeysRouteWithChildren = ApiByokKeysRoute._addFileChildren(
   ApiByokKeysRouteChildren,
 )
 
+interface ApiPublishRouteChildren {
+  ApiPublishStatusRoute: typeof ApiPublishStatusRoute
+}
+
+const ApiPublishRouteChildren: ApiPublishRouteChildren = {
+  ApiPublishStatusRoute: ApiPublishStatusRoute,
+}
+
+const ApiPublishRouteWithChildren = ApiPublishRoute._addFileChildren(
+  ApiPublishRouteChildren,
+)
+
 interface ApiUploadsRouteChildren {
   ApiUploadsIdRoute: typeof ApiUploadsIdRoute
 }
@@ -237,6 +365,22 @@ const ApiUploadsRouteWithChildren = ApiUploadsRoute._addFileChildren(
   ApiUploadsRouteChildren,
 )
 
+interface ApiVercelRouteChildren {
+  ApiVercelStatusRoute: typeof ApiVercelStatusRoute
+  ApiVercelOauthCallbackRoute: typeof ApiVercelOauthCallbackRoute
+  ApiVercelOauthStartRoute: typeof ApiVercelOauthStartRoute
+}
+
+const ApiVercelRouteChildren: ApiVercelRouteChildren = {
+  ApiVercelStatusRoute: ApiVercelStatusRoute,
+  ApiVercelOauthCallbackRoute: ApiVercelOauthCallbackRoute,
+  ApiVercelOauthStartRoute: ApiVercelOauthStartRoute,
+}
+
+const ApiVercelRouteWithChildren = ApiVercelRoute._addFileChildren(
+  ApiVercelRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StudioRoute: StudioRoute,
@@ -244,17 +388,20 @@ const rootRouteChildren: RootRouteChildren = {
   ApiContentRoute: ApiContentRoute,
   ApiGenerateRoute: ApiGenerateRoute,
   ApiMeRoute: ApiMeRoute,
+  ApiPublishRoute: ApiPublishRouteWithChildren,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
+  ApiVercelRoute: ApiVercelRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

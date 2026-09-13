@@ -94,6 +94,14 @@ begin
 end;
 $$;
 
+-- Milestone 5 correction: `published` does NOT gate this purge (0001/0002's
+-- original comments claimed it would, before publish existed to clarify the
+-- intent). Per the brief: publish copies image bytes into the Vercel deploy
+-- bundle, so the live site never depends on this Storage object staying
+-- populated — at that point our copy is "just a working copy for future
+-- edits," safe to fall under the same 30-day inactivity rule as an
+-- unpublished draft. `published` is still recorded (informational — "this
+-- made it into a deploy"), just not read here.
 create or replace function public.purge_stale_draft_uploads()
 returns void
 language plpgsql
@@ -107,7 +115,6 @@ begin
   from public.uploads u
   join public.portfolios p on p.user_id = u.user_id
   where u.kind in ('photo', 'project_image')
-    and u.published = false
     and p.updated_at < now() - interval '30 days';
 
   perform public.notify_storage_purge('uploads', v_paths);
@@ -115,7 +122,6 @@ begin
   delete from public.uploads u
   using public.portfolios p
   where u.kind in ('photo', 'project_image')
-    and u.published = false
     and u.user_id = p.user_id
     and p.updated_at < now() - interval '30 days';
 end;

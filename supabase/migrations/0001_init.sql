@@ -56,8 +56,12 @@ create policy "users can update their own portfolio"
   with check (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------
--- Uploads (milestone 2b). `published` gates the retention cron — flips
--- to true at Publish time once bytes are copied into the deploy bundle.
+-- Uploads (milestone 2b). `published` is informational only (set true at
+-- Publish time once bytes are copied into the Vercel deploy bundle, see
+-- milestone 5) — it does NOT exempt a row from the retention cron. Once
+-- copied, the live site no longer depends on this row, so the normal
+-- inactivity rule applies whether published or not; see
+-- 0003_storage_cleanup.sql's comment on purge_stale_draft_uploads.
 -- ---------------------------------------------------------------------
 
 create type public.upload_kind as enum ('resume', 'visual_reference', 'photo', 'project_image');
