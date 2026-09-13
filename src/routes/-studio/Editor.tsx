@@ -1,18 +1,19 @@
 import { useMemo, useState } from "react";
 
-import { content, type Content } from "@/data/content";
+import { type Content } from "@/data/content";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { projectErrors, serialize } from "./model";
 import { SECTIONS } from "./sections";
 
 /**
- * Visual editor for `src/content.json`. Dev only — loaded lazily by
- * `src/routes/studio.tsx` and never bundled for production.
+ * Visual editor for a user's portfolio Content. Reads/writes the current
+ * user's row via `/api/content` (see API.md) — `initialContent` is
+ * fetched by the `/studio` route before this mounts.
  */
-export function Editor() {
-  const [draft, setDraft] = useState<Content>(() => structuredClone(content));
-  const [saved, setSaved] = useState<Content>(() => structuredClone(content));
+export function Editor({ initialContent }: { initialContent: Content }) {
+  const [draft, setDraft] = useState<Content>(() => structuredClone(initialContent));
+  const [saved, setSaved] = useState<Content>(() => structuredClone(initialContent));
   const [activeId, setActiveId] = useState<string>(SECTIONS[0]?.id ?? "profile");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
@@ -38,15 +39,15 @@ export function Editor() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/__studio/save", {
-        method: "POST",
+      const res = await fetch("/api/content", {
+        method: "PUT",
         headers: { "content-type": "application/json" },
-        body: serialize(draft),
+        body: JSON.stringify({ content: draft }),
       });
-      const json = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok || !json.ok) throw new Error(json.error ?? res.statusText);
+      const json = (await res.json()) as { ok?: boolean; error?: { message: string } };
+      if (!res.ok || !json.ok) throw new Error(json.error?.message ?? res.statusText);
       setSaved(structuredClone(draft));
-      setStatus({ kind: "ok", msg: "Saved to src/content.json — the site will refresh." });
+      setStatus({ kind: "ok", msg: "Saved." });
     } catch (e) {
       setStatus({ kind: "err", msg: `Save failed: ${String(e)}` });
     } finally {
@@ -76,9 +77,7 @@ export function Editor() {
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-rule pb-4">
         <div>
           <h1 className="display text-4xl">Studio</h1>
-          <p className="mt-1 text-sm text-muted">
-            Edits <code className="text-ink">src/content.json</code>. Local dev only.
-          </p>
+          <p className="mt-1 text-sm text-muted">Edits your portfolio's content.</p>
         </div>
         <span className={cn("text-xs", dirty ? "text-accent" : "text-muted")}>
           {dirty ? "● Unsaved changes" : "All changes saved"}
@@ -121,7 +120,7 @@ export function Editor() {
 
       <div className="sticky bottom-0 z-10 mt-10 flex flex-wrap items-center gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
         <Button type="button" onClick={save} disabled={busy || !dirty}>
-          {busy ? "Saving…" : "Save to content.json"}
+          {busy ? "Saving…" : "Save"}
         </Button>
         <Button type="button" variant="outline" onClick={revert} disabled={!dirty}>
           Revert

@@ -17,6 +17,14 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-13** — Milestone 1 (auth + per-user storage) and the milestone 2
+  content endpoints shipped: `GET /api/me`, `GET /api/content`,
+  `PUT /api/content` are now real, backed by Supabase (Postgres + Auth).
+  Response shapes below match what's actually implemented, not just design —
+  the earlier draft shapes for these three were confirmed unchanged. Studio
+  (`/studio`) now reads/writes through `PUT /api/content` instead of the old
+  dev-only disk write. Auth itself is Supabase Auth directly from the
+  browser client — no custom login endpoint exists or is planned.
 - **2026-09-11** — Initial version. All endpoints are 🚧 Stub. No server code
   exists yet; milestone 1 (auth + per-user storage) hasn't started. This
   document exists first so the contract shape is visible from day one.
@@ -53,7 +61,7 @@ not to a custom endpoint here. The one endpoint this repo adds is for reading
 the app-specific user record (plan, quota, etc.) that lives in our own table
 alongside the Supabase-managed auth user.
 
-### `GET /api/me` — 🚧 Stub
+### `GET /api/me` — ✅ Shipped
 
 **Auth:** required.
 
@@ -84,7 +92,7 @@ phase, not enforced against anything yet.
 Replaces the old dev-only `POST /__studio/save` disk write. Studio's Save
 button calls only this — **it never triggers a deploy.**
 
-### `GET /api/content` — 🚧 Stub
+### `GET /api/content` — ✅ Shipped
 
 **Auth:** required.
 
@@ -98,15 +106,21 @@ Response `200`:
 { "content": { "profile": { "...": "..." }, "projects": [] }, "updatedAt": "2026-09-11T00:00:00Z" }
 ```
 
-### `PUT /api/content` — 🚧 Stub
+### `PUT /api/content` — ✅ Shipped
 
 **Auth:** required.
 
-Body: the full `Content` object (same shape Studio's `serialize()` already
-produces). Validated server-side against the shared zod `contentSchema` plus
-`projectErrors`-style checks (missing required fields, duplicate project
-slugs) before writing — this is the server-side mirror of the client-side
-validation Studio already does, not a replacement for it.
+Body: `{ "content": <full Content object> }` (same shape Studio's `serialize()`
+already produces, wrapped). Validated server-side in two passes before
+writing — this is the server-side mirror of the client-side validation
+Studio already does, not a replacement for it:
+
+1. The full object against the shared zod `contentSchema` — issue paths here
+   are dot-joined field paths (e.g. `profile.name`, `projects.1.date`).
+2. `projects` specifically through the same `projectErrors()` business-rule
+   check Studio's UI already runs (missing required fields, duplicate slugs)
+   — issue paths here are just `projects.<index>`, one combined message per
+   project, since that function flags a whole project rather than one field.
 
 Request:
 
@@ -117,17 +131,18 @@ Request:
 Response `200`:
 
 ```json
-{ "ok": true, "updatedAt": "2026-09-11T00:12:03Z" }
+{ "ok": true, "updatedAt": "2026-09-13T00:12:03Z" }
 ```
 
-Response `422` (validation failed):
+Response `422` (validation failed — a schema-shape issue and a business-rule
+issue shown together):
 
 ```json
 {
-  "error": { "code": "content_invalid", "message": "2 problems found" },
+  "error": { "code": "content_invalid", "message": "2 problem(s) found" },
   "issues": [
-    { "path": "projects.0.slug", "message": "Missing slug" },
-    { "path": "projects.2.slug", "message": "Duplicate slug \"decide\"" }
+    { "path": "profile.name", "message": "Required" },
+    { "path": "projects.2", "message": "Duplicate slug \"decide\"" }
   ]
 }
 ```
