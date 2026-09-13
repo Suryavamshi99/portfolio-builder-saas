@@ -17,6 +17,13 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-13 (2)** — Milestone 2b (file uploads) shipped: `POST/GET
+  /api/uploads`, `DELETE /api/uploads/:id`. Shape changes from the original
+  stub: the 409 response now uses two distinct codes — `upload_limit_exceeded`
+  (per-kind count cap) vs `upload_quota_exceeded` (storage bytes) — instead of
+  one shared code; `POST /api/uploads`'s 400 also covers `upload_invalid_kind`
+  and `upload_missing_file`, not just `upload_invalid_type`/`upload_too_large`.
+  Everything else matches the original design.
 - **2026-09-13** — Milestone 1 (auth + per-user storage) and the milestone 2
   content endpoints shipped: `GET /api/me`, `GET /api/content`,
   `PUT /api/content` are now real, backed by Supabase (Postgres + Auth).
@@ -175,7 +182,14 @@ size → real content-type → remaining quota → strip metadata → store):
   inactive draft expire after 30 days (warning email a few days prior);
   images tied to a **currently published** site are never auto-deleted.
 
-### `POST /api/uploads` — 🚧 Stub
+Singleton kinds (`resume`, `photo`) — a new upload **replaces** the existing
+one automatically. Capped kinds (`visual_reference`, `project_image`) reject
+a new upload once the count limit is hit instead — the user removes one via
+`DELETE` first. Uploaded files get a **signed URL, 1 hour TTL** — the bucket
+is private, so re-fetch `GET /api/uploads` (or re-`POST`) rather than caching
+a `url` past its expiry.
+
+### `POST /api/uploads` — ✅ Shipped
 
 **Auth:** required. `multipart/form-data`.
 
@@ -190,38 +204,55 @@ Response `201`:
   "kind": "resume",
   "filename": "surya-resume.pdf",
   "sizeBytes": 214532,
-  "url": "https://.../signed-url-or-public-path",
-  "createdAt": "2026-09-11T00:00:00Z"
+  "url": "https://.../object/sign/uploads/...?token=...",
+  "createdAt": "2026-09-13T00:00:00Z"
 }
 ```
 
-Response `400` (rejected — bad type/size, never touches storage):
+Response `400` (rejected — bad type/size/missing field, never touches
+storage; `code` is one of `upload_invalid_kind`, `upload_missing_file`,
+`upload_invalid_type`, `upload_too_large`):
 
 ```json
-{ "error": { "code": "upload_invalid_type", "message": "Expected PDF or DOCX" } }
+{ "error": { "code": "upload_invalid_type", "message": "Expected one of: application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document" } }
 ```
 
-Response `409` (quota or count exceeded):
+Response `409` — two distinct codes depending on which limit was hit:
+
+```json
+{ "error": { "code": "upload_limit_exceeded", "message": "You can have at most 3 visual_reference uploads — remove one first" } }
+```
 
 ```json
 { "error": { "code": "upload_quota_exceeded", "message": "Storage quota exceeded (50MB on the free plan)" } }
 ```
 
-Response `429` (hourly upload cap):
+Response `429` (hourly upload cap, separate from the LLM rate limit):
 
 ```json
 { "error": { "code": "rate_limited", "message": "Upload limit reached, try again later" } }
 ```
 
-### `GET /api/uploads` — 🚧 Stub
+### `GET /api/uploads` — ✅ Shipped
 
-**Auth:** required. Query: optional `kind`.
+**Auth:** required. Query: optional `?kind=`. `storage` in the response is
+always account-wide totals, even when `kind` filters which uploads are
+listed.
 
-Response `200`: `{ "uploads": [ { "id": "...", "kind": "photo", "...": "..." } ], "storage": { "usedBytes": 1234000, "quotaBytes": 52428800 } }`
+Response `200`:
 
-### `DELETE /api/uploads/:id` — 🚧 Stub
+```json
+{
+  "uploads": [
+    { "id": "...", "kind": "photo", "filename": "headshot.jpg", "sizeBytes": 812004, "url": "https://.../sign/...", "createdAt": "2026-09-13T00:00:00Z" }
+  ],
+  "storage": { "usedBytes": 1234000, "quotaBytes": 52428800 }
+}
+```
 
-**Auth:** required. `204` on success.
+### `DELETE /api/uploads/:id` — ✅ Shipped
+
+**Auth:** required. `204` on success, `404` (`{ "error": { "code": "not_found", ... } }`) if the upload doesn't exist or isn't yours.
 
 ---
 

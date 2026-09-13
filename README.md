@@ -57,11 +57,15 @@ schema or server internals.
 
 ## Status
 
-Milestone 1 (auth + per-user storage) and the milestone 2 content endpoints
-are live: `GET /api/me`, `GET /api/content`, `PUT /api/content`, backed by
-real Supabase tables and RLS policies. `/studio` reads/writes through those
-instead of the old dev-only disk write. Not yet built: file uploads (2b),
-BYOK extraction (3), rate limiting (4), Vercel OAuth + publish (5) — see
-`API.md`'s Changelog for exactly what's shipped vs. stubbed. There is no
-login UI yet (Antigravity's job); `/studio` will show "sign in to edit" for
-anyone without a Supabase session.
+Milestones 1, 2, and 2b are live: `GET /api/me`, `GET/PUT /api/content`,
+`POST/GET /api/uploads`, `DELETE /api/uploads/:id` — all backed by real
+Supabase tables, RLS policies, and Storage. Uploads are validated server-side
+by magic-byte sniffing (never client-reported type), size-capped, quota- and
+rate-limited, and images are stripped of EXIF/GPS via `sharp` before storage
+(`src/server/uploads.ts`). Not yet built: BYOK extraction (3), rate limiting
+on generation (4), Vercel OAuth + publish (5) — see `API.md`'s Changelog for
+exactly what's shipped vs. stubbed. There is no login UI yet (Antigravity's
+job); `/studio` will show "sign in to edit" for anyone without a Supabase
+session. One known gap: the retention cron's Storage-object deletion is a
+TODO in `0002_retention_cron.sql` — it deletes the DB row but not yet the
+underlying file, pending an Edge Function.
