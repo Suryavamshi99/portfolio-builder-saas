@@ -6,11 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ *
- * Small form primitives for the /studio content editor (dev only).
+ * Clean, accessible form primitives for the /studio content editor.
  * ------------------------------------------------------------------ */
 
 export function FieldLabel({ children }: { children: ReactNode }) {
-  return <span className="text-xs font-medium text-muted">{children}</span>;
+  return <span className="text-xs font-medium text-muted-foreground">{children}</span>;
 }
 
 export function Field({
@@ -35,10 +35,10 @@ export function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? ""}
-        className={cn(error && "border-red-500")}
+        className={cn(error && "border-destructive text-destructive")}
       />
-      {hint ? <span className="text-[11px] text-muted">{hint}</span> : null}
-      {error ? <span className="text-[11px] text-red-500">{error}</span> : null}
+      {hint ? <span className="text-[11px] text-muted-foreground">{hint}</span> : null}
+      {error ? <span className="text-[11px] text-destructive">{error}</span> : null}
     </label>
   );
 }
@@ -60,7 +60,7 @@ export function AreaField({
     <label className="flex flex-col gap-1.5">
       <FieldLabel>{label}</FieldLabel>
       <Textarea rows={rows} value={value} onChange={(e) => onChange(e.target.value)} />
-      {hint ? <span className="text-[11px] text-muted">{hint}</span> : null}
+      {hint ? <span className="text-[11px] text-muted-foreground">{hint}</span> : null}
     </label>
   );
 }
@@ -82,7 +82,7 @@ export function SelectField<T extends string>({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as T)}
-        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="h-9 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -112,7 +112,7 @@ function RowButton({
         e.stopPropagation();
         onClick();
       }}
-      className="flex h-7 w-7 items-center justify-center rounded border border-rule text-xs text-muted transition-colors hover:border-accent hover:text-accent"
+      className="flex h-7 w-7 items-center justify-center rounded border border-border text-xs text-muted-foreground transition-colors hover:border-accent hover:text-accent focus-visible:ring-1 focus-visible:ring-ring"
     >
       {children}
     </button>
@@ -170,7 +170,7 @@ export function StringList({
         type="button"
         variant="outline"
         size="sm"
-        className="w-fit"
+        className="w-fit text-xs"
         onClick={() => onChange([...items, ""])}
       >
         + Add {placeholder ?? "item"}
@@ -210,11 +210,12 @@ export function ArrayEditor<T>({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">{label}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{label}</h3>
         <Button
           type="button"
           variant="outline"
           size="sm"
+          className="text-xs"
           onClick={() => onChange([...items, create()])}
         >
           + Add {addLabel ?? ""}
@@ -222,14 +223,14 @@ export function ArrayEditor<T>({
       </div>
 
       {items.length === 0 ? (
-        <p className="rounded-md border border-dashed border-rule px-3 py-6 text-center text-xs text-muted">
+        <p className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
           Nothing here yet.
         </p>
       ) : null}
 
       {items.map((item, i) => (
-        <details key={i} open className="overflow-hidden rounded-lg border border-rule bg-paper">
-          <summary className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm">
+        <details key={i} open className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+          <summary className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted/40">
             <span className="truncate font-medium">{title(item, i) || `Item ${i + 1}`}</span>
             <span className="flex shrink-0 gap-1">
               <RowButton title="Move up" onClick={() => move(i, -1)}>
@@ -243,7 +244,7 @@ export function ArrayEditor<T>({
               </RowButton>
             </span>
           </summary>
-          <div className="flex flex-col gap-3 border-t border-rule p-3">
+          <div className="flex flex-col gap-3 border-t border-border p-3">
             {children(item, (next) => set(i, next), i)}
           </div>
         </details>

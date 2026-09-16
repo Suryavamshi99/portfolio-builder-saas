@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as ApiByokKeysRouteImport } from './routes/api/byok-keys'
 import { Route as ApiContentRouteImport } from './routes/api/content'
@@ -28,6 +31,21 @@ import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oau
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StudioRoute = StudioRouteImport.update({
@@ -103,6 +121,9 @@ const ApiVercelOauthStartRoute = ApiVercelOauthStartRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
@@ -120,6 +141,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
@@ -138,6 +162,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
@@ -157,6 +184,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
+    | '/onboarding'
+    | '/settings'
     | '/studio'
     | '/api/byok-keys'
     | '/api/content'
@@ -174,6 +204,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/onboarding'
+    | '/settings'
     | '/studio'
     | '/api/byok-keys'
     | '/api/content'
@@ -191,6 +224,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/login'
+    | '/onboarding'
+    | '/settings'
     | '/studio'
     | '/api/byok-keys'
     | '/api/content'
@@ -209,6 +245,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SettingsRoute: typeof SettingsRoute
   StudioRoute: typeof StudioRoute
   ApiByokKeysRoute: typeof ApiByokKeysRouteWithChildren
   ApiContentRoute: typeof ApiContentRoute
@@ -226,6 +265,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/studio': {
@@ -383,6 +443,9 @@ const ApiVercelRouteWithChildren = ApiVercelRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
+  SettingsRoute: SettingsRoute,
   StudioRoute: StudioRoute,
   ApiByokKeysRoute: ApiByokKeysRouteWithChildren,
   ApiContentRoute: ApiContentRoute,

@@ -4,14 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Placeholder neutral theme — Antigravity owns final visual design.
- * Kept minimal so shadcn/ui primitives (Button, Input, Textarea) used by
- * the Studio editor render sanely without a design system in place yet.
+ * Design system tokens — Accessible, high-contrast palette
+ * supporting both light and dark themes (WCAG AA compliant).
  */
 
 @theme inline {
   --color-background: rgb(var(--background));
   --color-foreground: rgb(var(--foreground));
+  --color-card: rgb(var(--card));
+  --color-card-foreground: rgb(var(--card-foreground));
+  --color-popover: rgb(var(--card));
+  --color-popover-foreground: rgb(var(--card-foreground));
   --color-border: rgb(var(--border));
   --color-input: rgb(var(--border));
   --color-ring: rgb(var(--ring));
@@ -19,37 +22,80 @@
   --color-muted-foreground: rgb(var(--muted-foreground));
   --color-primary: rgb(var(--primary));
   --color-primary-foreground: rgb(var(--primary-foreground));
+  --color-secondary: rgb(var(--secondary));
+  --color-secondary-foreground: rgb(var(--secondary-foreground));
   --color-accent: rgb(var(--accent));
   --color-accent-foreground: rgb(var(--accent-foreground));
+  --color-destructive: rgb(var(--destructive));
+  --color-destructive-foreground: rgb(var(--destructive-foreground));
+  --color-success: rgb(var(--success));
+  --color-success-foreground: rgb(var(--success-foreground));
+  --color-warning: rgb(var(--warning));
+  --color-warning-foreground: rgb(var(--warning-foreground));
+
+  /* Backward-compatible aliases for ported studio code */
+  --color-rule: rgb(var(--border));
+  --color-ink: rgb(var(--foreground));
+  --color-paper: rgb(var(--background));
 }
 
 :root {
-  --background: 255 255 255;
-  --foreground: 15 15 20;
-  --border: 226 226 230;
-  --ring: 46 63 229;
-  --muted: 244 244 246;
-  --muted-foreground: 107 107 112;
-  --primary: 15 15 20;
+  --background: 250 250 252;
+  --foreground: 15 23 42;
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
+  --border: 226 232 240;
+  --ring: 79 70 229;
+  --muted: 241 245 249;
+  --muted-foreground: 100 116 139;
+  --primary: 15 23 42;
   --primary-foreground: 255 255 255;
-  --accent: 46 63 229;
+  --secondary: 241 245 249;
+  --secondary-foreground: 15 23 42;
+  --accent: 79 70 229;
   --accent-foreground: 255 255 255;
+  --destructive: 225 29 72;
+  --destructive-foreground: 255 255 255;
+  --success: 16 185 129;
+  --success-foreground: 255 255 255;
+  --warning: 217 119 6;
+  --warning-foreground: 255 255 255;
 }
 
 .dark {
-  --background: 12 12 15;
-  --foreground: 245 245 247;
-  --border: 42 42 48;
-  --ring: 99 112 255;
-  --muted: 26 26 31;
-  --muted-foreground: 160 160 168;
-  --primary: 245 245 247;
-  --primary-foreground: 12 12 15;
-  --accent: 99 112 255;
-  --accent-foreground: 12 12 15;
+  --background: 11 15 25;
+  --foreground: 248 250 252;
+  --card: 17 24 39;
+  --card-foreground: 248 250 252;
+  --border: 30 41 59;
+  --ring: 129 140 248;
+  --muted: 26 36 53;
+  --muted-foreground: 148 163 184;
+  --primary: 248 250 252;
+  --primary-foreground: 11 15 25;
+  --secondary: 30 41 59;
+  --secondary-foreground: 248 250 252;
+  --accent: 99 102 241;
+  --accent-foreground: 255 255 255;
+  --destructive: 244 63 94;
+  --destructive-foreground: 255 255 255;
+  --success: 52 211 153;
+  --success-foreground: 11 15 25;
+  --warning: 251 191 36;
+  --warning-foreground: 11 15 25;
 }
 
 body {
-  background: rgb(var(--background));
+  background-color: rgb(var(--background));
   color: rgb(var(--foreground));
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible focus visible default for all interactive elements */
+:focus-visible {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 2px;
 }
