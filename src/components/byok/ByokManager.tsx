@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Tooltip } from "@/components/ui/tooltip";
 import {
   KeyRound,
   ShieldCheck,
@@ -13,6 +14,7 @@ import {
   Loader2,
   ExternalLink,
   Lock,
+  HelpCircle,
 } from "lucide-react";
 
 export type LLMProvider = "anthropic" | "openai" | "google";
@@ -29,6 +31,7 @@ const PROVIDER_METADATA: Record<
     description: string;
     placeholder: string;
     docsUrl: string;
+    steps: string[];
     recommended?: boolean;
   }
 > = {
@@ -38,18 +41,39 @@ const PROVIDER_METADATA: Record<
     placeholder: "sk-ant-...",
     docsUrl: "https://console.anthropic.com/settings/keys",
     recommended: true,
+    steps: [
+      "Go to console.anthropic.com and sign in (or create a free account).",
+      "In the left sidebar, click \"API Keys\".",
+      "Click \"Create Key\", give it any name.",
+      "Copy the key right away — Anthropic only shows it once.",
+      "Paste it into the box below.",
+    ],
   },
   openai: {
     name: "OpenAI",
     description: "GPT-4o / GPT-4o-mini. Fast and dependable content drafting.",
     placeholder: "sk-...",
     docsUrl: "https://platform.openai.com/api-keys",
+    steps: [
+      "Go to platform.openai.com/api-keys and sign in (or create a free account).",
+      "Click \"Create new secret key\".",
+      "Give it any name and click \"Create secret key\".",
+      "Copy the key right away — OpenAI only shows it once.",
+      "Paste it into the box below.",
+    ],
   },
   google: {
     name: "Google Gemini",
     description: "Gemini 2.5 Flash / Pro. Generous free tier quotas for students.",
     placeholder: "AIzaSy...",
     docsUrl: "https://aistudio.google.com/app/apikey",
+    steps: [
+      "Go to aistudio.google.com/app/apikey and sign in with your Google account.",
+      "Click \"Create API key\".",
+      "Pick an existing Google Cloud project, or let it create one for you.",
+      "Copy the generated key.",
+      "Paste it into the box below.",
+    ],
   },
 };
 
@@ -203,7 +227,31 @@ export function ByokManager({ onKeyConnected, compact = false }: ByokManagerProp
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="font-semibold text-sm">{meta.name}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-sm">{meta.name}</span>
+                  <Tooltip
+                    align="start"
+                    content={
+                      <div className="space-y-1.5">
+                        <p className="font-semibold text-foreground">How to get your {meta.name} key</p>
+                        <ol className="list-decimal space-y-1 pl-4">
+                          {meta.steps.map((step, i) => (
+                            <li key={i}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    }
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex size-4 items-center justify-center rounded-full text-muted-foreground hover:text-accent"
+                      aria-label={`How to get a ${meta.name} API key`}
+                    >
+                      <HelpCircle className="size-3.5" />
+                    </button>
+                  </Tooltip>
+                </div>
                 {connected ? (
                   <Badge variant="success" className="gap-1 text-[10px]">
                     <CheckCircle2 className="size-3" />

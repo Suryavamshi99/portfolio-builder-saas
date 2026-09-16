@@ -1,6 +1,7 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useAuth } from "@/lib/auth";
 import { ByokManager } from "@/components/byok/ByokManager";
 import { UploadWidget } from "@/components/upload/UploadWidget";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   KeyRound,
   HardDrive,
@@ -18,6 +20,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Zap,
+  AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
@@ -51,12 +55,17 @@ interface VercelStatus {
 }
 
 function SettingsContent() {
+  const navigate = useNavigate();
+  const { refreshPortfolioStatus } = useAuth();
   const [activeTab, setActiveTab] = React.useState("byok");
   const [userRecord, setUserRecord] = React.useState<UserRecord | null>(null);
   const [vercelStatus, setVercelStatus] = React.useState<VercelStatus | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [disconnectingVercel, setDisconnectingVercel] = React.useState(false);
   const [statusMsg, setStatusMsg] = React.useState<string | null>(null);
+  const [resetDialogOpen, setResetDialogOpen] = React.useState(false);
+  const [resetting, setResetting] = React.useState(false);
+  const [resetError, setResetError] = React.useState<string | null>(null);
 
   const fetchStatus = React.useCallback(async () => {
     try {
@@ -107,6 +116,25 @@ function SettingsContent() {
     }
   };
 
+  const handleStartOver = async () => {
+    setResetting(true);
+    setResetError(null);
+    try {
+      const res = await fetch("/api/reset", { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error?.message ?? `Reset failed (${res.status})`);
+      }
+      await refreshPortfolioStatus();
+      setResetDialogOpen(false);
+      void navigate({ to: "/onboarding" });
+    } catch (e: unknown) {
+      setResetError(e instanceof Error ? e.message : "Failed to reset your account.");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 py-4">
       <div>
@@ -125,7 +153,7 @@ function SettingsContent() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="byok" className="gap-2 text-xs">
             <KeyRound className="size-3.5" />
             BYOK Keys
@@ -137,6 +165,10 @@ function SettingsContent() {
           <TabsTrigger value="storage" className="gap-2 text-xs">
             <HardDrive className="size-3.5" />
             Storage & Files
+          </TabsTrigger>
+          <TabsTrigger value="danger" className="gap-2 text-xs text-destructive">
+            <AlertTriangle className="size-3.5" />
+            Danger Zone
           </TabsTrigger>
         </TabsList>
 
@@ -243,7 +275,80 @@ function SettingsContent() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Tab 4: Danger Zone */}
+        <TabsContent value="danger" className="pt-4 space-y-6">
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2 text-destructive">
+                <AlertTriangle className="size-4" />
+                Start Over
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Wipe your current draft and every uploaded file so you can build your portfolio from
+                scratch — for example if you want to start with a completely different resume or
+                direction rather than editing what's there.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-xs text-muted-foreground space-y-2">
+                <p>
+                  <strong className="text-foreground">This deletes:</strong> your portfolio content
+                  (everything in Studio), your resume, visual reference screenshots, profile photo, and
+                  project images.
+                </p>
+                <p>
+                  <strong className="text-foreground">This keeps:</strong> your connected API key(s) — you
+                  won't need to reconnect them.
+                </p>
+                <p>You'll be taken to the wizard afterward and will need to upload everything again.</p>
+              </div>
+              <Button
+                variant="destructive"
+                className="gap-2"
+                onClick={() => {
+                  setResetError(null);
+                  setResetDialogOpen(true);
+                }}
+              >
+                <RotateCcw className="size-4" />
+                Start Over
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="size-5" />
+              Delete everything and start over?
+            </DialogTitle>
+            <DialogDescription>
+              This permanently deletes your current portfolio draft and all uploaded files (resume,
+              visual references, photo, project images). Your connected API key(s) will be kept. You'll
+              need to re-upload everything and generate again. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {resetError && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertTitle>Couldn't reset</AlertTitle>
+              <AlertDescription>{resetError}</AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetDialogOpen(false)} disabled={resetting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => void handleStartOver()} disabled={resetting} className="gap-2">
+              {resetting ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}
+              Yes, start over
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { canAccessStudio } from "@/lib/portfolio-gate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -64,7 +65,8 @@ interface PublishStatus {
 function HomePage() {
   const { vercel } = Route.useSearch();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, portfolioReady } = useAuth();
+  const studioUnlocked = canAccessStudio({ portfolioReady });
 
   const [vercelJustConnected, setVercelJustConnected] = React.useState(vercel === "connected");
   const [userData, setUserData] = React.useState<UserRecord | null>(null);
@@ -108,7 +110,11 @@ function HomePage() {
             </div>
             <div className="flex items-center gap-2">
               <Button asChild size="sm" className="h-8 text-xs font-semibold">
-                <Link to="/studio">Open Studio to Publish</Link>
+                {studioUnlocked ? (
+                  <Link to="/studio">Open Studio to Publish</Link>
+                ) : (
+                  <Link to="/onboarding">Generate a Portfolio First</Link>
+                )}
               </Button>
               <Button
                 type="button"
@@ -142,14 +148,17 @@ function HomePage() {
             </div>
 
             <div className="flex items-center gap-2 pt-2 sm:pt-0">
-              <Button asChild className="gap-2">
-                <Link to="/studio">
-                  <LayoutTemplate className="size-4" /> Open Studio
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="gap-2">
+              {studioUnlocked ? (
+                <Button asChild className="gap-2">
+                  <Link to="/studio">
+                    <LayoutTemplate className="size-4" /> Open Studio
+                  </Link>
+                </Button>
+              ) : null}
+              <Button asChild variant={studioUnlocked ? "outline" : "default"} className="gap-2">
                 <Link to="/onboarding">
-                  <Sparkles className="size-4 text-accent" /> New Wizard Run
+                  <Sparkles className="size-4 text-accent" />
+                  {studioUnlocked ? "New Wizard Run" : "Generate Your Portfolio"}
                 </Link>
               </Button>
             </div>
@@ -207,7 +216,11 @@ function HomePage() {
               </CardContent>
               <CardFooter className="border-t border-border/40 pt-3">
                 <Button asChild variant="ghost" size="sm" className="h-7 w-full text-xs">
-                  <Link to="/studio">Edit in Studio →</Link>
+                  {studioUnlocked ? (
+                    <Link to="/studio">Edit in Studio →</Link>
+                  ) : (
+                    <Link to="/onboarding">Generate your portfolio →</Link>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -397,7 +410,7 @@ function HomePage() {
                 </div>
                 <CardTitle className="text-lg">Publish to Your Vercel</CardTitle>
                 <CardDescription className="text-xs leading-relaxed">
-                  One-click OAuth links your Vercel account. Your site is bundled with zero-dependency static HTML and hosted at your custom domain.
+                  One-click OAuth links your Vercel account. Your site is bundled as zero-dependency static HTML and deployed directly to your own Vercel account.
                 </CardDescription>
               </CardHeader>
             </Card>

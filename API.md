@@ -17,6 +17,14 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-16** — Added `POST /api/reset` ("start over" — see its own section
+  below, after milestone 2). Not part of the original six milestones; added
+  as a product requirement once real usage surfaced the need for a clean-
+  slate action distinct from a wizard re-run (which only overwrites content,
+  keeps uploads). Also: the frontend now gates `/studio` behind having a
+  ready portfolio (`profile.name`/`role`/`thesis` non-empty) — a UI-only
+  routing decision, not a new server rule, so no contract change for
+  `GET /api/content` itself.
 - **2026-09-13 (4)** — Milestone 5 (Vercel OAuth + publish) shipped:
   `GET /api/vercel/oauth/{start,callback}`, `GET /api/vercel/status`,
   `DELETE /api/vercel`, `POST /api/publish`, `GET /api/publish/status`. New
@@ -183,6 +191,41 @@ issue shown together):
   ]
 }
 ```
+
+---
+
+## "Start over" — reset a draft to blank
+
+Not one of the original six milestones — added as a product requirement.
+Distinct from re-running the wizard's Generate step (which only overwrites
+`portfolios.content`, leaving uploads and BYOK keys untouched): this wipes
+everything a user would need to re-enter to build fresh, while explicitly
+preserving what they'd have to go re-obtain from a third party.
+
+### `POST /api/reset` — ✅ Shipped
+
+**Auth:** required. No request body.
+
+Deletes every upload row **and its Storage object** for the user (resume,
+visual references, photo, project images), then resets `portfolios.content`
+to the empty `Content` shape. Does **not** touch `byok_keys`,
+`vercel_connections`, `generations`, or `publications` — connected provider
+keys stay connected, and a previously published site stays live and
+unaffected (this only resets the draft, not anything already deployed).
+
+Irreversible — the UI must get explicit confirmation before calling this;
+the endpoint does not ask twice or support undo.
+
+Response `200`:
+
+```json
+{ "ok": true, "updatedAt": "2026-09-16T00:00:00Z" }
+```
+
+Response `500`: `{ "error": { "code": "internal_error", "message": "..." } }`
+— note the message distinguishes a failure that happened before vs. after
+uploads were cleared (e.g. `"Uploads cleared, but could not reset content"`),
+since those leave the account in different partial states worth surfacing.
 
 ---
 

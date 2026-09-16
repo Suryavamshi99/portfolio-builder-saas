@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { UploadWidget, type UploadItem } from "@/components/upload/UploadWidget";
 import { ByokManager, type LLMProvider } from "@/components/byok/ByokManager";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   FileText,
   Image as ImageIcon,
@@ -22,6 +24,8 @@ import {
   Loader2,
   Clock,
   AlertTriangle,
+  LayoutTemplate,
+  Globe,
 } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
@@ -52,6 +56,7 @@ const STEPS = [
 
 function OnboardingWizard() {
   const navigate = useNavigate();
+  const { refreshPortfolioStatus, portfolioReady } = useAuth();
 
   const [currentStep, setCurrentStep] = React.useState<StepIndex>(1);
   const [resumeUpload, setResumeUpload] = React.useState<UploadItem | null>(null);
@@ -64,6 +69,8 @@ function OnboardingWizard() {
   // Generation state
   const [generating, setGenerating] = React.useState(false);
   const [generationPhase, setGenerationPhase] = React.useState<string>("");
+  const [generationComplete, setGenerationComplete] = React.useState(false);
+  const [confirmRegenerateOpen, setConfirmRegenerateOpen] = React.useState(false);
   const [errorDetails, setErrorDetails] = React.useState<{
     title: string;
     message: string;
@@ -173,11 +180,13 @@ function OnboardingWizard() {
         return;
       }
 
-      // Success! Move to Studio
-      setGenerationPhase("Content created successfully! Redirecting to Studio…");
-      setTimeout(() => {
-        void navigate({ to: "/studio" });
-      }, 1000);
+      // Success! Unlock Studio (refreshes the shared readiness flag Navbar
+      // and the /studio route both gate on), then show a deliberate
+      // hand-off screen rather than silently whisking the user away —
+      // they should land on a clear next step, not a surprise redirect.
+      setGenerationPhase("Content created successfully! Unlocking Studio…");
+      await refreshPortfolioStatus();
+      setGenerationComplete(true);
     } catch (e: unknown) {
       setErrorDetails({
         title: "Network Error",
@@ -448,8 +457,39 @@ function OnboardingWizard() {
           </>
         )}
 
-        {/* Step 6: Trigger Generation */}
-        {currentStep === 6 && (
+        {/* Step 6: Trigger Generation, or the post-generation hand-off */}
+        {currentStep === 6 && generationComplete && (
+          <>
+            <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+              <div className="flex size-14 items-center justify-center rounded-full bg-success/15 text-success">
+                <CheckCircle2 className="size-7" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-xl font-bold">Your portfolio draft is ready</h3>
+                <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                  Head to Studio to review what was generated — fix anything that's off, update old
+                  roles, or add projects that didn't come from your resume. Nothing is public yet.
+                </p>
+              </div>
+              <div className="w-full max-w-sm space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-left text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-foreground">
+                  <Globe className="size-3.5 text-accent" />
+                  Publishing is a separate, explicit step
+                </div>
+                <p>
+                  Editing and saving in Studio never goes live on its own. When you're happy with it,
+                  connect Vercel and hit Publish from Studio to deploy it to your own account.
+                </p>
+              </div>
+              <Button size="lg" className="gap-2 font-semibold" onClick={() => void navigate({ to: "/studio" })}>
+                <LayoutTemplate className="size-4" />
+                Review & Edit in Studio
+              </Button>
+            </CardContent>
+          </>
+        )}
+
+        {currentStep === 6 && !generationComplete && (
           <>
             <CardHeader>
               <CardTitle className="text-lg">Step 6: Generate Your Portfolio Draft</CardTitle>
@@ -473,6 +513,17 @@ function OnboardingWizard() {
                   </div>
                 </div>
               </div>
+
+              {portfolioReady && (
+                <Alert variant="warning">
+                  <AlertTriangle className="size-4" />
+                  <AlertTitle>You already have a portfolio</AlertTitle>
+                  <AlertDescription>
+                    Generating again will overwrite your current draft and call your {selectedProvider} key
+                    again — using more of your API credits, subject to what your account has available.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Error Callouts */}
               {errorDetails && (
@@ -527,7 +578,7 @@ function OnboardingWizard() {
               <Button
                 type="button"
                 disabled={generating || !resumeUpload}
-                onClick={handleGenerate}
+                onClick={() => (portfolioReady ? setConfirmRegenerateOpen(true) : void handleGenerate())}
                 className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
               >
                 {generating ? (
@@ -536,7 +587,7 @@ function OnboardingWizard() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="size-4" /> Generate Portfolio
+                    <Sparkles className="size-4" /> {portfolioReady ? "Regenerate Portfolio" : "Generate Portfolio"}
                   </>
                 )}
               </Button>
@@ -544,6 +595,37 @@ function OnboardingWizard() {
           </>
         )}
       </Card>
+
+      <Dialog open={confirmRegenerateOpen} onOpenChange={setConfirmRegenerateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-warning">
+              <AlertTriangle className="size-5" />
+              Regenerate and overwrite your current draft?
+            </DialogTitle>
+            <DialogDescription>
+              This calls your {selectedProvider} API key again and uses more of your available credits —
+              subject to whatever quota or balance your account has with that provider. Your current
+              Studio draft will be overwritten with the new result.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmRegenerateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              onClick={() => {
+                setConfirmRegenerateOpen(false);
+                void handleGenerate();
+              }}
+            >
+              <Sparkles className="size-4" />
+              Yes, regenerate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

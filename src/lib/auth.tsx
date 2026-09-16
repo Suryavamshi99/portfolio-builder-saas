@@ -1,12 +1,17 @@
 import * as React from "react";
 import type { User, Session, SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { isPortfolioReady } from "@/lib/portfolio-gate";
+import type { Content } from "@/data/content";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   supabaseConfigured: boolean;
+  /** null = not checked yet. See src/lib/portfolio-gate.ts for what "ready" means and how it's used. */
+  portfolioReady: boolean | null;
+  refreshPortfolioStatus: () => Promise<boolean>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
   signOut: () => Promise<void>;
@@ -35,8 +40,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<Session | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [supabaseConfigured, setSupabaseConfigured] = React.useState(true);
+  const [portfolioReady, setPortfolioReady] = React.useState<boolean | null>(null);
 
   const client = React.useMemo(() => getBrowserClient(), []);
+
+  const refreshPortfolioStatus = React.useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/content");
+      if (!res.ok) {
+        setPortfolioReady(false);
+        return false;
+      }
+      const json = (await res.json()) as { content: Content };
+      const ready = isPortfolioReady(json.content);
+      setPortfolioReady(ready);
+      return ready;
+    } catch {
+      setPortfolioReady(false);
+      return false;
+    }
+  }, []);
 
   React.useEffect(() => {
     if (!client) {
@@ -65,6 +88,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, [client]);
+
+  React.useEffect(() => {
+    if (!user) {
+      setPortfolioReady(null);
+      return;
+    }
+    void refreshPortfolioStatus();
+  }, [user, refreshPortfolioStatus]);
 
   const signInWithPassword = async (email: string, password: string) => {
     if (!client) {
@@ -111,6 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         loading,
         supabaseConfigured,
+        portfolioReady,
+        refreshPortfolioStatus,
         signInWithPassword,
         signUp,
         signOut,

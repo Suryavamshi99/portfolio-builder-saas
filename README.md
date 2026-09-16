@@ -75,14 +75,24 @@ schema or server internals.
 ## Status
 
 **All six milestones' endpoints exist** (payments intentionally excluded —
-see below): `GET /api/me`, `GET/PUT /api/content`, `POST/GET /api/uploads`,
-`DELETE /api/uploads/:id`, `POST/GET /api/byok-keys`,
-`DELETE /api/byok-keys/:provider`, `POST /api/generate`,
-`GET /api/vercel/oauth/{start,callback}`, `GET /api/vercel/status`,
-`DELETE /api/vercel`, `POST /api/publish`, `GET /api/publish/status` — all
-backed by real Supabase tables, RLS policies, and Storage. There is no login
-UI yet (Antigravity's job); `/studio` will show "sign in to edit" for anyone
-without a Supabase session.
+see below), plus `POST /api/reset` ("start over" — added later as a product
+requirement, see API.md) — all backed by real Supabase tables, RLS policies,
+and Storage.
+
+**The frontend is built too** (by Antigravity, not this session) — login/
+signup, the onboarding wizard, BYOK key management with per-provider setup
+help, Studio restyled, live preview, and the publish flow. On top of that,
+this session added: `/studio` is gated behind having a ready portfolio
+(profile has real content) rather than being reachable immediately after
+sign-in — a brand-new or freshly-reset account lands on the wizard by
+default; a confirmation step before regenerating warns that it re-calls the
+BYOK provider and overwrites the current draft; and Settings has a "Danger
+Zone" to wipe a draft + its uploads back to blank (keeping connected API
+keys) via `POST /api/reset`.
+
+**Runtime-verified against a real, live Supabase project** as of this
+session — migrations applied successfully, sign-up/email-confirmation flow
+confirmed working end to end against real Supabase Auth.
 
 Highlights: uploads are validated server-side by magic-byte sniffing (never
 client-reported type), size-capped, quota- and rate-limited, and images are
@@ -115,13 +125,11 @@ rule either way. Fixed in the migrations; see their comments.
 **Milestone 6 (payments) is deliberately not started** — `users.plan` is the
 only forward-looking surface (`"free"`, unenforced), per the brief.
 
-**Not runtime-verified**: none of milestones 1–5 have been exercised against
-a live Supabase project, real provider API keys, or a real Vercel OAuth app
-— none of those credentials exist in this environment. Verified throughout:
-`vite build` (client+SSR) and `tsc --noEmit` clean after every change, a
-standalone smoke test confirming `pdf-parse` extracts text from a real
-(hand-built) PDF buffer, and another confirming the publish template renders
-and HTML-escapes correctly. Not executed: DOCX extraction, all three LLM
-provider calls, and the entire Vercel OAuth/Deployments flow — the last of
-these carries real uncertainty (see `API.md`'s milestone 5 section) since I
-had no way to confirm Vercel's current API shapes against live traffic.
+**Still not runtime-verified**: real BYOK provider keys (the actual LLM
+calls), and the entire Vercel OAuth/Deployments flow — the latter carries
+real uncertainty (see `API.md`'s milestone 5 section) since there's still no
+way to confirm Vercel's current API shapes against live traffic without a
+registered OAuth app. `vite build` (client+SSR) and `tsc --noEmit` stay
+clean after every change; a standalone smoke test confirmed `pdf-parse`
+extracts text from a real (hand-built) PDF buffer. DOCX extraction via
+`mammoth` is still implementation-reviewed only, not executed.

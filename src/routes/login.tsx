@@ -25,7 +25,7 @@ export const Route = createFileRoute("/login")({
 function LoginRoute() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  const { user, signInWithPassword, signUp, supabaseConfigured } = useAuth();
+  const { user, signInWithPassword, signUp, supabaseConfigured, refreshPortfolioStatus } = useAuth();
 
   const [activeTab, setActiveTab] = React.useState<"signin" | "signup">("signin");
   const [email, setEmail] = React.useState("");
@@ -34,12 +34,22 @@ function LoginRoute() {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
 
+  // Where to land after auth succeeds: an explicit `redirect` (e.g. AuthGuard
+  // bounced someone off a protected page) always wins. Otherwise, default to
+  // the wizard until a portfolio actually exists — Studio isn't the landing
+  // page for a first-time or still-empty account.
+  const resolveDestination = React.useCallback(async (): Promise<string> => {
+    if (redirect) return redirect;
+    const ready = await refreshPortfolioStatus();
+    return ready ? "/studio" : "/onboarding";
+  }, [redirect, refreshPortfolioStatus]);
+
   // If already authenticated, redirect to destination
   React.useEffect(() => {
     if (user) {
-      void navigate({ to: (redirect ?? "/studio") as any });
+      void resolveDestination().then((to) => navigate({ to: to as any }));
     }
-  }, [user, redirect, navigate]);
+  }, [user, resolveDestination, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +69,8 @@ function LoginRoute() {
         if (error) {
           setErrorMsg(error.message);
         } else {
-          void navigate({ to: (redirect ?? "/studio") as any });
+          const to = await resolveDestination();
+          void navigate({ to: to as any });
         }
       } else {
         const { error, user: createdUser } = await signUp(email, password);
@@ -67,9 +78,10 @@ function LoginRoute() {
           setErrorMsg(error.message);
         } else if (createdUser && !createdUser.confirmed_at) {
           setSuccessMsg(
-            "Account created! If email confirmation is enabled on this project, check your inbox to confirm before signing in."
+            "Account created! Check your inbox for a confirmation email from Supabase (sender address looks like noreply@mail.app.supabase.io) — it sometimes lands in spam. Confirm it, then come back and sign in."
           );
         } else {
+          // No email confirmation required — a brand-new account always starts in the wizard.
           void navigate({ to: (redirect ?? "/onboarding") as any });
         }
       }

@@ -1,9 +1,10 @@
 import { useEffect, useState, type ComponentType } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { isPortfolioReady } from "@/lib/portfolio-gate";
 
 import type { Content } from "@/data/content";
 
@@ -30,6 +31,13 @@ type LoadState =
 
 function StudioRoute() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (state.status === "ready" && !isPortfolioReady(state.content)) {
+      void navigate({ to: "/onboarding" });
+    }
+  }, [state, navigate]);
 
   const loadContent = () => {
     setState({ status: "loading" });
@@ -91,6 +99,17 @@ function StudioRoute() {
 
   if (state.status === "unauthenticated") {
     return null; // Handled by AuthGuard
+  }
+
+  if (!isPortfolioReady(state.content)) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center" role="status">
+        <Loader2 className="size-8 animate-spin text-accent" aria-hidden="true" />
+        <p className="text-sm text-muted-foreground">
+          No portfolio yet — taking you to the wizard…
+        </p>
+      </div>
+    );
   }
 
   return <StudioClient initialContent={state.content} />;

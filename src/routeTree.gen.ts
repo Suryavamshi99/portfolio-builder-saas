@@ -19,6 +19,7 @@ import { Route as ApiContentRouteImport } from './routes/api/content'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as ApiPublishRouteImport } from './routes/api/publish'
+import { Route as ApiResetRouteImport } from './routes/api/reset'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
@@ -78,6 +79,11 @@ const ApiPublishRoute = ApiPublishRouteImport.update({
   path: '/api/publish',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiResetRoute = ApiResetRouteImport.update({
+  id: '/api/reset',
+  path: '/api/reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiUploadsRoute = ApiUploadsRouteImport.update({
   id: '/api/uploads',
   path: '/api/uploads',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
+  '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
+  '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/api/generate': typeof ApiGenerateRoute
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
+  '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/api/generate'
     | '/api/me'
     | '/api/publish'
+    | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/byok-keys/$provider'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/api/generate'
     | '/api/me'
     | '/api/publish'
+    | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/byok-keys/$provider'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/api/generate'
     | '/api/me'
     | '/api/publish'
+    | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/byok-keys/$provider'
@@ -254,6 +266,7 @@ export interface RootRouteChildren {
   ApiGenerateRoute: typeof ApiGenerateRoute
   ApiMeRoute: typeof ApiMeRoute
   ApiPublishRoute: typeof ApiPublishRouteWithChildren
+  ApiResetRoute: typeof ApiResetRoute
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
 }
@@ -328,6 +341,13 @@ declare module '@tanstack/react-router' {
       path: '/api/publish'
       fullPath: '/api/publish'
       preLoaderRoute: typeof ApiPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/reset': {
+      id: '/api/reset'
+      path: '/api/reset'
+      fullPath: '/api/reset'
+      preLoaderRoute: typeof ApiResetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/uploads': {
@@ -452,6 +472,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGenerateRoute: ApiGenerateRoute,
   ApiMeRoute: ApiMeRoute,
   ApiPublishRoute: ApiPublishRouteWithChildren,
+  ApiResetRoute: ApiResetRoute,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
 }

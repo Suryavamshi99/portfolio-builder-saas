@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { canAccessStudio } from "@/lib/portfolio-gate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,10 +13,12 @@ import {
   Sun,
   Moon,
   FolderUp,
+  Lock,
 } from "lucide-react";
 
 export function Navbar() {
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, portfolioReady } = useAuth();
+  const studioUnlocked = canAccessStudio({ portfolioReady });
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
@@ -64,19 +67,29 @@ export function Navbar() {
 
           {user && (
             <nav className="hidden items-center gap-1 md:flex">
-              <Link
-                to="/studio"
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  currentPath.startsWith("/studio")
-                    ? "bg-accent/10 text-accent"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <LayoutTemplate className="size-3.5" />
+              {studioUnlocked ? (
+                <Link
+                  to="/studio"
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    currentPath.startsWith("/studio")
+                      ? "bg-accent/10 text-accent"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <LayoutTemplate className="size-3.5" />
+                    Studio
+                  </span>
+                </Link>
+              ) : (
+                <span
+                  className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground/50"
+                  title="Generate your portfolio in the wizard first to unlock Studio"
+                >
+                  <Lock className="size-3" />
                   Studio
                 </span>
-              </Link>
+              )}
               <Link
                 to="/onboarding"
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
