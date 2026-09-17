@@ -30,15 +30,17 @@ export const Route = createFileRoute("/api/vercel/oauth/callback")({
         }
 
         let accessToken: string;
+        let teamId: string | null;
         try {
           const result = await exchangeVercelCode(code);
           accessToken = result.accessToken;
+          teamId = result.teamId;
         } catch (e) {
           const message = e instanceof VercelOAuthError ? e.message : String(e);
           return Response.json({ error: { code: "vercel_oauth_failed", message } }, { status: 502 });
         }
 
-        const username = await fetchVercelUsername(accessToken);
+        const username = await fetchVercelUsername(accessToken, teamId);
         const { ciphertext, nonce } = encryptSecret(accessToken);
 
         const { error } = await supabase.from("vercel_connections").upsert(
@@ -47,6 +49,7 @@ export const Route = createFileRoute("/api/vercel/oauth/callback")({
             encrypted_access_token: bufferToBytea(ciphertext),
             nonce: bufferToBytea(nonce),
             vercel_username: username,
+            team_id: teamId,
           },
           { onConflict: "user_id" },
         );

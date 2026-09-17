@@ -44,13 +44,15 @@ PROFESSIONAL PORTFOLIO COPYWRITING GUIDELINES (Resume.io Career-Optimized Style)
    - about.stats: 2-4 quantitative statistics derived strictly from resume facts (e.g., years of experience, production projects, users impacted, or graduation honors).
    - about.offHours: 2-4 authentic hobbies/interests if indicated, mapped to valid icons ("film", "racquet", "philosophy", "running", "generic").
 
-6. Standard Navigation (nav):
-   - Always include standard navigation routes:
-     - { "to": "/", "label": "Home", "short": "01", "index": "01" }
-     - { "to": "/work", "label": "Experience", "short": "02", "index": "02" }
-     - { "to": "/projects", "label": "Projects", "short": "03", "index": "03" }
-     - { "to": "/skills", "label": "Skills", "short": "04", "index": "04" }
-     - { "to": "/about", "label": "About", "short": "05", "index": "05" }
+6. Navigation (nav):
+   - The published site is a single scrolling page with in-page anchor links, not
+     separate routes. Use "#" + section id, matching these sections exactly:
+     - { "to": "#about", "label": "About", "short": "01", "index": "01" }
+     - { "to": "#work", "label": "Experience", "short": "02", "index": "02" }
+     - { "to": "#skills", "label": "Skills", "short": "03", "index": "03" }
+     - { "to": "#projects", "label": "Projects", "short": "04", "index": "04" }
+     - { "to": "#contact", "label": "Contact", "short": "05", "index": "05" }
+   - Omit an entry if the corresponding section will be empty (e.g. no projects).
 
 7. Project Slugs & Structure:
    - Ensure every project has a clean URL-friendly kebab-case 'slug' (e.g., "distributed-cache-engine").

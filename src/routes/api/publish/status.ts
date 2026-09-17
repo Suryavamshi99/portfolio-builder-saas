@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/publish/status")({
 
         const { data: connection } = await supabase
           .from("vercel_connections")
-          .select("encrypted_access_token, nonce")
+          .select("encrypted_access_token, nonce, team_id")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/api/publish/status")({
           byteaToBuffer(connection.encrypted_access_token),
           byteaToBuffer(connection.nonce),
         );
-        const live = await getVercelDeployment(accessToken, publication.vercel_deployment_id);
+        const live = await getVercelDeployment(accessToken, connection.team_id, publication.vercel_deployment_id);
 
         if (!live) {
           return Response.json({

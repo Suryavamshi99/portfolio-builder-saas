@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/publish")({
 
         const { data: connection } = await supabase
           .from("vercel_connections")
-          .select("encrypted_access_token, nonce")
+          .select("encrypted_access_token, nonce, team_id")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/api/publish")({
 
         let deployment: { deploymentId: string; url: string };
         try {
-          deployment = await createVercelDeployment(accessToken, projectName, {
+          deployment = await createVercelDeployment(accessToken, connection.team_id, projectName, {
             "index.html": html,
             ...imageFiles,
           });

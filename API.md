@@ -17,6 +17,18 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-17** — Closed loose ends flagged in earlier entries. Fixed two
+  real bugs, not just uncertainty: (1) `gemini-2.0-flash` (google model id)
+  was actually shut down by Google on 2026-06-01 — any generation with that
+  provider was broken; replaced with `gemini-3.5-flash`, and `gpt-4o`
+  (deprecated) with `gpt-5.6-terra`, both verified against each provider's
+  current docs. (2) Vercel's OAuth token response includes `team_id`
+  (non-null when installed on a Team, not a personal account) which was
+  never captured — every Vercel API call after connecting needed it as a
+  `teamId` query param or would 403; fixed via migration `0004` and
+  `src/server/vercel/deploy.ts`. Also confirmed DOCX extraction (`mammoth`)
+  actually works end-to-end via a standalone smoke test (previously only
+  PDF had been verified this way).
 - **2026-09-16** — Added `POST /api/reset` ("start over" — see its own section
   below, after milestone 2). Not part of the original six milestones; added
   as a product requirement once real usage surfaced the need for a clean-
@@ -461,14 +473,17 @@ rolling window, not a fixed reset time.
 Studio's **Save** (`PUT /api/content`) only ever updates the draft. Nothing
 below is triggered by Save — only by an explicit Publish action.
 
-**Uncertainty flag**: the Vercel OAuth and Deployments API endpoints/shapes
-below are implemented against my best understanding of Vercel's current API,
-NOT confirmed against live traffic (no Vercel OAuth app or test account in
-this environment). If they need correcting, it's contained to
-`src/config/vercel.ts` and `src/server/vercel/{oauth,deploy}.ts` — the
-`/api/vercel/*` and `/api/publish*` contracts below (request/response shapes
-Antigravity builds against) should not need to change even if the internals
-do.
+**Verified 2026-09-17** against Vercel's official docs (previously an
+unconfirmed guess): the OAuth authorize/token URLs and the Deployments API
+files-by-SHA flow were both correct as implemented. One real gap the
+verification pass did catch and fix: the token response's `team_id` (set
+when the integration is installed on a Vercel Team rather than a personal
+account) was never being captured or threaded through to later API calls —
+every one of those needs it as a `teamId` query param or Vercel 403s. Fixed
+in `vercel_connections.team_id` (migration `0004`) and every call in
+`src/server/vercel/deploy.ts`. Still not exercised against live traffic (no
+registered OAuth app in this environment) — only the shapes are confirmed,
+not the actual request/response behavior.
 
 ### `GET /api/vercel/oauth/start` — ✅ Shipped
 

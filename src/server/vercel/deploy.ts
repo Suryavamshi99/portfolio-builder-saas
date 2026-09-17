@@ -1,20 +1,26 @@
 import { createHash } from "node:crypto";
 import { VERCEL_API_BASE } from "@/config/vercel";
+import { withTeamId } from "./oauth";
 
 /**
  * Vercel Deployments API (v13) — files-by-digest flow: upload each file's
  * bytes once (dedup'd by its own SHA-1 on Vercel's end), then create the
- * deployment referencing files by that digest. Believed correct as of
- * implementation time but NOT verified live — see the uncertainty note in
- * src/config/vercel.ts. Isolated here so a correction is contained to one
- * file.
+ * deployment referencing files by that digest. Verified against Vercel's
+ * official docs on 2026-09-17 (endpoint, method, and files-by-SHA shape all
+ * confirmed correct). Every call takes `teamId` — required whenever the
+ * integration is installed on a Vercel Team rather than a personal account,
+ * or Vercel returns 403; harmless (ignored) when null.
  */
 export class VercelDeployError extends Error {}
 
-async function uploadVercelFile(accessToken: string, buffer: Buffer): Promise<{ sha: string; size: number }> {
+async function uploadVercelFile(
+  accessToken: string,
+  teamId: string | null,
+  buffer: Buffer,
+): Promise<{ sha: string; size: number }> {
   const sha = createHash("sha1").update(buffer).digest("hex");
 
-  const res = await fetch(`${VERCEL_API_BASE}/v2/files`, {
+  const res = await fetch(withTeamId(`${VERCEL_API_BASE}/v2/files`, teamId), {
     method: "POST",
     headers: {
       authorization: `Bearer ${accessToken}`,
@@ -34,18 +40,19 @@ async function uploadVercelFile(accessToken: string, buffer: Buffer): Promise<{ 
 
 export async function createVercelDeployment(
   accessToken: string,
+  teamId: string | null,
   projectName: string,
   files: Record<string, Buffer | string>,
 ): Promise<{ deploymentId: string; url: string }> {
   const fileEntries = await Promise.all(
     Object.entries(files).map(async ([path, content]) => {
       const buffer = typeof content === "string" ? Buffer.from(content, "utf8") : content;
-      const { sha, size } = await uploadVercelFile(accessToken, buffer);
+      const { sha, size } = await uploadVercelFile(accessToken, teamId, buffer);
       return { file: path, sha, size };
     }),
   );
 
-  const res = await fetch(`${VERCEL_API_BASE}/v13/deployments`, {
+  const res = await fetch(withTeamId(`${VERCEL_API_BASE}/v13/deployments`, teamId), {
     method: "POST",
     headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" },
     body: JSON.stringify({
@@ -70,9 +77,10 @@ export type VercelReadyState = "QUEUED" | "INITIALIZING" | "BUILDING" | "READY" 
 
 export async function getVercelDeployment(
   accessToken: string,
+  teamId: string | null,
   deploymentId: string,
 ): Promise<{ readyState: VercelReadyState; url: string } | null> {
-  const res = await fetch(`${VERCEL_API_BASE}/v13/deployments/${deploymentId}`, {
+  const res = await fetch(withTeamId(`${VERCEL_API_BASE}/v13/deployments/${deploymentId}`, teamId), {
     headers: { authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) return null;
