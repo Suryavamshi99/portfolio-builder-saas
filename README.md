@@ -49,10 +49,14 @@ you:
    file's comment), and `APP_ORIGIN` (this app's own deployed URL).
 4. Register a Vercel OAuth app (needed for "Connect Vercel" / Publish) and
    set its redirect URI to `${APP_ORIGIN}/api/vercel/oauth/callback`; put the
-   resulting `VERCEL_CLIENT_ID`/`VERCEL_CLIENT_SECRET` in `.env`. The
-   endpoint shapes (`src/config/vercel.ts`) are verified against Vercel's
-   official docs, but still not exercised against live traffic — no
-   registered app in the environment that built this.
+   resulting values in `.env` as `OAUTH_VERCEL_CLIENT_ID`/`OAUTH_VERCEL_CLIENT_SECRET`
+   — **not** `VERCEL_CLIENT_ID`/`VERCEL_CLIENT_SECRET`; Vercel's own
+   dashboard rejects any custom environment variable starting with
+   `VERCEL_` at project-import time ("Environment variable ... is
+   invalid"), since it reserves that whole prefix for its own system
+   variables. The endpoint shapes (`src/config/vercel.ts`) are verified
+   against Vercel's official docs, but still not exercised against live
+   traffic — no registered app in the environment that built this.
 5. Deploy the Storage-cleanup Edge Function the retention cron depends on:
    ```sh
    supabase functions deploy purge-storage-objects
