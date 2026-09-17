@@ -1,3 +1,4 @@
+import { CanvasFactory } from "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
@@ -10,7 +11,7 @@ import mammoth from "mammoth";
  */
 export async function extractResumeText(buffer: Buffer, mimeType: string): Promise<string> {
   if (mimeType === "application/pdf") {
-    const parser = new PDFParse({ data: buffer });
+    const parser = new PDFParse({ data: buffer, CanvasFactory });
     try {
       // pageJoiner: "" — default appends a "-- N of M --" marker per page,
       // which is noise we don't want feeding into the extraction prompt.
