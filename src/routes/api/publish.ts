@@ -6,6 +6,7 @@ import { emptyContent, type Content } from "@/data/content";
 import { embedStorageImages } from "@/server/template/images";
 import { renderSiteHtml } from "@/server/template/render";
 import { createVercelDeployment, VercelDeployError } from "@/server/vercel/deploy";
+import { getOrCreateAppUser } from "@/server/users";
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -33,6 +34,9 @@ export const Route = createFileRoute("/api/publish")({
           return errorResponse(409, "vercel_not_connected", "Connect your Vercel account first");
         }
 
+        const appUser = await getOrCreateAppUser(supabase, user.id);
+        if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
+
         const { data: portfolio } = await supabase
           .from("portfolios")
           .select("content")
@@ -44,7 +48,7 @@ export const Route = createFileRoute("/api/publish")({
           content,
           supabase,
         );
-        const html = renderSiteHtml(embeddedContent);
+        const html = renderSiteHtml(embeddedContent, appUser.plan);
 
         const accessToken = decryptSecret(
           byteaToBuffer(connection.encrypted_access_token),

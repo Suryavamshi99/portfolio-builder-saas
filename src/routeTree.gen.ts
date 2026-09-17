@@ -22,10 +22,12 @@ import { Route as ApiPublishRouteImport } from './routes/api/publish'
 import { Route as ApiResetRouteImport } from './routes/api/reset'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
+import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
+import { Route as ApiWebhooksDodoRouteImport } from './routes/api/webhooks/dodo'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
 
@@ -94,6 +96,11 @@ const ApiVercelRoute = ApiVercelRouteImport.update({
   path: '/api/vercel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBillingCheckoutRoute = ApiBillingCheckoutRouteImport.update({
+  id: '/api/billing/checkout',
+  path: '/api/billing/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
   id: '/$provider',
   path: '/$provider',
@@ -113,6 +120,11 @@ const ApiVercelStatusRoute = ApiVercelStatusRouteImport.update({
   id: '/status',
   path: '/status',
   getParentRoute: () => ApiVercelRoute,
+} as any)
+const ApiWebhooksDodoRoute = ApiWebhooksDodoRouteImport.update({
+  id: '/api/webhooks/dodo',
+  path: '/api/webhooks/dodo',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVercelOauthCallbackRoute = ApiVercelOauthCallbackRouteImport.update({
   id: '/oauth/callback',
@@ -139,10 +151,12 @@ export interface FileRoutesByFullPath {
   '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
+  '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
+  '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
@@ -160,10 +174,12 @@ export interface FileRoutesByTo {
   '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
+  '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
+  '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
@@ -182,10 +198,12 @@ export interface FileRoutesById {
   '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
+  '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
+  '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
@@ -205,10 +223,12 @@ export interface FileRouteTypes {
     | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
+    | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
+    | '/api/webhooks/dodo'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
   fileRoutesByTo: FileRoutesByTo
@@ -226,10 +246,12 @@ export interface FileRouteTypes {
     | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
+    | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
+    | '/api/webhooks/dodo'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
   id:
@@ -247,10 +269,12 @@ export interface FileRouteTypes {
     | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
+    | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
+    | '/api/webhooks/dodo'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
   fileRoutesById: FileRoutesById
@@ -269,6 +293,8 @@ export interface RootRouteChildren {
   ApiResetRoute: typeof ApiResetRoute
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
+  ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
+  ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -364,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVercelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/billing/checkout': {
+      id: '/api/billing/checkout'
+      path: '/api/billing/checkout'
+      fullPath: '/api/billing/checkout'
+      preLoaderRoute: typeof ApiBillingCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/byok-keys/$provider': {
       id: '/api/byok-keys/$provider'
       path: '/$provider'
@@ -391,6 +424,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/vercel/status'
       preLoaderRoute: typeof ApiVercelStatusRouteImport
       parentRoute: typeof ApiVercelRoute
+    }
+    '/api/webhooks/dodo': {
+      id: '/api/webhooks/dodo'
+      path: '/api/webhooks/dodo'
+      fullPath: '/api/webhooks/dodo'
+      preLoaderRoute: typeof ApiWebhooksDodoRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/vercel/oauth/callback': {
       id: '/api/vercel/oauth/callback'
@@ -475,6 +515,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiResetRoute: ApiResetRoute,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
+  ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
+  ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

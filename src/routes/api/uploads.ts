@@ -5,8 +5,8 @@ import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { getOrCreateAppUser } from "@/server/users";
 import { isUploadKind, sanitizeFilename, stripImageMetadataIfNeeded, validateUpload } from "@/server/uploads";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
-import { UPLOAD_LIMITS, UPLOADS_PER_HOUR_LIMIT, type UploadKind } from "@/config/uploads";
-import { PLAN_STORAGE_QUOTA_BYTES } from "@/config/plans";
+import { UPLOAD_LIMITS, type UploadKind } from "@/config/uploads";
+import { PLAN_STORAGE_QUOTA_BYTES, PLAN_UPLOADS_PER_HOUR } from "@/config/plans";
 
 const BUCKET = "uploads";
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -90,8 +90,16 @@ export const Route = createFileRoute("/api/uploads")({
         const validated = await validateUpload(kind, buffer);
         if (!validated.ok) return errorResponse(400, validated.error.code, validated.error.message);
 
+        const appUser = await getOrCreateAppUser(supabase, user.id);
+        if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
+
         // 2. hourly upload rate limit, separate from the LLM generation limit.
-        const rateLimit = await checkHourlyRateLimit(supabase, "uploads", user.id, UPLOADS_PER_HOUR_LIMIT);
+        const rateLimit = await checkHourlyRateLimit(
+          supabase,
+          "uploads",
+          user.id,
+          PLAN_UPLOADS_PER_HOUR[appUser.plan],
+        );
         if (rateLimit.limited) {
           return errorResponse(429, "rate_limited", "Upload limit reached, try again later", {
             retryAfterSeconds: rateLimit.retryAfterSeconds,
@@ -99,9 +107,6 @@ export const Route = createFileRoute("/api/uploads")({
         }
 
         // 3. remaining quota — storage bytes and per-kind count.
-        const appUser = await getOrCreateAppUser(supabase, user.id);
-        if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
-
         const { data: existingForUser } = await supabase
           .from("uploads")
           .select("id, kind, storage_path, size_bytes")

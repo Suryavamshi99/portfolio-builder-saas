@@ -1,4 +1,5 @@
 import type { Content } from "@/data/content";
+import type { Plan } from "@/config/plans";
 import { escapeAttr, escapeHtml } from "./escape";
 
 /**
@@ -9,8 +10,13 @@ import { escapeAttr, escapeHtml } from "./escape";
  * accessibly, but visual design is Antigravity's job, not this pipeline's.
  * Swap or extend this module for real theming later; nothing else in the
  * publish pipeline needs to change to do that.
+ *
+ * `plan` gates the one thing Free vs. Pro actually changes about the
+ * published output itself (storage/rate limits are enforced elsewhere,
+ * upstream of this function ever running) — a small "Published with
+ * Portfol.io" credit on the free tier, removed on Pro.
  */
-export function renderSiteHtml(content: Content): string {
+export function renderSiteHtml(content: Content, plan: Plan = "free"): string {
   const title = `${content.profile.name}${content.profile.role ? ` — ${content.profile.role}` : ""}`;
 
   const sections = [
@@ -38,8 +44,13 @@ ${renderNav(content)}
 <main>
 ${sections}
 </main>
+${plan === "free" ? renderBadge() : ""}
 </body>
 </html>`;
+}
+
+function renderBadge(): string {
+  return `<div class="pio-badge"><a href="https://portfol.io" target="_blank" rel="noopener">Published with Portfol.io</a></div>`;
 }
 
 function renderNav(content: Content): string {
@@ -269,4 +280,6 @@ h3 { font-size: 1.15rem; margin-bottom: 0.25rem; }
 a { color: var(--accent); }
 ul { padding-left: 1.2rem; }
 .resumes a { margin-right: 0.75rem; }
+.pio-badge { position: fixed; bottom: 1rem; right: 1rem; font-size: 0.7rem; padding: 0.4rem 0.7rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 85%, transparent); backdrop-filter: blur(4px); }
+.pio-badge a { color: var(--paper); text-decoration: none; }
 `;

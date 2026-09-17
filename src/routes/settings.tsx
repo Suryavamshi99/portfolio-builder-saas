@@ -2,6 +2,7 @@ import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
+import { PRO_PRICE_USD } from "@/config/plans";
 import { ByokManager } from "@/components/byok/ByokManager";
 import { UploadWidget } from "@/components/upload/UploadWidget";
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,18 @@ import {
   Zap,
   AlertTriangle,
   RotateCcw,
+  Sparkles,
+  Clock,
 } from "lucide-react";
 
+interface SettingsSearch {
+  upgrade?: "pending";
+}
+
 export const Route = createFileRoute("/settings")({
+  validateSearch: (search: Record<string, unknown>): SettingsSearch => {
+    return search["upgrade"] === "pending" ? { upgrade: "pending" } : {};
+  },
   head: () => ({
     meta: [{ title: "Account & Settings — Portfol.io" }],
   }),
@@ -56,6 +66,7 @@ interface VercelStatus {
 
 function SettingsContent() {
   const navigate = useNavigate();
+  const { upgrade } = Route.useSearch();
   const { refreshPortfolioStatus } = useAuth();
   const [activeTab, setActiveTab] = React.useState("byok");
   const [userRecord, setUserRecord] = React.useState<UserRecord | null>(null);
@@ -66,6 +77,9 @@ function SettingsContent() {
   const [resetDialogOpen, setResetDialogOpen] = React.useState(false);
   const [resetting, setResetting] = React.useState(false);
   const [resetError, setResetError] = React.useState<string | null>(null);
+  const [upgrading, setUpgrading] = React.useState(false);
+  const [upgradeError, setUpgradeError] = React.useState<string | null>(null);
+  const [pendingUpgrade, setPendingUpgrade] = React.useState(upgrade === "pending");
 
   const fetchStatus = React.useCallback(async () => {
     try {
@@ -93,6 +107,38 @@ function SettingsContent() {
   React.useEffect(() => {
     void fetchStatus();
   }, [fetchStatus]);
+
+  // Dodo's webhook can land a moment after the return_url redirect brings
+  // the user back here — poll briefly rather than telling them to refresh.
+  React.useEffect(() => {
+    if (!pendingUpgrade) return;
+    if (userRecord?.plan === "pro") {
+      setPendingUpgrade(false);
+      return;
+    }
+    const interval = setInterval(() => void fetchStatus(), 3000);
+    const timeout = setTimeout(() => setPendingUpgrade(false), 30000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [pendingUpgrade, userRecord?.plan, fetchStatus]);
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    setUpgradeError(null);
+    try {
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.checkoutUrl) {
+        throw new Error(json?.error?.message ?? `Could not start checkout (${res.status})`);
+      }
+      window.location.href = json.checkoutUrl;
+    } catch (e: unknown) {
+      setUpgradeError(e instanceof Error ? e.message : "Failed to start checkout.");
+      setUpgrading(false);
+    }
+  };
 
   const handleConnectVercel = () => {
     // Top-level navigation redirect as specified in API.md milestone 5
@@ -151,6 +197,60 @@ function SettingsContent() {
           <AlertDescription>{statusMsg}</AlertDescription>
         </Alert>
       )}
+
+      {pendingUpgrade && userRecord?.plan !== "pro" && (
+        <Alert variant="warning">
+          <Clock className="size-4" />
+          <AlertTitle>Payment processing</AlertTitle>
+          <AlertDescription>
+            Confirming your payment — this usually takes a few seconds. This will update
+            automatically once it's through.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Card className={userRecord?.plan === "pro" ? "border-accent/40" : undefined}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="size-4 text-accent" />
+              Plan & Billing
+            </CardTitle>
+            <Badge variant={userRecord?.plan === "pro" ? "accent" : "outline"} className="uppercase text-[10px]">
+              {userRecord?.plan ?? "free"}
+            </Badge>
+          </div>
+          <CardDescription className="text-xs">
+            {userRecord?.plan === "pro"
+              ? "Pro is a one-time unlock — no subscription, nothing recurring."
+              : "50MB storage, 5 generations/hour, 10 uploads/hour, and a small badge on your published site."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {userRecord?.plan !== "pro" && (
+            <>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li>• 250MB storage (5x free)</li>
+                <li>• 20 generations/hour, 30 uploads/hour</li>
+                <li>• "Published with Portfol.io" badge removed</li>
+              </ul>
+              {upgradeError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Couldn't start checkout</AlertTitle>
+                  <AlertDescription>{upgradeError}</AlertDescription>
+                </Alert>
+              )}
+              <Button onClick={() => void handleUpgrade()} disabled={upgrading} className="gap-2">
+                {upgrading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                Upgrade to Pro — ${PRO_PRICE_USD} one-time
+              </Button>
+              <p className="text-[11px] text-muted-foreground">
+                Handled by Dodo Payments. Not a subscription — nothing recurring, ever.
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">

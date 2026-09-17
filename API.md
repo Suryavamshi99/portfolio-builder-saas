@@ -17,6 +17,15 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-17 (2)** — Milestone 6 (payments) shipped: `POST /api/billing/checkout`,
+  `POST /api/webhooks/dodo`. Shape change from the original stub: dropped
+  "unlimited portfolios" as a Pro benefit — the schema only supports one
+  portfolio per user, for everyone, which wasn't discovered as a real
+  constraint until this milestone was actually being scoped. Pro instead
+  gates storage quota, generation/upload rate limits, and the published-
+  site badge — see the milestone's intro paragraph for the full table.
+  One-time lifetime unlock, not a subscription, per explicit product
+  decision — no renewal/coupon/plan-downgrade logic exists.
 - **2026-09-17** — Closed loose ends flagged in earlier entries. Fixed two
   real bugs, not just uncertainty: (1) `gemini-2.0-flash` (google model id)
   was actually shut down by Google on 2026-06-01 — any generation with that
@@ -573,8 +582,58 @@ since it's the real first-call case): `{ "error": { "code": "no_publications", "
 
 ---
 
-## Milestone 6 — Payments
+## Milestone 6 — Payments (Dodo Payments)
 
-Out of scope this phase. The only forward-looking surface is the `plan` field
-already returned by `GET /api/me` (`"free"` today, unenforced) — no Dodo
-Payments code, coupons, or gating exists yet, intentionally.
+One-time lifetime "Pro" unlock — **not a subscription**, no renewal/coupon
+logic exists or is planned. `GET /api/me`'s `plan` field (`"free"` | `"pro"`)
+is the one thing that changes; what it gates is documented in `src/config/plans.ts`
+(storage quota, generation/upload rate limits, and whether the published
+template includes a small "Published with Portfol.io" badge — see
+`src/server/template/render.ts`). Notably **not** gated: number of portfolios
+— the schema only supports one portfolio per user, for everyone, so that
+was dropped from the original pricing pitch once this was actually being
+built; a real future feature, not a payments detail.
+
+### `POST /api/billing/checkout` — ✅ Shipped
+
+**Auth:** required. No request body.
+
+Creates a Dodo hosted checkout session for the Pro unlock and returns its
+URL — **not a redirect itself**; the UI does a top-level navigation to
+`checkoutUrl` (same pattern as `GET /api/vercel/oauth/start`, just JSON
+first since this needs the authenticated user's email before creating the
+session). The actual plan flip does **not** happen here or from the
+`return_url` redirect (a user could hit that without having paid, by
+editing the URL) — only `POST /api/webhooks/dodo` flips `plan`, once Dodo
+confirms the payment server-to-server.
+
+Response `200`:
+
+```json
+{ "checkoutUrl": "https://test.checkout.dodopayments.com/session/cks_..." }
+```
+
+Response `400`: `{ "error": { "code": "email_required", "message": "..." } }` — no email on the Supabase Auth user.
+
+Response `502`: `{ "error": { "code": "checkout_failed", "message": "..." } }` — Dodo's API itself rejected the request.
+
+### `POST /api/webhooks/dodo` — ✅ Shipped (internal — not called by the UI)
+
+Not part of the UI contract — Dodo calls this directly, server-to-server.
+Documented here for completeness, since it's the only thing that actually
+grants Pro.
+
+Verifies the Standard Webhooks signature (`webhook-id`/`webhook-timestamp`/
+`webhook-signature` headers, HMAC-SHA256 — see `src/lib/standard-webhooks.ts`,
+generic to the open spec, not Dodo-specific) before trusting anything in the
+body. On a valid `payment.succeeded` event: records a row in `purchases`
+(idempotent — `dodo_payment_id` is unique, so a replayed webhook for the
+same payment is a no-op, not a double-grant) and flips `users.plan` to
+`"pro"`. Any other event type is acknowledged (`200`) and ignored — no
+subscription/refund/dispute handling exists for this one-time,
+non-recurring product.
+
+Exempted from the global CSRF Origin check (`src/start.ts`) — every path
+under `/api/webhooks/*` is, since these are never browser requests and have
+no session cookie for CSRF to protect; authenticity comes from the
+signature instead.

@@ -49,10 +49,10 @@ you:
    file's comment), and `APP_ORIGIN` (this app's own deployed URL).
 4. Register a Vercel OAuth app (needed for "Connect Vercel" / Publish) and
    set its redirect URI to `${APP_ORIGIN}/api/vercel/oauth/callback`; put the
-   resulting `VERCEL_CLIENT_ID`/`VERCEL_CLIENT_SECRET` in `.env`. The exact
-   registration flow and the OAuth/Deployments API endpoints this app calls
-   (`src/config/vercel.ts`) weren't verified against live Vercel traffic when
-   built — check `API.md`'s milestone 5 section before relying on this.
+   resulting `VERCEL_CLIENT_ID`/`VERCEL_CLIENT_SECRET` in `.env`. The
+   endpoint shapes (`src/config/vercel.ts`) are verified against Vercel's
+   official docs, but still not exercised against live traffic — no
+   registered app in the environment that built this.
 5. Deploy the Storage-cleanup Edge Function the retention cron depends on:
    ```sh
    supabase functions deploy purge-storage-objects
@@ -64,6 +64,15 @@ you:
    step doesn't break anything else; the retention cron just logs a warning
    and leaves Storage objects orphaned (safe, just not reclaimed) until it's
    done.
+6. Create a Dodo Payments product (one-time price, **not** recurring —
+   $19 by default, see `PRO_PRICE_USD` in `src/config/plans.ts` if you
+   change it) and a webhook endpoint pointed at
+   `${APP_ORIGIN}/api/webhooks/dodo`. Put the API key, the product's
+   `pdt_...` id, and the webhook's `whsec_...` signing secret into `.env`
+   as `DODO_PAYMENTS_API_KEY` / `DODO_PRODUCT_ID_PRO` / `DODO_WEBHOOK_SECRET`.
+   Dodo's merchant onboarding form asks for a real website URL, so this
+   step needs the app actually deployed somewhere first — can't be done
+   against `localhost`.
 
 ## The contract
 
@@ -74,10 +83,20 @@ schema or server internals.
 
 ## Status
 
-**All six milestones' endpoints exist** (payments intentionally excluded —
-see below), plus `POST /api/reset` ("start over" — added later as a product
-requirement, see API.md) — all backed by real Supabase tables, RLS policies,
-and Storage.
+**All six milestones are shipped, including payments** — `POST
+/api/billing/checkout` + `POST /api/webhooks/dodo` (Dodo Payments, a
+one-time $19 lifetime unlock, not a subscription), plus `POST /api/reset`
+("start over" — added later as a product requirement, see API.md). All
+backed by real Supabase tables, RLS policies, and Storage.
+
+One thing that changed along the way, worth knowing before treating "Pro"
+as flexible: the original pricing pitch included "unlimited portfolios" as
+a Pro benefit, but the schema only supports one portfolio per user, for
+everyone — `portfolios.user_id` is the primary key. That's a real future
+feature (a genuine schema change touching most content-facing endpoints +
+the frontend), not something Pro currently unlocks. Pro instead gates
+storage quota (250MB vs. 50MB), generation/upload rate limits, and the
+"Published with Portfol.io" badge on the live site — see `src/config/plans.ts`.
 
 **The frontend is built too** (by Antigravity, not this session) — login/
 signup, the onboarding wizard, BYOK key management with per-provider setup
@@ -122,14 +141,21 @@ is that publishing copies bytes into the Vercel bundle, which is what
 protects a live site, so our copy becomes disposable under the same 30-day
 rule either way. Fixed in the migrations; see their comments.
 
-**Milestone 6 (payments) is deliberately not started** — `users.plan` is the
-only forward-looking surface (`"free"`, unenforced), per the brief.
+Also fixed since the frontend build: two model ids had actually gone
+stale — `gemini-2.0-flash` was shut down by Google outright (a real
+production break for anyone picking that provider, not just a cosmetic
+staleness issue), `gpt-4o` was deprecated — both replaced and verified
+against each provider's current docs. And a real gap in the Vercel
+integration: the OAuth token response's `team_id` (set when installed on a
+Vercel Team, not a personal account) was never captured, so every API call
+after connecting would 403 for a team install — fixed via a new migration
+and threaded through every call in `src/server/vercel/deploy.ts`.
 
 **Still not runtime-verified**: real BYOK provider keys (the actual LLM
-calls), and the entire Vercel OAuth/Deployments flow — the latter carries
-real uncertainty (see `API.md`'s milestone 5 section) since there's still no
-way to confirm Vercel's current API shapes against live traffic without a
-registered OAuth app. `vite build` (client+SSR) and `tsc --noEmit` stay
-clean after every change; a standalone smoke test confirmed `pdf-parse`
-extracts text from a real (hand-built) PDF buffer. DOCX extraction via
-`mammoth` is still implementation-reviewed only, not executed.
+calls), the entire Vercel OAuth/Deployments flow (endpoint shapes are now
+confirmed against Vercel's official docs, but not exercised against live
+traffic — no registered OAuth app in this environment), and the entire Dodo
+Payments flow (same reason — no live product/webhook registered here
+either). `vite build` (client+SSR) and `tsc --noEmit` stay clean after every
+change; standalone smoke tests confirmed both `pdf-parse` and `mammoth`
+actually extract text from real (hand-built) PDF and DOCX buffers.

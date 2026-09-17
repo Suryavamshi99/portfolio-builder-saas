@@ -22,6 +22,3 @@ export const LLM_MODELS: Record<LlmProvider, string> = {
   openai: "gpt-5.6-terra",
   google: "gemini-3.5-flash",
 };
-
-/** Our own compute cost, independent of whose API key is used. */
-export const GENERATIONS_PER_HOUR_LIMIT = 5;

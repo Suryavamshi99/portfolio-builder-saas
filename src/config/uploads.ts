@@ -54,6 +54,3 @@ export const UPLOAD_LIMITS: Record<
 };
 
 export const IMAGE_KINDS: readonly UploadKind[] = ["visual_reference", "photo", "project_image"];
-
-/** Separate from the LLM generation rate limit (milestone 4). */
-export const UPLOADS_PER_HOUR_LIMIT = 10;

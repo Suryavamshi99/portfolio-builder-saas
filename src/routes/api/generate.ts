@@ -2,7 +2,8 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
-import { isLlmProvider, GENERATIONS_PER_HOUR_LIMIT } from "@/config/llm";
+import { isLlmProvider } from "@/config/llm";
+import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { extractResumeText } from "@/server/resume-text";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@/server/llm";
 import { recordGeneration } from "@/server/generations";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
+import { getOrCreateAppUser } from "@/server/users";
 import { contentSchema } from "@/data/content";
 import { projectErrors } from "@/routes/-studio/model";
 
@@ -56,8 +58,16 @@ export const Route = createFileRoute("/api/generate")({
         const provider = body.provider;
         const resumeUploadId = body.resumeUploadId;
 
+        const appUser = await getOrCreateAppUser(supabase, user.id);
+        if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
+
         // Our own compute cost, independent of whose API key is used.
-        const rateLimit = await checkHourlyRateLimit(supabase, "generations", user.id, GENERATIONS_PER_HOUR_LIMIT);
+        const rateLimit = await checkHourlyRateLimit(
+          supabase,
+          "generations",
+          user.id,
+          PLAN_GENERATIONS_PER_HOUR[appUser.plan],
+        );
         if (rateLimit.limited) {
           return errorResponse(429, "rate_limited", "Generation limit reached, try again later", {
             retryAfterSeconds: rateLimit.retryAfterSeconds,
