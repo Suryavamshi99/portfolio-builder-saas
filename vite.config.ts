@@ -2,11 +2,20 @@ import { defineConfig } from "vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitro } from "nitro/vite";
 
 /**
- * Nitro auto-detects the `vercel` preset with zero config when the build
- * runs on Vercel's CI (VERCEL=1). Locally it falls back to node-server,
- * which is all we need for `vite dev` / `vite preview`.
+ * The `nitro()` plugin is what actually wires Nitro into the build — it's
+ * a SEPARATE Vite plugin from the `nitro` package being a dependency;
+ * without it, `vite build` just does a plain Vite SSR build (dist/client +
+ * dist/server/server.js as a generic Node entry) with no platform-specific
+ * output at all, and Vercel has nothing in the shape it expects to route
+ * requests to (404 on every path — confirmed by reproducing this locally
+ * with VERCEL=1 before adding this plugin; it did not affect the build
+ * output at all without it). The original personal-portfolio repo's
+ * zero-config Vercel deploy worked because @lovable.dev/vite-tanstack-config
+ * bundles this plugin internally — lost when that Lovable-specific wrapper
+ * was deliberately not brought into this repo at scaffold time.
  */
 export default defineConfig({
   resolve: {
@@ -15,6 +24,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     tanstackStart(),
+    nitro(),
     viteReact(),
   ],
 });
