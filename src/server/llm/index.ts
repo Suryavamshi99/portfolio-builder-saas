@@ -18,6 +18,45 @@ export function callLlmProvider(provider: LlmProvider, input: LlmCallInput): Pro
   }
 }
 
+const RESUME_IO_STYLE_GUIDELINES = `
+PROFESSIONAL PORTFOLIO COPYWRITING GUIDELINES (Resume.io Career-Optimized Style):
+1. Impact-Driven Action Verbs (Google X-Y-Z Formula):
+   - For all role groups, achievements, and project descriptions, start bullet points with strong, dynamic verbs (e.g., "Architected", "Engineered", "Spearheaded", "Optimized", "Scaled", "Automated", "Streamlined", "Deployed").
+   - Frame accomplishments around impact: [Action Verb] + [Context & Scope] + [Quantified Result].
+   - When metrics, percentages, throughput numbers, latency drops, or scale exist in the resume, highlight them in the role claims, project points, and metrics arrays.
+
+2. Professional Developer Thesis (profile.thesis):
+   - Craft a sharp, confident 1-2 sentence positioning statement highlighting the candidate's core technical domain, architecture focus, and value. Avoid passive filler or student clichés.
+
+3. Structured Skill Categorization with Real Evidence (skills.groups):
+   - Categorize detected skills into 3-5 clean technical domains (e.g., "Languages & Core Runtimes", "Frontend & UI Architecture", "Backend & Distributed Systems", "DevOps & Cloud", "AI/ML & Data").
+   - For each group, provide a clear 'claim' summarizing expertise.
+   - For each skill, provide concrete 'evidence' citing the specific project, role, or feature where it was used in the resume.
+
+4. Current Focus ('Now' Section) & Marquee Tags:
+   - home.nowTitle: 2-5 words summarizing current status (e.g., "Building High-Throughput Distributed Systems", "Shipping Web & Mobile Applications").
+   - home.nowText: 1-2 sentences on what they are currently building, studying, or deploying based on their latest experience.
+   - home.marquee: 5-8 modern technology keywords or domain tags from the resume (e.g. ["TypeScript", "Next.js", "Distributed Systems", "PostgreSQL", "React 19", "Docker"]).
+
+5. Narrative 'About' & Quantified Metrics:
+   - about.title: "Background & Engineering Philosophy"
+   - about.intro: 2-3 engaging, professional sentences detailing their engineering journey and problem-solving mindset.
+   - about.stats: 2-4 quantitative statistics derived strictly from resume facts (e.g., years of experience, production projects, users impacted, or graduation honors).
+   - about.offHours: 2-4 authentic hobbies/interests if indicated, mapped to valid icons ("film", "racquet", "philosophy", "running", "generic").
+
+6. Standard Navigation (nav):
+   - Always include standard navigation routes:
+     - { "to": "/", "label": "Home", "short": "01", "index": "01" }
+     - { "to": "/work", "label": "Experience", "short": "02", "index": "02" }
+     - { "to": "/projects", "label": "Projects", "short": "03", "index": "03" }
+     - { "to": "/skills", "label": "Skills", "short": "04", "index": "04" }
+     - { "to": "/about", "label": "About", "short": "05", "index": "05" }
+
+7. Project Slugs & Structure:
+   - Ensure every project has a clean URL-friendly kebab-case 'slug' (e.g., "distributed-cache-engine").
+   - Populate 'role', 'tech', 'summary', and 'body' with structured blocks containing headings and concise points.
+`;
+
 export function buildExtractionUserMessage(
   resumeText: string,
   otherSpecifics: string | undefined,
@@ -26,8 +65,9 @@ export function buildExtractionUserMessage(
   const parts = [
     `Resume text:\n"""\n${resumeText}\n"""`,
     otherSpecifics?.trim()
-      ? `Other specifics from the user (tone/emphasis/structure only — never a source of new facts):\n"""\n${otherSpecifics.trim()}\n"""`
+      ? `User specifics and desired emphasis/target role:\n"""\n${otherSpecifics.trim()}\n"""`
       : null,
+    RESUME_IO_STYLE_GUIDELINES.trim(),
     `Respond with ONLY a single JSON object — no markdown code fences, no commentary before or after. It must validate against this JSON Schema:\n${JSON.stringify(jsonSchema)}`,
   ];
   return parts.filter((part): part is string => part !== null).join("\n\n");

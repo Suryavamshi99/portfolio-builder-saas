@@ -30,7 +30,7 @@ import {
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
-    meta: [{ title: "Onboarding Wizard — Portfolio Builder" }],
+    meta: [{ title: "AI Portfolio Wizard — Portfol.io" }],
   }),
   component: OnboardingPage,
 });
@@ -204,9 +204,14 @@ function OnboardingWizard() {
       {/* Header & Stepper */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Portfolio Generation Wizard</h1>
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            Step-by-step assistant to extract your work history, structure your projects, and draft your portfolio.
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">Portfol.io AI Wizard</h1>
+            <Badge variant="accent" className="text-[10px] font-mono">
+              Resume.io Tuned
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground sm:text-sm mt-1">
+            Recruiter-aligned assistant to extract your work history, structure your projects, and craft a job-winning portfolio.
           </p>
         </div>
 
@@ -380,6 +385,72 @@ function OnboardingWizard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* AI Tuning Presets */}
+              <div className="space-y-2 rounded-xl border border-indigo-200/60 bg-indigo-50/40 p-3.5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                    <Sparkles className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                    Resume.io AI Tuning Presets
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">Click to append</span>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <div>
+                    <div className="text-[11px] font-semibold text-muted-foreground mb-1">Target Engineering Role:</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        "Full-Stack Software Engineer",
+                        "Backend & Distributed Systems",
+                        "Frontend & UI Architecture",
+                        "AI / ML & Data Systems",
+                        "Cloud & DevOps Infrastructure",
+                      ].map((rolePreset) => (
+                        <button
+                          key={rolePreset}
+                          type="button"
+                          onClick={() => {
+                            const addition = `Target Role: ${rolePreset}.`;
+                            if (!otherSpecifics.includes(addition)) {
+                              setOtherSpecifics((prev) => (prev ? `${prev.trim()}\n${addition}` : addition));
+                            }
+                          }}
+                          className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium text-foreground transition-all hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+                        >
+                          + {rolePreset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-semibold text-muted-foreground mb-1">Copywriting Style & Tone:</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        "Google X-Y-Z Impact Formulation (highlight metrics & scale)",
+                        "Deep Technical Architecture & Systems focus",
+                        "Product-Minded & High-Velocity Startup tone",
+                        "Clean, concise ATS-optimized phrasing",
+                      ].map((tonePreset) => (
+                        <button
+                          key={tonePreset}
+                          type="button"
+                          onClick={() => {
+                            const addition = `Style & Tone: ${tonePreset}.`;
+                            if (!otherSpecifics.includes(addition)) {
+                              setOtherSpecifics((prev) => (prev ? `${prev.trim()}\n${addition}` : addition));
+                            }
+                          }}
+                          className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium text-foreground transition-all hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+                        >
+                          + {tonePreset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="other-specifics" className="text-xs font-medium">
                   Custom instructions for the extraction model:
@@ -389,7 +460,7 @@ function OnboardingWizard() {
                   placeholder="e.g. Focus on my machine learning internships, highlight my published papers, keep project summaries concise and impact-focused."
                   value={otherSpecifics}
                   onChange={(e) => setOtherSpecifics(e.target.value)}
-                  rows={5}
+                  rows={4}
                 />
               </div>
               <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">

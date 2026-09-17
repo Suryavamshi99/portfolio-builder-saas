@@ -1,7 +1,7 @@
-# Portfolio Builder — SaaS
+# Portfol.io — AI Developer Portfolio Builder SaaS
 
 Hosted product: students turn a resume into a live portfolio site either by
-prompting an AI (their own API key) or editing structured fields directly,
+prompting a recruiter-grade AI (their own API key) or editing structured fields directly,
 then publish it to their own Vercel account.
 
 This repo is the **product** — accounts, per-user storage, the BYOK

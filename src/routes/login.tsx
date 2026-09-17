@@ -8,6 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 
+import { Logo } from "@/components/layout/Logo";
+
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
     const res: { redirect?: string } = {};
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/login")({
     return res;
   },
   head: () => ({
-    meta: [{ title: "Sign In / Sign Up — Portfolio Builder" }],
+    meta: [{ title: "Sign In / Sign Up — Portfol.io" }],
   }),
   component: LoginRoute,
 });
@@ -105,13 +107,16 @@ function LoginRoute() {
       </div>
 
       <Card className="border-border shadow-md">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center space-y-2">
+          <div className="flex justify-center pb-2">
+            <Logo size="md" />
+          </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             {activeTab === "signin" ? "Welcome back" : "Create your account"}
           </CardTitle>
           <CardDescription>
             {activeTab === "signin"
-              ? "Sign in to access your portfolio studio and deployments."
+              ? "Sign in to access your Portfol.io studio and deployments."
               : "Start turning your resume into a live published portfolio."}
           </CardDescription>
         </CardHeader>

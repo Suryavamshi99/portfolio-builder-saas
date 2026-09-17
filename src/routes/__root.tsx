@@ -57,10 +57,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Portfolio Builder — SaaS" },
-      { name: "description", content: "Build and publish your developer portfolio with your own AI keys." },
+      { title: "Portfol.io — AI Resume to Live Developer Portfolio Builder" },
+      {
+        name: "description",
+        content:
+          "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and private BYOK AI.",
+      },
+      { name: "theme-color", content: "#4f46e5" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "stylesheet", href: appCss },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

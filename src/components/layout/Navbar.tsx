@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { canAccessStudio } from "@/lib/portfolio-gate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Logo } from "@/components/layout/Logo";
 import {
   Sparkles,
   LayoutTemplate,
@@ -14,6 +15,7 @@ import {
   Moon,
   FolderUp,
   Lock,
+  ArrowRight,
 } from "lucide-react";
 
 export function Navbar() {
@@ -52,16 +54,20 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-accent text-accent-foreground shadow-xs">
-              <Sparkles className="size-4" />
-            </div>
-            <span className="text-sm font-bold sm:text-base">Portfolio Builder</span>
-            <Badge variant="secondary" className="hidden sm:inline-flex text-[10px] uppercase font-mono tracking-wider">
-              BYOK
+          <Link
+            to="/"
+            className="group flex items-center gap-2 transition-opacity hover:opacity-90"
+            aria-label="Portfol.io Home"
+          >
+            <Logo size="sm" />
+            <Badge
+              variant="secondary"
+              className="hidden lg:inline-flex text-[10px] uppercase font-mono tracking-wider text-muted-foreground"
+            >
+              AI Builder
             </Badge>
           </Link>
 
@@ -151,10 +157,19 @@ export function Navbar() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button asChild variant="outline" size="sm" className="h-8 text-xs">
+                  <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-medium">
                     <Link to="/login" search={{ redirect: currentPath }}>
                       <LogIn className="mr-1.5 size-3.5" />
                       Sign in
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="h-8 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                  >
+                    <Link to="/login" search={{ redirect: "/onboarding" }}>
+                      Create my portfolio
                     </Link>
                   </Button>
                 </div>

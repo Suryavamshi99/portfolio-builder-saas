@@ -26,7 +26,7 @@ import {
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
-    meta: [{ title: "Account & Settings — Portfolio Builder" }],
+    meta: [{ title: "Account & Settings — Portfol.io" }],
   }),
   component: SettingsPage,
 });

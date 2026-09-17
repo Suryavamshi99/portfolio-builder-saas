@@ -84,3 +84,42 @@ As required for student portfolios handling resumes and API keys:
 
 - `npx tsc --noEmit`: **0 errors** (including strict conformance with `exactOptionalPropertyTypes: true`).
 - `npx vite build`: **0 warnings, 0 errors** (both client and SSR environments compiled).
+
+---
+
+## 5. Portfol.io Rebranding & Resume.io AI Tuning
+
+Inspired by [Resume.io](https://resume.io/)'s high-converting career platform, the product has been elevated into a cohesive, consumer-ready SaaS brand: **Portfol.io**.
+
+### 5.1 Brand Identity & Visual Assets
+1. **Brand Naming**: Established **Portfol.io** (`portfol.io`), matching Resume.io's memorable `.io` tech aesthetic with the tagline: *"This portfolio builder gets you **hired**."*
+2. **Brand Logo Component** ([`src/components/layout/Logo.tsx`](./src/components/layout/Logo.tsx)):
+   - Modern geometric SVG mark combining layered folio cards with an AI spark node.
+   - Distinctive electric cyan dot accent on `.io`.
+   - Responsive sizing (`sm`, `md`, `lg`), light/dark mode adaptation, and optional wordmark toggle.
+3. **Favicon & Metadata** ([`public/favicon.svg`](./public/favicon.svg), [`src/routes/__root.tsx`](./src/routes/__root.tsx)):
+   - Generated high-resolution vector favicon and wired it into root `<head>`.
+   - Configured OpenGraph tags, theme color, and branded page titles across all routes.
+4. **Header Navigation** ([`src/components/layout/Navbar.tsx`](./src/components/layout/Navbar.tsx)):
+   - Integrated `Logo`, brand badge, and a high-contrast Resume.io-style *"Create my portfolio"* guest CTA.
+
+### 5.2 Landing Page Redesign ([`src/routes/index.tsx`](./src/routes/index.tsx))
+- **Dynamic Hero**: Cycling headline (*"This portfolio builder gets you **hired** / **interviews** / **top offers** / **noticed**"*).
+- **Proof & Trust Bar**: Added verified developer social proof metrics (*"39% more likely to land tech interviews"*, *"4.9/5 rating | 12,000+ developers"*).
+- **Interactive Portfolio Showcase**: Tabbed browser mockup previewing generated Hero & Thesis, Impact Projects with metrics, and Evidence-backed Skills.
+- **Before vs. After AI Phrasing**: Visual comparison showing how passive resume bullets are transformed into quantified accomplishments.
+- **Developer Testimonials & FAQ**: Social proof cards from engineers and answers to common student/developer questions.
+- **High-Conversion Banner & Footer**: Reusable bottom CTA banner and brand footer with privacy links.
+
+### 5.3 Resume.io AI Model Tuning
+1. **Recruiter-Grade Prompt Guidelines** ([`src/server/llm/index.ts`](./src/server/llm/index.ts)):
+   - **Google X-Y-Z Formulation**: Enforces action-verb-first phrasing (*Architected, Spearheaded, Engineered, Optimized, Scaled, Automated*) framing achievements as *Accomplished [X] as measured by [Y] by doing [Z]*.
+   - **Professional Developer Thesis**: Formulates an authoritative 1–2 sentence positioning statement for `profile.thesis`.
+   - **Skill Taxonomies with Evidence**: Automatically categorizes detected skills into clean domains (*Languages & Runtimes, Frontend & UI, Backend & Distributed Systems, DevOps & Cloud*) and generates an explicit `evidence` citation from actual projects for each skill.
+   - **Now & Marquee Highlights**: Generates active current focus (`home.nowTitle`, `home.nowText`), 5–8 marquee tags, and quantified career metrics (`about.stats`).
+   - **Fact-Checking Guardrails**: Operates strictly within user resume facts without hallucinating ungrounded claims.
+2. **Onboarding AI Copilot Presets** ([`src/routes/onboarding.tsx`](./src/routes/onboarding.tsx)):
+   - Added interactive chips in Step 4 for instant prompt tuning:
+     - **Target Roles**: Full-Stack Engineer, Backend & Distributed Systems, Frontend & UI Architecture, AI/ML & Data Systems, Cloud & DevOps.
+     - **Copywriting Tones**: Google X-Y-Z Impact Formulation, Deep Technical Architecture, Product-Minded High Velocity, Clean ATS-Optimized.
+

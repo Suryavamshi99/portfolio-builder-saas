@@ -10,7 +10,7 @@ import type { Content } from "@/data/content";
 
 export const Route = createFileRoute("/studio")({
   head: () => ({
-    meta: [{ title: "Studio — Portfolio Builder" }, { name: "robots", content: "noindex, nofollow" }],
+    meta: [{ title: "Studio — Portfol.io" }, { name: "robots", content: "noindex, nofollow" }],
   }),
   component: StudioPage,
 });
