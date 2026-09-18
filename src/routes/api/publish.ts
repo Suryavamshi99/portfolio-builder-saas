@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
+import { getAppOrigin } from "@/config/app";
 import { emptyContent, type Content } from "@/data/content";
 import { embedStorageImages } from "@/server/template/images";
 import { renderSiteHtml } from "@/server/template/render";
@@ -48,7 +49,7 @@ export const Route = createFileRoute("/api/publish")({
           content,
           supabase,
         );
-        const html = renderSiteHtml(embeddedContent, appUser.plan);
+        const html = renderSiteHtml(embeddedContent, appUser.plan, getAppOrigin());
 
         const accessToken = decryptSecret(
           byteaToBuffer(connection.encrypted_access_token),

@@ -465,7 +465,7 @@ export function HomePage() {
                   <div className="size-3 rounded-full bg-emerald-500/80" />
                   <div className="ml-3 hidden sm:flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 text-[11px] font-mono text-muted-foreground">
                     <Lock className="size-3" />
-                    <span>https://alex-chen.portfol.io</span>
+                    <span>https://alex-chen.vercel.app</span>
                   </div>
                 </div>
 

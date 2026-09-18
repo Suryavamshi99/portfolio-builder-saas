@@ -27,4 +27,10 @@ export default defineConfig({
     nitro(),
     viteReact(),
   ],
+  // pdf-parse/worker pulls in @napi-rs/canvas's native .node binary; Vite's
+  // dev dependency-optimizer can't pre-bundle that and crashes on startup.
+  // Not a build-time issue — `vite build` traces/copies it correctly.
+  optimizeDeps: {
+    exclude: ["pdf-parse", "pdf-parse/worker", "@napi-rs/canvas"],
+  },
 });

@@ -16,7 +16,7 @@ import { escapeAttr, escapeHtml } from "./escape";
  * upstream of this function ever running) — a small "Published with
  * Portfol.io" credit on the free tier, removed on Pro.
  */
-export function renderSiteHtml(content: Content, plan: Plan = "free"): string {
+export function renderSiteHtml(content: Content, plan: Plan = "free", appOrigin?: string): string {
   const title = `${content.profile.name}${content.profile.role ? ` — ${content.profile.role}` : ""}`;
 
   const sections = [
@@ -44,13 +44,20 @@ ${renderNav(content)}
 <main>
 ${sections}
 </main>
-${plan === "free" ? renderBadge() : ""}
+${plan === "free" ? renderBadge(appOrigin) : ""}
 </body>
 </html>`;
 }
 
-function renderBadge(): string {
-  return `<div class="pio-badge"><a href="https://portfol.io" target="_blank" rel="noopener">Published with Portfol.io</a></div>`;
+/**
+ * Links to our own app (appOrigin), not a marketing domain — we don't own
+ * a vanity domain for this product, so the badge must never hardcode one.
+ */
+function renderBadge(appOrigin?: string): string {
+  const label = "Published with Portfol.io";
+  return appOrigin
+    ? `<div class="pio-badge"><a href="${escapeAttr(appOrigin)}" target="_blank" rel="noopener">${label}</a></div>`
+    : `<div class="pio-badge"><span>${label}</span></div>`;
 }
 
 function renderNav(content: Content): string {
