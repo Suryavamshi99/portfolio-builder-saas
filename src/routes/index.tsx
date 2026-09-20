@@ -726,7 +726,7 @@ export function HomePage() {
             </div>
           </section>
 
-          {/* Testimonials / Social Proof Section (Resume.io Style) */}
+          {/* Real portfolios built with Shipfolio */}
           <section className="mx-auto max-w-5xl rounded-3xl border border-border/80 bg-card p-8 sm:p-12 space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/60 pb-6">
               <div>
@@ -735,43 +735,60 @@ export function HomePage() {
                     <Star key={i} className="size-4 fill-current" />
                   ))}
                 </div>
-                <h3 className="text-2xl font-bold text-foreground">Loved by engineers landing dream jobs</h3>
+                <h3 className="text-2xl font-bold text-foreground">What people actually built with it</h3>
               </div>
-              <div className="text-xs text-muted-foreground font-mono">
-                Verified developer reviews
-              </div>
+              <div className="text-xs text-muted-foreground font-mono">Real portfolios, shared with permission</div>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-3 text-left">
-              <div className="space-y-3 rounded-xl bg-muted/40 p-4">
-                <p className="text-xs text-foreground leading-relaxed italic">
-                  “I had 5 versions of a PDF resume. Shipfolio turned it into an interactive site in 90 seconds. Recruiters actually commented on the clean metrics during my interviews!”
-                </p>
-                <div className="pt-2">
-                  <div className="font-bold text-xs text-foreground">Sarah Lin</div>
-                  <div className="text-[11px] text-muted-foreground">Software Engineer at Fintech Startup</div>
+              {[
+                {
+                  quote: "Went from a stack of PDF drafts to a live site in one sitting — genuinely convenient.",
+                  name: "Harshit Chebolu",
+                  role: "AI Product & Strategy",
+                  url: "https://harshit-chebolu.vercel.app/",
+                },
+                {
+                  quote: "Turned a few years of experience into something recruiters could click through, not just skim.",
+                  name: "Shrividya Ramesh",
+                  role: "Sports Management & Gaming, Masters' Union",
+                  url: "https://my-personal-portfolio-orpin-six.vercel.app/",
+                },
+                {
+                  quote: "Super convenient — I didn't have to think about hosting or design, just my own story.",
+                  name: "Maneesh Bichala",
+                  role: "Associate Analyst, Deloitte Consulting",
+                  url: "https://maneeshbichala.vercel.app/",
+                },
+                {
+                  quote: "Loved how fast it was. My numbers finally had a place that looked as sharp as they are.",
+                  name: "Atul Sreejil",
+                  role: "Sales & Marketing Professional",
+                  url: "https://atulsreejilportfolio-drab.vercel.app/",
+                },
+                {
+                  quote: "Made turning consulting case work into something presentable way less painful than I expected.",
+                  name: "Revathi Iyer",
+                  role: "Risk Consultant, now at Masters' Union",
+                  url: "https://revathiportfolio-eight.vercel.app/",
+                },
+              ].map((t) => (
+                <div key={t.name} className="flex flex-col justify-between space-y-3 rounded-xl bg-muted/40 p-4">
+                  <p className="text-xs text-foreground leading-relaxed italic">“{t.quote}”</p>
+                  <div className="pt-2">
+                    <div className="font-bold text-xs text-foreground">{t.name}</div>
+                    <div className="text-[11px] text-muted-foreground">{t.role}</div>
+                    <a
+                      href={t.url}
+                      target="_blank"
+                      rel="noopener"
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                      View portfolio <ExternalLink className="size-3" />
+                    </a>
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-3 rounded-xl bg-muted/40 p-4">
-                <p className="text-xs text-foreground leading-relaxed italic">
-                  “The BYOK model is genius. I used my Gemini free tier key, paid zero dollars, and deployed directly to my own Vercel domain. Top tier product.”
-                </p>
-                <div className="pt-2">
-                  <div className="font-bold text-xs text-foreground">Marcus Vance</div>
-                  <div className="text-[11px] text-muted-foreground">CS Senior at Georgia Tech</div>
-                </div>
-              </div>
-
-              <div className="space-y-3 rounded-xl bg-muted/40 p-4">
-                <p className="text-xs text-foreground leading-relaxed italic">
-                  “The AI guardrails are real. It didn’t fabricate tech I didn't know—it just phrased my real accomplishments with authority. Got 3 offers in 4 weeks.”
-                </p>
-                <div className="pt-2">
-                  <div className="font-bold text-xs text-foreground">David K.</div>
-                  <div className="text-[11px] text-muted-foreground">Full-Stack Developer</div>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
