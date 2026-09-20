@@ -4,11 +4,13 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 import { Logo } from "@/components/layout/Logo";
+
+import { FluidOrb } from "@/components/ui/fluid-orb";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -95,7 +97,12 @@ function LoginRoute() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[75vh] w-full max-w-md flex-col justify-center px-4 py-12">
+    <div className="relative mx-auto flex min-h-[80vh] w-full max-w-md flex-col justify-center px-4 py-12">
+      {/* Ambient FluidOrb Glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 opacity-35 dark:opacity-20 blur-3xl">
+        <FluidOrb size={380} color="#10B981" />
+      </div>
+
       <div className="mb-6">
         <Link
           to="/"
@@ -106,15 +113,15 @@ function LoginRoute() {
         </Link>
       </div>
 
-      <Card className="border-border shadow-md">
-        <CardHeader className="text-center space-y-2">
-          <div className="flex justify-center pb-2">
+      <Card className="border-border/80 bg-card/95 backdrop-blur-xl shadow-xl rounded-2xl">
+        <CardHeader className="text-center space-y-2 pb-4">
+          <div className="flex justify-center pb-1">
             <Logo size="md" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">
+          <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
             {activeTab === "signin" ? "Welcome back" : "Create your account"}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs">
             {activeTab === "signin"
               ? "Sign in to access your Shipfolio studio and deployments."
               : "Start turning your resume into a live published portfolio."}
@@ -155,9 +162,9 @@ function LoginRoute() {
               setSuccessMsg(null);
             }}
           >
-            <TabsList className="mb-6 grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsList className="mb-6 grid w-full grid-cols-2 bg-muted/60 p-1">
+              <TabsTrigger value="signin" className="text-xs font-semibold">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="text-xs font-semibold">Sign Up</TabsTrigger>
             </TabsList>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -174,6 +181,7 @@ function LoginRoute() {
                   autoComplete="email"
                   required
                   disabled={loading || !supabaseConfigured}
+                  className="bg-background/60"
                 />
               </div>
 
@@ -191,12 +199,13 @@ function LoginRoute() {
                   required
                   minLength={6}
                   disabled={loading || !supabaseConfigured}
+                  className="bg-background/60"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full font-medium"
+                className="w-full font-semibold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 active:scale-[0.98]"
                 disabled={loading || !supabaseConfigured}
               >
                 {loading && <Loader2 className="mr-2 size-4 animate-spin" />}

@@ -2,6 +2,7 @@ import * as React from "react";
 import type { Content } from "@/data/content";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
   Monitor,
   Tablet,
@@ -92,12 +93,16 @@ export function LivePreview({ content }: LivePreviewProps) {
               {/* Header / Hero */}
               <header className="space-y-4 border-b border-border/80 pb-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  {p.portrait && (
+                  {p.portrait ? (
                     <img
                       src={p.portrait}
                       alt={p.name}
                       className="size-20 rounded-full object-cover border border-border shadow-xs"
                     />
+                  ) : (
+                    <div className="relative size-20 rounded-full overflow-hidden border border-accent/30 shadow-xs flex items-center justify-center bg-accent/10">
+                      <FluidOrb size={80} color="#10B981" />
+                    </div>
                   )}
                   <div className="space-y-1">
                     <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">

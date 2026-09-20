@@ -23,7 +23,7 @@ export function Logo({ className = "", showWordmark = true, size = "md" }: LogoP
     <div className={`inline-flex items-center gap-2.5 font-bold tracking-tight select-none ${className}`}>
       {/* Modern geometric Shipfolio icon mark */}
       <div
-        className={`relative flex ${iconSizes[size]} items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-blue-500 text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/20 transition-transform group-hover:scale-105`}
+        className={`relative flex ${iconSizes[size]} items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-400 text-white shadow-md shadow-emerald-500/25 ring-1 ring-white/20 transition-transform group-hover:scale-105`}
         aria-hidden="true"
       >
         <svg
@@ -61,14 +61,14 @@ export function Logo({ className = "", showWordmark = true, size = "md" }: LogoP
             fill="#ffffff"
           />
           {/* Dynamic dot indicator */}
-          <circle cx="21" cy="21" r="2" fill="#38bdf8" />
+          <circle cx="21" cy="21" r="2" fill="#34d399" />
         </svg>
       </div>
 
       {showWordmark && (
         <span className={`font-extrabold tracking-tight text-foreground ${textSizes[size]}`}>
           <span>Ship</span>
-          <span className="text-indigo-600 dark:text-indigo-400">folio</span>
+          <span className="text-accent">folio</span>
         </span>
       )}
     </div>

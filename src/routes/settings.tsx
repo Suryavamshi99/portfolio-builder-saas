@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
   KeyRound,
   HardDrive,
@@ -18,8 +19,6 @@ import {
   Trash2,
   CheckCircle2,
   Loader2,
-  ExternalLink,
-  ShieldCheck,
   Zap,
   AlertTriangle,
   RotateCcw,
@@ -71,7 +70,6 @@ function SettingsContent() {
   const [activeTab, setActiveTab] = React.useState("byok");
   const [userRecord, setUserRecord] = React.useState<UserRecord | null>(null);
   const [vercelStatus, setVercelStatus] = React.useState<VercelStatus | null>(null);
-  const [loading, setLoading] = React.useState(true);
   const [disconnectingVercel, setDisconnectingVercel] = React.useState(false);
   const [statusMsg, setStatusMsg] = React.useState<string | null>(null);
   const [resetDialogOpen, setResetDialogOpen] = React.useState(false);
@@ -83,7 +81,6 @@ function SettingsContent() {
 
   const fetchStatus = React.useCallback(async () => {
     try {
-      setLoading(true);
       const [meRes, vercelRes] = await Promise.all([
         fetch("/api/me"),
         fetch("/api/vercel/status"),
@@ -99,8 +96,6 @@ function SettingsContent() {
       }
     } catch (e) {
       console.warn("Error fetching settings data:", e);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -209,15 +204,19 @@ function SettingsContent() {
         </Alert>
       )}
 
-      <Card className={userRecord?.plan === "pro" ? "border-accent/40" : undefined}>
-        <CardHeader>
+      <Card className="relative overflow-hidden border-border/80 bg-card rounded-2xl shadow-xs">
+        <div className="pointer-events-none absolute -right-10 -top-10 -z-0 opacity-20 blur-2xl">
+          <FluidOrb size={180} color="#10B981" />
+        </div>
+
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
               <Sparkles className="size-4 text-accent" />
               Plan & Billing
             </CardTitle>
-            <Badge variant={userRecord?.plan === "pro" ? "accent" : "outline"} className="uppercase text-[10px]">
-              {userRecord?.plan ?? "free"}
+            <Badge variant={userRecord?.plan === "pro" ? "accent" : "outline"} className="uppercase text-[10px] font-mono font-semibold">
+              {userRecord?.plan ?? "free"} tier
             </Badge>
           </div>
           <CardDescription className="text-xs">
@@ -226,7 +225,7 @@ function SettingsContent() {
               : "50MB storage, 5 generations/hour, 10 uploads/hour, and a small badge on your published site."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="relative z-10 space-y-3">
           {userRecord?.plan !== "pro" && (
             <>
               <ul className="space-y-1 text-xs text-muted-foreground">
@@ -240,7 +239,7 @@ function SettingsContent() {
                   <AlertDescription>{upgradeError}</AlertDescription>
                 </Alert>
               )}
-              <Button onClick={() => void handleUpgrade()} disabled={upgrading} className="gap-2">
+              <Button onClick={() => void handleUpgrade()} disabled={upgrading} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 font-semibold active:scale-[0.98]">
                 {upgrading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
                 Upgrade to Pro — ${PRO_PRICE_USD} one-time
               </Button>

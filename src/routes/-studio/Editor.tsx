@@ -278,7 +278,7 @@ export function Editor({ initialContent }: { initialContent: Content }) {
               type="button"
               onClick={save}
               disabled={busy || !dirty}
-              className="gap-2 font-medium"
+              className="gap-2 font-semibold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 active:scale-[0.98]"
             >
               {busy ? (
                 <>

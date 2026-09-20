@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/layout/Logo";
 import {
-  Sparkles,
   LayoutTemplate,
   LogOut,
   LogIn,
@@ -16,7 +15,8 @@ import {
   Moon,
   FolderUp,
   Lock,
-  ArrowRight,
+  Menu,
+  X,
 } from "lucide-react";
 
 export function Navbar() {
@@ -26,6 +26,11 @@ export function Navbar() {
   const currentPath = routerState.location.pathname;
 
   const [darkMode, setDarkMode] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [currentPath]);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -142,45 +147,56 @@ export function Navbar() {
             <>
               {user ? (
                 <div className="flex items-center gap-2">
-                  <span className="hidden max-w-[150px] truncate text-xs text-muted-foreground sm:inline-block">
+                  <span className="hidden max-w-[150px] truncate text-xs text-muted-foreground lg:inline-block">
                     {user.email}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => signOut()}
-                    className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/30"
+                    className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/30 hidden sm:inline-flex"
                     aria-label="Sign out"
                   >
                     <LogOut className="size-3.5" />
-                    <span className="hidden sm:inline">Sign out</span>
+                    <span>Sign out</span>
+                  </Button>
+                  {/* Mobile hamburger menu toggle */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMobileMenuOpen((prev) => !prev)}
+                    aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
+                    className="size-8 text-muted-foreground hover:text-foreground md:hidden"
+                  >
+                    {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
                   </Button>
                 </div>
               ) : getLaunchMode() === "waitlist" ? (
                 <Button
                   asChild
                   size="sm"
-                  className="h-8 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                  className="h-8 bg-accent px-3.5 text-xs font-semibold text-accent-foreground shadow-xs hover:bg-accent/90"
                 >
                   <Link to="/" hash="waitlist" hashScrollIntoView>
                     Join waitlist
                   </Link>
                 </Button>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-medium">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Button asChild variant="ghost" size="sm" className="h-8 px-2 sm:px-3 text-xs font-medium">
                     <Link to="/login" search={{ redirect: currentPath }}>
-                      <LogIn className="mr-1.5 size-3.5" />
-                      Sign in
+                      <LogIn className="mr-1 sm:mr-1.5 size-3.5" />
+                      <span>Sign in</span>
                     </Link>
                   </Button>
                   <Button
                     asChild
                     size="sm"
-                    className="h-8 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                    className="h-8 bg-accent px-2.5 sm:px-3.5 text-xs font-semibold text-accent-foreground shadow-xs hover:bg-accent/90"
                   >
                     <Link to="/login" search={{ redirect: "/onboarding" }}>
-                      Create my portfolio
+                      <span className="hidden sm:inline">Create portfolio</span>
+                      <span className="sm:hidden">Create</span>
                     </Link>
                   </Button>
                 </div>
@@ -189,6 +205,71 @@ export function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Mobile navigation panel for logged-in users */}
+      {user && mobileMenuOpen && (
+        <div className="border-t border-border/80 bg-background/95 backdrop-blur-md px-4 py-3 md:hidden space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="text-[11px] font-mono text-muted-foreground px-2 py-1 truncate">
+            Signed in as {user.email}
+          </div>
+          <nav className="flex flex-col gap-1">
+            {studioUnlocked ? (
+              <Link
+                to="/studio"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                  currentPath.startsWith("/studio")
+                    ? "bg-accent/15 text-accent font-semibold"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <LayoutTemplate className="size-4 text-accent" />
+                <span>Studio</span>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground/50">
+                <Lock className="size-4" />
+                <span>Studio (Generate portfolio first)</span>
+              </div>
+            )}
+            <Link
+              to="/onboarding"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                currentPath.startsWith("/onboarding")
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <FolderUp className="size-4 text-accent" />
+              <span>Wizard</span>
+            </Link>
+            <Link
+              to="/settings"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                currentPath.startsWith("/settings")
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <KeyRound className="size-4 text-accent" />
+              <span>BYOK & Storage</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                signOut();
+              }}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-colors text-left"
+            >
+              <LogOut className="size-4" />
+              <span>Sign out</span>
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

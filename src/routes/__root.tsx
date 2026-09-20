@@ -10,19 +10,24 @@ import { type ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { Navbar } from "@/components/layout/Navbar";
 
+import { FluidOrb } from "@/components/ui/fluid-orb";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold tracking-tight text-accent">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">The page you were looking for doesn't exist.</p>
-        <div className="mt-6">
+    <div className="relative flex min-h-[65vh] items-center justify-center px-4 overflow-hidden">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 opacity-25 blur-3xl">
+        <FluidOrb size={300} color="#10B981" />
+      </div>
+      <div className="max-w-md text-center space-y-3">
+        <h1 className="text-7xl font-black tracking-tight text-accent">404</h1>
+        <h2 className="text-xl font-bold text-foreground">Page not found</h2>
+        <p className="text-sm text-muted-foreground">The page you were looking for doesn't exist.</p>
+        <div className="pt-2">
           <Link
             to="/"
-            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground shadow-md shadow-accent/20 hover:bg-accent/90 active:scale-[0.98]"
           >
             Go to home
           </Link>
@@ -36,13 +41,13 @@ function ErrorComponent({ error }: { error: Error }) {
   console.error(error);
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold text-destructive">An unexpected error occurred</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error?.message || "Something went wrong."}</p>
-        <div className="mt-6">
+      <div className="max-w-md text-center space-y-3">
+        <h1 className="text-xl font-bold text-destructive">An unexpected error occurred</h1>
+        <p className="text-sm text-muted-foreground">{error?.message || "Something went wrong."}</p>
+        <div className="pt-2">
           <Link
             to="/"
-            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground shadow-md shadow-accent/20 hover:bg-accent/90 active:scale-[0.98]"
           >
             Return to safety
           </Link>
@@ -63,7 +68,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and private BYOK AI.",
       },
-      { name: "theme-color", content: "#4f46e5" },
+      { name: "theme-color", content: "#10B981" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },

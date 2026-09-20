@@ -78,7 +78,7 @@ export function WaitlistCta({
         <Button
           type="submit"
           disabled={status === "loading"}
-          className={`h-11 gap-2 font-semibold ${buttonClassName ?? ""}`}
+          className={`h-11 gap-2 font-semibold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 active:scale-[0.98] ${buttonClassName ?? ""}`}
         >
           {status === "loading" ? "Joining…" : buttonLabel}
           {status !== "loading" && <ArrowRight className="size-4" />}

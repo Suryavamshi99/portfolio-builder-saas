@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { UploadWidget, type UploadItem } from "@/components/upload/UploadWidget";
 import { ByokManager, type LLMProvider } from "@/components/byok/ByokManager";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
   FileText,
   Image as ImageIcon,
@@ -386,10 +387,10 @@ function OnboardingWizard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* AI Tuning Presets */}
-              <div className="space-y-2 rounded-xl border border-indigo-200/60 bg-indigo-50/40 p-3.5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+              <div className="space-y-2 rounded-xl border border-accent/20 bg-accent/5 p-3.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-xs font-bold text-accent flex items-center gap-1.5">
+                    <Sparkles className="size-3.5 text-accent" />
                     Resume.io AI Tuning Presets
                   </span>
                   <span className="text-[11px] text-muted-foreground">Click to append</span>
@@ -415,7 +416,7 @@ function OnboardingWizard() {
                               setOtherSpecifics((prev) => (prev ? `${prev.trim()}\n${addition}` : addition));
                             }
                           }}
-                          className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium text-foreground transition-all hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+                          className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground transition-all hover:border-accent hover:text-accent active:scale-[0.98]"
                         >
                           + {rolePreset}
                         </button>
@@ -441,7 +442,7 @@ function OnboardingWizard() {
                               setOtherSpecifics((prev) => (prev ? `${prev.trim()}\n${addition}` : addition));
                             }
                           }}
-                          className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium text-foreground transition-all hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+                          className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground transition-all hover:border-accent hover:text-accent active:scale-[0.98]"
                         >
                           + {tonePreset}
                         </button>
@@ -452,7 +453,7 @@ function OnboardingWizard() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="other-specifics" className="text-xs font-medium">
+                <label htmlFor="other-specifics" className="text-xs font-medium text-foreground">
                   Custom instructions for the extraction model:
                 </label>
                 <Textarea
@@ -461,9 +462,10 @@ function OnboardingWizard() {
                   value={otherSpecifics}
                   onChange={(e) => setOtherSpecifics(e.target.value)}
                   rows={4}
+                  className="bg-background/60"
                 />
               </div>
-              <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+              <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground border border-border/40">
                 <p>
                   <strong>Tip:</strong> The extraction prompt adheres to strict content-integrity guardrails: it will never fabricate facts, alter employment periods, or make unsubstantiated claims.
                 </p>
@@ -481,7 +483,7 @@ function OnboardingWizard() {
               <Button
                 type="button"
                 onClick={() => setCurrentStep(5)}
-                className="gap-2"
+                className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
                 Next: BYOK Key Setup
                 <ArrowRight className="size-4" />
@@ -519,7 +521,7 @@ function OnboardingWizard() {
               <Button
                 type="button"
                 onClick={() => setCurrentStep(6)}
-                className="gap-2"
+                className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
                 Next: Review & Generate
                 <ArrowRight className="size-4" />
@@ -531,31 +533,37 @@ function OnboardingWizard() {
         {/* Step 6: Trigger Generation, or the post-generation hand-off */}
         {currentStep === 6 && generationComplete && (
           <>
-            <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
-              <div className="flex size-14 items-center justify-center rounded-full bg-success/15 text-success">
-                <CheckCircle2 className="size-7" />
+            <CardContent className="flex flex-col items-center gap-6 py-12 text-center relative overflow-hidden">
+              <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-0 opacity-20 blur-3xl">
+                <FluidOrb size={260} color="#10B981" />
               </div>
-              <div className="space-y-1.5">
-                <h3 className="text-xl font-bold">Your portfolio draft is ready</h3>
-                <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                  Head to Studio to review what was generated — fix anything that's off, update old
-                  roles, or add projects that didn't come from your resume. Nothing is public yet.
-                </p>
-              </div>
-              <div className="w-full max-w-sm space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-left text-xs text-muted-foreground">
-                <div className="flex items-center gap-2 font-medium text-foreground">
-                  <Globe className="size-3.5 text-accent" />
-                  Publishing is a separate, explicit step
+
+              <div className="relative z-10 flex flex-col items-center gap-4">
+                <div className="flex size-16 items-center justify-center rounded-full bg-success/20 text-success shadow-lg shadow-success/20">
+                  <CheckCircle2 className="size-8" />
                 </div>
-                <p>
-                  Editing and saving in Studio never goes live on its own. When you're happy with it,
-                  connect Vercel and hit Publish from Studio to deploy it to your own account.
-                </p>
+                <div className="space-y-1.5 max-w-md">
+                  <h3 className="text-2xl font-bold tracking-tight text-foreground">Your portfolio draft is ready</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Head to Studio to review what was generated — refine any field, tune project metrics, or reorder sections. Nothing is public yet.
+                  </p>
+                </div>
+
+                <div className="w-full max-w-md space-y-2 rounded-xl border border-border/80 bg-muted/40 p-4 text-left text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <Globe className="size-3.5 text-accent" />
+                    Publishing is a separate, explicit step
+                  </div>
+                  <p className="leading-relaxed">
+                    Editing and saving in Studio never goes live on its own. When you're happy with it, connect Vercel and hit Publish from Studio to deploy it to your own domain.
+                  </p>
+                </div>
+
+                <Button size="lg" className="gap-2 font-semibold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 active:scale-[0.98]" onClick={() => void navigate({ to: "/studio" })}>
+                  <LayoutTemplate className="size-4" />
+                  Review & Edit in Studio
+                </Button>
               </div>
-              <Button size="lg" className="gap-2 font-semibold" onClick={() => void navigate({ to: "/studio" })}>
-                <LayoutTemplate className="size-4" />
-                Review & Edit in Studio
-              </Button>
             </CardContent>
           </>
         )}
@@ -571,13 +579,13 @@ function OnboardingWizard() {
             <CardContent className="space-y-6">
               {/* Summary overview */}
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-border p-3 text-xs space-y-1">
+                <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
                   <span className="text-muted-foreground">Selected Resume:</span>
-                  <div className="font-semibold truncate">
+                  <div className="font-semibold truncate text-foreground">
                     {resumeUpload?.filename ?? "No resume uploaded"}
                   </div>
                 </div>
-                <div className="rounded-lg border border-border p-3 text-xs space-y-1">
+                <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
                   <span className="text-muted-foreground">LLM Provider:</span>
                   <div className="font-semibold uppercase tracking-wider text-accent">
                     {selectedProvider}
@@ -622,17 +630,23 @@ function OnboardingWizard() {
                 </Alert>
               )}
 
-              {/* Generating active state */}
+              {/* Generating active state with FluidOrb living core */}
               {generating && (
-                <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-accent/40 bg-accent/5 p-8 text-center">
-                  <div className="relative flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-md">
-                    <Sparkles className="size-6 animate-pulse" />
+                <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-2xl border border-accent/40 bg-accent/5 p-8 text-center shadow-lg">
+                  <div className="relative">
+                    <FluidOrb size={170} color="#10B981" className="shadow-2xl ring-4 ring-accent/20" />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <Sparkles className="size-8 text-white drop-shadow-md animate-pulse" />
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-base">Crafting your portfolio…</h3>
-                    <p className="text-xs text-muted-foreground">{generationPhase}</p>
+                  <div className="space-y-1.5 max-w-sm">
+                    <h3 className="font-bold text-lg text-foreground tracking-tight">Synthesizing Your Portfolio…</h3>
+                    <p className="text-xs text-accent font-medium animate-pulse">{generationPhase}</p>
                   </div>
-                  <Loader2 className="size-5 animate-spin text-accent" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="size-3.5 animate-spin text-accent" />
+                    <span>Enforcing Google X-Y-Z and zero-hallucination guardrails</span>
+                  </div>
                 </div>
               )}
             </CardContent>
