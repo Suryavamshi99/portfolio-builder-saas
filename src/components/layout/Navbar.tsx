@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { canAccessStudio } from "@/lib/portfolio-gate";
+import { getLaunchMode } from "@/config/launch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/layout/Logo";
@@ -60,7 +61,7 @@ export function Navbar() {
           <Link
             to="/"
             className="group flex items-center gap-2 transition-opacity hover:opacity-90"
-            aria-label="Portfol.io Home"
+            aria-label="Shipfolio Home"
           >
             <Logo size="sm" />
             <Badge
@@ -155,6 +156,16 @@ export function Navbar() {
                     <span className="hidden sm:inline">Sign out</span>
                   </Button>
                 </div>
+              ) : getLaunchMode() === "waitlist" ? (
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-8 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                >
+                  <Link to="/" hash="waitlist" hashScrollIntoView>
+                    Join waitlist
+                  </Link>
+                </Button>
               ) : (
                 <div className="flex items-center gap-2">
                   <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-medium">

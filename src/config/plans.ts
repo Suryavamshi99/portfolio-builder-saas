@@ -7,7 +7,7 @@ export const DEFAULT_PLAN: Plan = "free";
  * isn't here — the schema only supports one portfolio per user, for
  * everyone (portfolios.user_id is the primary key), so that's not a lever
  * this phase can pull. What actually gates Free vs. Pro instead: storage
- * quota, generation/upload rate limits, and the "Published with Portfol.io"
+ * quota, generation/upload rate limits, and the "Published with Shipfolio"
  * badge in the template (see src/server/template/render.ts).
  */
 export const PLAN_STORAGE_QUOTA_BYTES: Record<Plan, number> = {

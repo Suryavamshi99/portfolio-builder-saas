@@ -14,7 +14,7 @@ import { escapeAttr, escapeHtml } from "./escape";
  * `plan` gates the one thing Free vs. Pro actually changes about the
  * published output itself (storage/rate limits are enforced elsewhere,
  * upstream of this function ever running) — a small "Published with
- * Portfol.io" credit on the free tier, removed on Pro.
+ * Shipfolio" credit on the free tier, removed on Pro.
  */
 export function renderSiteHtml(content: Content, plan: Plan = "free", appOrigin?: string): string {
   const title = `${content.profile.name}${content.profile.role ? ` — ${content.profile.role}` : ""}`;
@@ -54,10 +54,10 @@ ${plan === "free" ? renderBadge(appOrigin) : ""}
  * a vanity domain for this product, so the badge must never hardcode one.
  */
 function renderBadge(appOrigin?: string): string {
-  const label = "Published with Portfol.io";
+  const label = "Published with Shipfolio";
   return appOrigin
-    ? `<div class="pio-badge"><a href="${escapeAttr(appOrigin)}" target="_blank" rel="noopener">${label}</a></div>`
-    : `<div class="pio-badge"><span>${label}</span></div>`;
+    ? `<div class="sf-badge"><a href="${escapeAttr(appOrigin)}" target="_blank" rel="noopener">${label}</a></div>`
+    : `<div class="sf-badge"><span>${label}</span></div>`;
 }
 
 function renderNav(content: Content): string {
@@ -287,6 +287,6 @@ h3 { font-size: 1.15rem; margin-bottom: 0.25rem; }
 a { color: var(--accent); }
 ul { padding-left: 1.2rem; }
 .resumes a { margin-right: 0.75rem; }
-.pio-badge { position: fixed; bottom: 1rem; right: 1rem; font-size: 0.7rem; padding: 0.4rem 0.7rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 85%, transparent); backdrop-filter: blur(4px); }
-.pio-badge a { color: var(--paper); text-decoration: none; }
+.sf-badge { position: fixed; bottom: 1rem; right: 1rem; font-size: 0.7rem; padding: 0.4rem 0.7rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 85%, transparent); backdrop-filter: blur(4px); }
+.sf-badge a { color: var(--paper); text-decoration: none; }
 `;

@@ -30,7 +30,7 @@ import {
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
-    meta: [{ title: "AI Portfolio Wizard — Portfol.io" }],
+    meta: [{ title: "AI Portfolio Wizard — Shipfolio" }],
   }),
   component: OnboardingPage,
 });
@@ -205,7 +205,7 @@ function OnboardingWizard() {
       <div className="space-y-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">Portfol.io AI Wizard</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Shipfolio AI Wizard</h1>
             <Badge variant="accent" className="text-[10px] font-mono">
               Resume.io Tuned
             </Badge>

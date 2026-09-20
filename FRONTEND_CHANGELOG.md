@@ -87,12 +87,12 @@ As required for student portfolios handling resumes and API keys:
 
 ---
 
-## 5. Portfol.io Rebranding & Resume.io AI Tuning
+## 5. Shipfolio Rebranding & Resume.io AI Tuning
 
-Inspired by [Resume.io](https://resume.io/)'s high-converting career platform, the product has been elevated into a cohesive, consumer-ready SaaS brand: **Portfol.io**.
+Inspired by [Resume.io](https://resume.io/)'s high-converting career platform, the product has been elevated into a cohesive, consumer-ready SaaS brand: **Shipfolio**.
 
 ### 5.1 Brand Identity & Visual Assets
-1. **Brand Naming**: Established **Portfol.io** (`portfol.io`), matching Resume.io's memorable `.io` tech aesthetic with the tagline: *"This portfolio builder gets you **hired**."*
+1. **Brand Naming**: Established **Shipfolio**, matching Resume.io's memorable `.io`-era tech aesthetic with the tagline: *"This portfolio builder gets you **hired**."* (Renamed from an earlier working name, "Portfol.io" — that domain was already taken.)
 2. **Brand Logo Component** ([`src/components/layout/Logo.tsx`](./src/components/layout/Logo.tsx)):
    - Modern geometric SVG mark combining layered folio cards with an AI spark node.
    - Distinctive electric cyan dot accent on `.io`.

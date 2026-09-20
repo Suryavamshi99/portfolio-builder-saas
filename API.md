@@ -17,6 +17,15 @@ designed in detail).
 
 ## Changelog
 
+- **2026-09-20** — Rebranded from "Portfol.io" to **Shipfolio** (the former
+  domain was already taken) — every user-facing brand string, the badge
+  link, and the landing-page mockup URL updated; the generic English word
+  "portfolio" describing the product itself is untouched. Also shipped
+  Milestone 7 (`POST /api/waitlist`) and `VITE_LAUNCH_MODE`, a pre-launch
+  GTM toggle — see that milestone's section for the full contract. Fixed a
+  real bug found while doing this: the free-tier badge hardcoded
+  `href="https://portfol.io"`, a domain nobody owns — now links to the
+  app's own `APP_ORIGIN` instead.
 - **2026-09-17 (2)** — Milestone 6 (payments) shipped: `POST /api/billing/checkout`,
   `POST /api/webhooks/dodo`. Shape change from the original stub: dropped
   "unlimited portfolios" as a Pro benefit — the schema only supports one
@@ -588,7 +597,7 @@ One-time lifetime "Pro" unlock — **not a subscription**, no renewal/coupon
 logic exists or is planned. `GET /api/me`'s `plan` field (`"free"` | `"pro"`)
 is the one thing that changes; what it gates is documented in `src/config/plans.ts`
 (storage quota, generation/upload rate limits, and whether the published
-template includes a small "Published with Portfol.io" badge — see
+template includes a small "Published with Shipfolio" badge — see
 `src/server/template/render.ts`). Notably **not** gated: number of portfolios
 — the schema only supports one portfolio per user, for everyone, so that
 was dropped from the original pricing pitch once this was actually being
@@ -637,3 +646,31 @@ Exempted from the global CSRF Origin check (`src/start.ts`) — every path
 under `/api/webhooks/*` is, since these are never browser requests and have
 no session cookie for CSRF to protect; authenticity comes from the
 signature instead.
+
+## Milestone 7 — Pre-launch waitlist
+
+`VITE_LAUNCH_MODE` (`src/config/launch.ts`) is a client-visible toggle —
+`"waitlist"` swaps every sign-up CTA on the landing page for an
+email-capture form (`src/components/waitlist/WaitlistCta.tsx`); `"live"`
+(the default) shows the real `/login` flow. Not a route guard — `/login`
+and `/onboarding` still work if navigated to directly in either mode.
+
+### `POST /api/waitlist` — ✅ Shipped
+
+**Auth:** none — this exists precisely because there's no account yet.
+
+Request body: `{ "email": string, "source"?: string }`.
+
+Forwards to a Google Apps Script Web App (see README "Setup (Waitlist)"),
+not Supabase — a waitlist is a marketing list someone wants to open in a
+spreadsheet, not product data needing RLS or an admin UI. The shared
+secret (`WAITLIST_WEBHOOK_SECRET`) is checked inside that script, not
+here, so someone who finds the script's URL can't write rows directly.
+
+Response `201`: `{ "ok": true }`.
+
+Response `400`: `{ "error": { "code": "invalid_email", "message": "..." } }`.
+
+Response `502`: `{ "error": { "code": "waitlist_webhook_failed" | "waitlist_webhook_unreachable", "message": "..." } }`
+— `WAITLIST_WEBHOOK_URL`/`WAITLIST_WEBHOOK_SECRET` unset, or the Apps
+Script itself rejected/errored.

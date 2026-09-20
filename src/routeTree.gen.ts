@@ -22,6 +22,7 @@ import { Route as ApiPublishRouteImport } from './routes/api/publish'
 import { Route as ApiResetRouteImport } from './routes/api/reset'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
+import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
@@ -96,6 +97,11 @@ const ApiVercelRoute = ApiVercelRouteImport.update({
   path: '/api/vercel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWaitlistRoute = ApiWaitlistRouteImport.update({
+  id: '/api/waitlist',
+  path: '/api/waitlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBillingCheckoutRoute = ApiBillingCheckoutRouteImport.update({
   id: '/api/billing/checkout',
   path: '/api/billing/checkout',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
+  '/api/waitlist': typeof ApiWaitlistRoute
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
+  '/api/waitlist': typeof ApiWaitlistRoute
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/api/reset': typeof ApiResetRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
+  '/api/waitlist': typeof ApiWaitlistRoute
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
+    | '/api/waitlist'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
+    | '/api/waitlist'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/api/reset'
     | '/api/uploads'
     | '/api/vercel'
+    | '/api/waitlist'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   ApiResetRoute: typeof ApiResetRoute
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
+  ApiWaitlistRoute: typeof ApiWaitlistRoute
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
 }
@@ -388,6 +401,13 @@ declare module '@tanstack/react-router' {
       path: '/api/vercel'
       fullPath: '/api/vercel'
       preLoaderRoute: typeof ApiVercelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/waitlist': {
+      id: '/api/waitlist'
+      path: '/api/waitlist'
+      fullPath: '/api/waitlist'
+      preLoaderRoute: typeof ApiWaitlistRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/billing/checkout': {
@@ -515,6 +535,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiResetRoute: ApiResetRoute,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
+  ApiWaitlistRoute: ApiWaitlistRoute,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
 }

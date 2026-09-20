@@ -1,4 +1,4 @@
-# Portfol.io — AI Developer Portfolio Builder SaaS
+# Shipfolio — AI Developer Portfolio Builder SaaS
 
 Hosted product: students turn a resume into a live portfolio site either by
 prompting a recruiter-grade AI (their own API key) or editing structured fields directly,
@@ -78,6 +78,57 @@ you:
    step needs the app actually deployed somewhere first — can't be done
    against `localhost`.
 
+## Setup (Waitlist)
+
+Optional, pre-launch only. Waitlist signups go to a Google Sheet, not
+Supabase — no product data, no RLS, just a list you can open and skim.
+
+1. Create a new Google Sheet. Give row 1 headers: `Email`, `Source`, `Submitted At`.
+2. In that Sheet, **Extensions → Apps Script**, delete the placeholder code, and paste:
+   ```javascript
+   const SHARED_SECRET = "PASTE_YOUR_WAITLIST_WEBHOOK_SECRET_HERE";
+
+   function doPost(e) {
+     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+     const data = JSON.parse(e.postData.contents);
+
+     if (data.secret !== SHARED_SECRET) {
+       return ContentService.createTextOutput(JSON.stringify({ error: "unauthorized" }))
+         .setMimeType(ContentService.MimeType.JSON);
+     }
+
+     const email = String(data.email || "").trim().toLowerCase();
+     if (!email) {
+       return ContentService.createTextOutput(JSON.stringify({ error: "missing_email" }))
+         .setMimeType(ContentService.MimeType.JSON);
+     }
+
+     const existing = sheet.getRange("A2:A").getValues().flat();
+     if (existing.includes(email)) {
+       return ContentService.createTextOutput(JSON.stringify({ ok: true, duplicate: true }))
+         .setMimeType(ContentService.MimeType.JSON);
+     }
+
+     sheet.appendRow([email, data.source || "", data.submittedAt || new Date().toISOString()]);
+     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+       .setMimeType(ContentService.MimeType.JSON);
+   }
+   ```
+3. Generate a secret and paste it into `SHARED_SECRET` above (replacing the placeholder):
+   ```sh
+   node -e "console.log(require('node:crypto').randomBytes(24).toString('base64url'))"
+   ```
+   This same value goes into `.env`/Vercel as `WAITLIST_WEBHOOK_SECRET` — it's what stops
+   anyone who finds the Apps Script URL from writing rows directly, bypassing this app's
+   validation.
+4. **Deploy → New deployment → Web app.** Execute as **Me**, who has access **Anyone**.
+   Copy the resulting URL (`https://script.google.com/macros/s/.../exec`) into `.env`/Vercel
+   as `WAITLIST_WEBHOOK_URL`.
+5. Whenever you edit the script later, Apps Script needs **Manage deployments → Edit →
+   New version** for the change to take effect — the deployment URL itself doesn't change.
+6. Set `VITE_LAUNCH_MODE=waitlist` (and redeploy) to switch the landing page's CTAs to the
+   email-capture form; `live` (the default) shows the real sign-up flow.
+
 ## The contract
 
 [`API.md`](./API.md) is the single source of truth for every endpoint —
@@ -87,11 +138,18 @@ schema or server internals.
 
 ## Status
 
+Rebranded to **Shipfolio** ("Portfol.io" was never actually ownable — the
+domain was taken). See API.md's Changelog for exactly what that touched.
+
 **All six milestones are shipped, including payments** — `POST
 /api/billing/checkout` + `POST /api/webhooks/dodo` (Dodo Payments, a
 one-time $19 lifetime unlock, not a subscription), plus `POST /api/reset`
 ("start over" — added later as a product requirement, see API.md). All
-backed by real Supabase tables, RLS policies, and Storage.
+backed by real Supabase tables, RLS policies, and Storage. A seventh,
+pre-launch-only milestone was added on top: `POST /api/waitlist` +
+`VITE_LAUNCH_MODE`, a GTM toggle to run the landing page as an
+email-capture waitlist before opening real signups — see "Setup
+(Waitlist)" above.
 
 One thing that changed along the way, worth knowing before treating "Pro"
 as flexible: the original pricing pitch included "unlimited portfolios" as
@@ -100,7 +158,7 @@ everyone — `portfolios.user_id` is the primary key. That's a real future
 feature (a genuine schema change touching most content-facing endpoints +
 the frontend), not something Pro currently unlocks. Pro instead gates
 storage quota (250MB vs. 50MB), generation/upload rate limits, and the
-"Published with Portfol.io" badge on the live site — see `src/config/plans.ts`.
+"Published with Shipfolio" badge on the live site — see `src/config/plans.ts`.
 
 **The frontend is built too** (by Antigravity, not this session) — login/
 signup, the onboarding wizard, BYOK key management with per-provider setup

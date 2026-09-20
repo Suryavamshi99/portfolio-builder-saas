@@ -57,7 +57,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Portfol.io — AI Resume to Live Developer Portfolio Builder" },
+      { title: "Shipfolio — AI Resume to Live Developer Portfolio Builder" },
       {
         name: "description",
         content:

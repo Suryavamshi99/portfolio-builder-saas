@@ -2,6 +2,8 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { canAccessStudio } from "@/lib/portfolio-gate";
+import { getLaunchMode } from "@/config/launch";
+import { WaitlistCta } from "@/components/waitlist/WaitlistCta";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -46,7 +48,7 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Portfol.io — AI Resume to Live Portfolio SaaS" },
+      { title: "Shipfolio — AI Resume to Live Portfolio SaaS" },
       {
         name: "description",
         content:
@@ -79,6 +81,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const { user, loading, portfolioReady } = useAuth();
   const studioUnlocked = canAccessStudio({ portfolioReady });
+  const launchMode = getLaunchMode();
 
   const [vercelJustConnected, setVercelJustConnected] = React.useState(vercel === "connected");
   const [userData, setUserData] = React.useState<UserRecord | null>(null);
@@ -401,30 +404,36 @@ export function HomePage() {
               </p>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-3.5 pt-3">
-                <Button
-                  asChild
-                  size="lg"
-                  className="h-12 px-7 text-base font-bold shadow-lg shadow-indigo-500/25 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 gap-2"
-                >
-                  <Link to="/login" search={{ redirect: "/onboarding" }}>
-                    Create my portfolio
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
+              {launchMode === "waitlist" ? (
+                <div className="flex justify-center pt-3">
+                  <WaitlistCta id="waitlist" source="hero" buttonLabel="Join the waitlist" />
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-center gap-3.5 pt-3">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 px-7 text-base font-bold shadow-lg shadow-indigo-500/25 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 gap-2"
+                  >
+                    <Link to="/login" search={{ redirect: "/onboarding" }}>
+                      Create my portfolio
+                      <ArrowRight className="size-4" />
+                    </Link>
+                  </Button>
 
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="h-12 px-6 text-base font-semibold border-border/80 hover:bg-muted gap-2"
-                >
-                  <Link to="/login" search={{ redirect: "/onboarding" }}>
-                    <Upload className="size-4 text-indigo-600 dark:text-indigo-400" />
-                    Upload my resume
-                  </Link>
-                </Button>
-              </div>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="h-12 px-6 text-base font-semibold border-border/80 hover:bg-muted gap-2"
+                  >
+                    <Link to="/login" search={{ redirect: "/onboarding" }}>
+                      <Upload className="size-4 text-indigo-600 dark:text-indigo-400" />
+                      Upload my resume
+                    </Link>
+                  </Button>
+                </div>
+              )}
 
               {/* Trust & Proof Bar */}
               <div className="pt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-muted-foreground">
@@ -619,7 +628,7 @@ export function HomePage() {
                 How our AI elevates your resume into a portfolio
               </h2>
               <p className="mx-auto max-w-2xl text-sm sm:text-base text-muted-foreground">
-                Generic AI tools make up facts or write robotic summaries. Portfol.io applies Resume.io’s proven career formulation to highlight your real achievements.
+                Generic AI tools make up facts or write robotic summaries. Shipfolio applies Resume.io’s proven career formulation to highlight your real achievements.
               </p>
             </div>
 
@@ -645,11 +654,11 @@ export function HomePage() {
                 </ul>
               </div>
 
-              {/* Portfol.io Tuned */}
+              {/* Shipfolio Tuned */}
               <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/30 p-6 dark:border-emerald-950/50 dark:bg-emerald-950/10 space-y-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    Portfol.io AI-Tuned (Resume.io Phrasing)
+                    Shipfolio AI-Tuned (Resume.io Phrasing)
                   </span>
                   <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
                     Recruiter Winning
@@ -736,7 +745,7 @@ export function HomePage() {
             <div className="grid gap-6 sm:grid-cols-3 text-left">
               <div className="space-y-3 rounded-xl bg-muted/40 p-4">
                 <p className="text-xs text-foreground leading-relaxed italic">
-                  “I had 5 versions of a PDF resume. Portfol.io turned it into an interactive site in 90 seconds. Recruiters actually commented on the clean metrics during my interviews!”
+                  “I had 5 versions of a PDF resume. Shipfolio turned it into an interactive site in 90 seconds. Recruiters actually commented on the clean metrics during my interviews!”
                 </p>
                 <div className="pt-2">
                   <div className="font-bold text-xs text-foreground">Sarah Lin</div>
@@ -784,19 +793,29 @@ export function HomePage() {
                 Ready to stand out in the top 2%?
               </h2>
               <p className="text-base text-indigo-100 leading-relaxed">
-                Join thousands of students and engineers creating job-winning portfolios in minutes with Portfol.io.
+                Join thousands of students and engineers creating job-winning portfolios in minutes with Shipfolio.
               </p>
               <div className="pt-2">
-                <Button
-                  asChild
-                  size="lg"
-                  className="h-12 bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-8 text-base shadow-xl"
-                >
-                  <Link to="/login" search={{ redirect: "/onboarding" }}>
-                    Create my portfolio now
-                    <ArrowRight className="ml-2 size-4" />
-                  </Link>
-                </Button>
+                {launchMode === "waitlist" ? (
+                  <div className="flex justify-center">
+                    <WaitlistCta
+                      source="bottom-banner"
+                      buttonLabel="Join the waitlist"
+                      buttonClassName="bg-white text-indigo-700 hover:bg-indigo-50 shadow-xl"
+                    />
+                  </div>
+                ) : (
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-8 text-base shadow-xl"
+                  >
+                    <Link to="/login" search={{ redirect: "/onboarding" }}>
+                      Create my portfolio now
+                      <ArrowRight className="ml-2 size-4" />
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </section>
@@ -810,18 +829,26 @@ export function HomePage() {
                 <span>The AI Developer Portfolio Builder</span>
               </div>
               <div className="flex items-center gap-6">
-                <Link to="/login" className="hover:text-foreground">
-                  Sign in
-                </Link>
-                <Link to="/login" search={{ redirect: "/onboarding" }} className="hover:text-foreground">
-                  Build Portfolio
-                </Link>
+                {launchMode === "waitlist" ? (
+                  <Link to="/" hash="waitlist" hashScrollIntoView className="hover:text-foreground">
+                    Join waitlist
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/login" className="hover:text-foreground">
+                      Sign in
+                    </Link>
+                    <Link to="/login" search={{ redirect: "/onboarding" }} className="hover:text-foreground">
+                      Build Portfolio
+                    </Link>
+                  </>
+                )}
                 <Link to="/settings" className="hover:text-foreground">
                   Privacy & Keys
                 </Link>
               </div>
               <div>
-                © {new Date().getFullYear()} Portfol.io. All rights reserved.
+                © {new Date().getFullYear()} Shipfolio. All rights reserved.
               </div>
             </div>
           </footer>

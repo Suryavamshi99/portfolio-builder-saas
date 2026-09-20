@@ -36,7 +36,7 @@ export const Route = createFileRoute("/settings")({
     return search["upgrade"] === "pending" ? { upgrade: "pending" } : {};
   },
   head: () => ({
-    meta: [{ title: "Account & Settings — Portfol.io" }],
+    meta: [{ title: "Account & Settings — Shipfolio" }],
   }),
   component: SettingsPage,
 });
@@ -232,7 +232,7 @@ function SettingsContent() {
               <ul className="space-y-1 text-xs text-muted-foreground">
                 <li>• 250MB storage (5x free)</li>
                 <li>• 20 generations/hour, 30 uploads/hour</li>
-                <li>• "Published with Portfol.io" badge removed</li>
+                <li>• "Published with Shipfolio" badge removed</li>
               </ul>
               {upgradeError && (
                 <Alert variant="destructive">

@@ -21,7 +21,7 @@ export function Logo({ className = "", showWordmark = true, size = "md" }: LogoP
 
   return (
     <div className={`inline-flex items-center gap-2.5 font-bold tracking-tight select-none ${className}`}>
-      {/* Modern geometric Portfol.io icon mark */}
+      {/* Modern geometric Shipfolio icon mark */}
       <div
         className={`relative flex ${iconSizes[size]} items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-blue-500 text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/20 transition-transform group-hover:scale-105`}
         aria-hidden="true"
@@ -67,8 +67,8 @@ export function Logo({ className = "", showWordmark = true, size = "md" }: LogoP
 
       {showWordmark && (
         <span className={`font-extrabold tracking-tight text-foreground ${textSizes[size]}`}>
-          <span>portfol</span>
-          <span className="text-indigo-600 dark:text-indigo-400">.io</span>
+          <span>Ship</span>
+          <span className="text-indigo-600 dark:text-indigo-400">folio</span>
         </span>
       )}
     </div>

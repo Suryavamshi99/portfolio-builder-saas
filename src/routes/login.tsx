@@ -19,7 +19,7 @@ export const Route = createFileRoute("/login")({
     return res;
   },
   head: () => ({
-    meta: [{ title: "Sign In / Sign Up — Portfol.io" }],
+    meta: [{ title: "Sign In / Sign Up — Shipfolio" }],
   }),
   component: LoginRoute,
 });
@@ -116,7 +116,7 @@ function LoginRoute() {
           </CardTitle>
           <CardDescription>
             {activeTab === "signin"
-              ? "Sign in to access your Portfol.io studio and deployments."
+              ? "Sign in to access your Shipfolio studio and deployments."
               : "Start turning your resume into a live published portfolio."}
           </CardDescription>
         </CardHeader>
