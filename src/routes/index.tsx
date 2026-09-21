@@ -74,7 +74,6 @@ interface PublishStatus {
 }
 
 const ROTATING_WORDS = ["hired.", "interviews.", "top offers.", "noticed."];
-const HEADLINE_WORDS = ["This", "portfolio", "builder", "gets", "you"];
 
 const FEATURED_PORTFOLIO = {
   name: "Maneesh Bichala",
@@ -441,50 +440,30 @@ export function HomePage() {
 
           {/* Section 1: Hero Section with Ambient FluidOrb Background */}
           <section className="relative pt-6 sm:pt-12 pb-8 text-center flex flex-col items-center justify-center overflow-hidden sm:overflow-visible">
-            {/* Fluid orb + targeting-reticle overlay, behind the headline. Kept crisp
-                (minimal CSS blur) rather than diffused into a full glow — the shader's
-                own edge falloff already gives it a soft boundary; a wide blur-3xl on
-                top of that just smeared the fluid texture into a flat gradient. */}
-            <div className="pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 -z-10 flex size-[320px] items-center justify-center">
-              <div className="absolute size-[420px] rounded-full bg-accent/25 blur-3xl opacity-60 dark:opacity-40" />
-              <FluidOrb size={260} color="#3457E8" className="opacity-55 blur-sm shadow-2xl shadow-accent/30" />
-              <svg
-                viewBox="0 0 320 320"
-                className="absolute size-[320px] text-foreground/20 dark:text-foreground/25"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <line x1="160" y1="0" x2="160" y2="320" stroke="currentColor" strokeWidth="1" />
-                <line x1="0" y1="160" x2="320" y2="160" stroke="currentColor" strokeWidth="1" />
-                <circle cx="160" cy="160" r="3" fill="currentColor" />
-              </svg>
+            {/* Ambient FluidOrb WebGL Shader Canvas nestled behind Hero */}
+            <div className="pointer-events-none absolute left-1/2 -top-12 -translate-x-1/2 -z-10 flex items-center justify-center overflow-visible">
+              <FluidOrb
+                size={440}
+                color="#3457E8"
+                className="opacity-50 dark:opacity-35 blur-3xl transition-opacity duration-1000 scale-125"
+              />
             </div>
 
-            <div className="mx-auto max-w-4xl space-y-6">
+            <StaggerGroup className="mx-auto max-w-4xl space-y-6">
               {/* Eyebrow: exactly 1 allowed for this section family */}
-              <Reveal immediate className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
+              <StaggerItem className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
                 <Sparkles className="size-3.5 text-accent" />
                 <span>AI Portfolio Builder for Developers</span>
                 <span className="h-3 w-px bg-accent/30" />
                 <span className="font-mono text-[11px] font-normal opacity-90">100% BYOK</span>
-              </Reveal>
+              </StaggerItem>
 
-              {/* Display Headline: Max 2 lines at desktop, tight tracking. Word-by-word
-                  stagger reveal — plain motion.span per word, not the shared Reveal/
-                  StaggerGroup machinery, so this stays independent of that container's
-                  own animation state. */}
-              <h1 className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl text-foreground leading-[1.08] [text-shadow:0_2px_24px_rgb(var(--background)/0.7)]">
-                {HEADLINE_WORDS.map((word, i) => (
-                  <motion.span
-                    key={word}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.08 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                    className="inline-block"
-                  >
-                    {word}&nbsp;
-                  </motion.span>
-                ))}
+              {/* Display Headline: Max 2 lines at desktop, tight tracking */}
+              <StaggerItem
+                as="h1"
+                className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl text-foreground leading-[1.08]"
+              >
+                This portfolio builder gets you{" "}
                 <span className="relative inline-block text-accent">
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -512,25 +491,23 @@ export function HomePage() {
                     />
                   </svg>
                 </span>
-              </h1>
+              </StaggerItem>
 
               {/* Subtext: Strict copy constraint (<20 words, max 3 lines) */}
-              <Reveal
-                immediate
-                delay={0.16}
+              <StaggerItem
                 as="p"
                 className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-muted-foreground leading-relaxed"
               >
                 Transform raw resume bullets into an interactive, recruiter-vetted portfolio and deploy to Vercel in minutes with private BYOK AI.
-              </Reveal>
+              </StaggerItem>
 
               {/* Action Buttons: 1 primary + max 1 secondary */}
               {launchMode === "waitlist" ? (
-                <Reveal immediate delay={0.24} className="flex justify-center pt-3">
+                <StaggerItem className="flex justify-center pt-3">
                   <WaitlistCta id="waitlist" source="hero" buttonLabel="Join the waitlist" />
-                </Reveal>
+                </StaggerItem>
               ) : (
-                <Reveal immediate delay={0.24} className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+                <StaggerItem className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
                   <Magnetic>
                     <Button
                       asChild
@@ -555,11 +532,11 @@ export function HomePage() {
                       Upload my resume
                     </Link>
                   </Button>
-                </Reveal>
+                </StaggerItem>
               )}
 
               {/* Trust & Proof Bar: Placed directly under CTAs, honest claims only, no invented stats */}
-              <Reveal immediate delay={0.32} className="pt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-muted-foreground">
+              <StaggerItem className="pt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Clock className="size-4 text-accent" />
                   <span className="font-medium">Live in minutes, not weeks</span>
@@ -579,8 +556,8 @@ export function HomePage() {
                   <ExternalLink className="size-4 text-accent" />
                   <span>See real portfolios built with Shipfolio</span>
                 </Link>
-              </Reveal>
-            </div>
+              </StaggerItem>
+            </StaggerGroup>
 
             {/* Section 2: Real Portfolio Preview — an actual Shipfolio output, not a mockup */}
             <Reveal delay={0.2} y={32} className="mx-auto mt-12 w-full max-w-5xl space-y-3">

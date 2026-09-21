@@ -23,27 +23,17 @@ interface RevealProps extends Omit<HTMLMotionProps<"div">, "as"> {
   x?: number;
   /** Renders as this HTML tag instead of a div, e.g. "section". Preserves semantics/SEO. */
   as?: MotionTag;
-  /**
-   * Animate on mount instead of waiting for a viewport intersection. Use this
-   * for anything guaranteed to already be in the initial viewport (hero
-   * content) — whileInView's IntersectionObserver firing for an element
-   * that's already in view at hydration time is a race, not a guarantee,
-   * and was intermittently leaving hero content stuck at opacity 0.
-   */
-  immediate?: boolean;
 }
 
 /** Fades + slides content in as it enters the viewport. Motivated by: storytelling (content arrives in scroll order). */
-export function Reveal({ children, delay = 0, y = 24, x = 0, as = "div", immediate = false, className, ...props }: RevealProps) {
+export function Reveal({ children, delay = 0, y = 24, x = 0, as = "div", className, ...props }: RevealProps) {
   const reduce = useReducedMotion();
   const MotionTag = MOTION_TAGS[as] as typeof motion.div;
-  const animateProps = immediate
-    ? { animate: { opacity: 1, y: 0, x: 0 } }
-    : { whileInView: { opacity: 1, y: 0, x: 0 }, viewport: { once: true, amount: 0.3 } };
   return (
     <MotionTag
       initial={reduce ? false : { opacity: 0, y, x }}
-      {...animateProps}
+      whileInView={{ opacity: 1, y: 0, x: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.6, delay, ease: EASE }}
       className={className}
       {...(props as HTMLMotionProps<"div">)}
@@ -63,22 +53,15 @@ const staggerItem: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
 };
 
-interface StaggerGroupProps extends HTMLMotionProps<"div"> {
-  /** Animate on mount instead of waiting for a viewport intersection — see Reveal's `immediate` doc. */
-  immediate?: boolean;
-}
-
 /** Orchestrates child StaggerItems into a sequence. Motivated by: hierarchy (guides the eye through related items in order). */
-export function StaggerGroup({ children, className, immediate = false, ...props }: StaggerGroupProps) {
+export function StaggerGroup({ children, className, ...props }: HTMLMotionProps<"div">) {
   const reduce = useReducedMotion();
-  const animateProps = immediate
-    ? { animate: "show" }
-    : { whileInView: "show", viewport: { once: true, amount: 0.2 } };
   return (
     <motion.div
       variants={staggerContainer}
       initial={reduce ? false : "hidden"}
-      {...animateProps}
+      whileInView="show"
+      viewport={{ once: true, amount: 0.2 }}
       className={className}
       {...props}
     >
