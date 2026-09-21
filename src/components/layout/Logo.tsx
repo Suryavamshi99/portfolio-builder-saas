@@ -23,7 +23,7 @@ export function Logo({ className = "", showWordmark = true, size = "md" }: LogoP
     <div className={`inline-flex items-center gap-2.5 font-bold tracking-tight select-none ${className}`}>
       {/* Modern geometric Shipfolio icon mark */}
       <div
-        className={`relative flex ${iconSizes[size]} items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-400 text-white shadow-md shadow-emerald-500/25 ring-1 ring-white/20 transition-transform group-hover:scale-105`}
+        className={`relative flex ${iconSizes[size]} items-center justify-center rounded-xl bg-gradient-to-tr from-[#2A46D8] via-[#3457E8] to-[#5B8CFF] text-white shadow-md shadow-[#3457E8]/25 ring-1 ring-white/20 transition-transform group-hover:scale-105`}
         aria-hidden="true"
       >
         <svg

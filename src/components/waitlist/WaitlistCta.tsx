@@ -54,10 +54,10 @@ export function WaitlistCta({
     return (
       <div
         id={id}
-        className={`flex items-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 ${className ?? ""}`}
+        className={`flex items-center gap-2 text-sm font-medium text-success ${className ?? ""}`}
       >
         <CheckCircle2 className="size-4 shrink-0" />
-        You're on the list — we'll email you when it's ready.
+        You're on the list, we'll email you when it's ready.
       </div>
     );
   }

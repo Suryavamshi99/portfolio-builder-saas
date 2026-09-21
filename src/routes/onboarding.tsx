@@ -535,7 +535,7 @@ function OnboardingWizard() {
           <>
             <CardContent className="flex flex-col items-center gap-6 py-12 text-center relative overflow-hidden">
               <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-0 opacity-20 blur-3xl">
-                <FluidOrb size={260} color="#10B981" />
+                <FluidOrb size={260} color="#3457E8" />
               </div>
 
               <div className="relative z-10 flex flex-col items-center gap-4">
@@ -634,7 +634,7 @@ function OnboardingWizard() {
               {generating && (
                 <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-2xl border border-accent/40 bg-accent/5 p-8 text-center shadow-lg">
                   <div className="relative">
-                    <FluidOrb size={170} color="#10B981" className="shadow-2xl ring-4 ring-accent/20" />
+                    <FluidOrb size={170} color="#3457E8" className="shadow-2xl ring-4 ring-accent/20" />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <Sparkles className="size-8 text-white drop-shadow-md animate-pulse" />
                     </div>

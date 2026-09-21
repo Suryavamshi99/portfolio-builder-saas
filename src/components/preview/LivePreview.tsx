@@ -101,7 +101,7 @@ export function LivePreview({ content }: LivePreviewProps) {
                     />
                   ) : (
                     <div className="relative size-20 rounded-full overflow-hidden border border-accent/30 shadow-xs flex items-center justify-center bg-accent/10">
-                      <FluidOrb size={80} color="#10B981" />
+                      <FluidOrb size={80} color="#3457E8" />
                     </div>
                   )}
                   <div className="space-y-1">

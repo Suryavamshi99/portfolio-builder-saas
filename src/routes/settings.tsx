@@ -206,7 +206,7 @@ function SettingsContent() {
 
       <Card className="relative overflow-hidden border-border/80 bg-card rounded-2xl shadow-xs">
         <div className="pointer-events-none absolute -right-10 -top-10 -z-0 opacity-20 blur-2xl">
-          <FluidOrb size={180} color="#10B981" />
+          <FluidOrb size={180} color="#3457E8" />
         </div>
 
         <CardHeader className="relative z-10">

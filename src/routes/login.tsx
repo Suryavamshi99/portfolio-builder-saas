@@ -100,7 +100,7 @@ function LoginRoute() {
     <div className="relative mx-auto flex min-h-[80vh] w-full max-w-md flex-col justify-center px-4 py-12">
       {/* Ambient FluidOrb Glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 opacity-35 dark:opacity-20 blur-3xl">
-        <FluidOrb size={380} color="#10B981" />
+        <FluidOrb size={380} color="#3457E8" />
       </div>
 
       <div className="mb-6">

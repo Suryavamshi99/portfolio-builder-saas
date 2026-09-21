@@ -18,7 +18,7 @@ function NotFoundComponent() {
   return (
     <div className="relative flex min-h-[65vh] items-center justify-center px-4 overflow-hidden">
       <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 opacity-25 blur-3xl">
-        <FluidOrb size={300} color="#10B981" />
+        <FluidOrb size={300} color="#3457E8" />
       </div>
       <div className="max-w-md text-center space-y-3">
         <h1 className="text-7xl font-black tracking-tight text-accent">404</h1>
@@ -68,7 +68,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and private BYOK AI.",
       },
-      { name: "theme-color", content: "#10B981" },
+      { name: "theme-color", content: "#3457E8" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
