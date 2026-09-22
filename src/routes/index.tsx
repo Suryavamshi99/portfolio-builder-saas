@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Logo } from "@/components/layout/Logo";
 import { FluidOrb } from "@/components/ui/fluid-orb";
-import { ScrollRevealOrb } from "@/components/hero/ScrollRevealOrb";
+import { HeroOrbIntro } from "@/components/hero/HeroOrbIntro";
 import { Integration, VisualContainer } from "@/components/ui/integration-card";
 import { Reveal, StaggerGroup, StaggerItem, Magnetic } from "@/components/motion/reveal";
 import { motion, AnimatePresence } from "motion/react";
@@ -439,14 +439,14 @@ export function HomePage() {
             }}
           />
 
-          {/* Section 1: Hero — scroll-reveal orb (see ScrollRevealOrb.tsx).
+          {/* Section 1: Hero — autoplaying orb intro (see HeroOrbIntro.tsx).
               Fixed dark/light palette independent of the site's light/dark
-              toggle: the orb is a light stage early in the scroll, but by
-              the time content fades in (progress > 0.42) it's grown to
-              cover the frame with its own dark navy surface, so the
-              content below is styled for that dark backdrop specifically,
-              not the theme tokens used everywhere else on the page. */}
-          <ScrollRevealOrb>
+              toggle: the orb starts as a light stage, but by the time
+              content fades in it's grown to cover the frame with its own
+              dark navy surface, so the content below is styled for that
+              dark backdrop specifically, not the theme tokens used
+              everywhere else on the page. */}
+          <HeroOrbIntro>
             <div className="mx-auto max-w-4xl space-y-6">
               {/* Eyebrow: exactly 1 allowed for this section family */}
               <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
@@ -550,7 +550,7 @@ export function HomePage() {
                 </Link>
               </div>
             </div>
-          </ScrollRevealOrb>
+          </HeroOrbIntro>
 
           {/* Section 2: Real Portfolio Preview — an actual Shipfolio output, not a mockup */}
           <section className="relative">
