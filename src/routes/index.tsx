@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Logo } from "@/components/layout/Logo";
 import { FluidOrb } from "@/components/ui/fluid-orb";
+import { ScrollRevealOrb } from "@/components/hero/ScrollRevealOrb";
 import { Integration, VisualContainer } from "@/components/ui/integration-card";
 import { Reveal, StaggerGroup, StaggerItem, Magnetic } from "@/components/motion/reveal";
 import { motion, AnimatePresence } from "motion/react";
@@ -438,31 +439,25 @@ export function HomePage() {
             }}
           />
 
-          {/* Section 1: Hero Section with Ambient FluidOrb Background */}
-          <section className="relative pt-6 sm:pt-12 pb-8 text-center flex flex-col items-center justify-center overflow-hidden sm:overflow-visible">
-            {/* Ambient FluidOrb WebGL Shader Canvas nestled behind Hero */}
-            <div className="pointer-events-none absolute left-1/2 -top-12 -translate-x-1/2 -z-10 flex items-center justify-center overflow-visible">
-              <FluidOrb
-                size={440}
-                color="#3457E8"
-                className="opacity-50 dark:opacity-35 blur-3xl transition-opacity duration-1000 scale-125"
-              />
-            </div>
-
-            <StaggerGroup className="mx-auto max-w-4xl space-y-6">
+          {/* Section 1: Hero — scroll-reveal orb (see ScrollRevealOrb.tsx).
+              Fixed dark/light palette independent of the site's light/dark
+              toggle: the orb is a light stage early in the scroll, but by
+              the time content fades in (progress > 0.42) it's grown to
+              cover the frame with its own dark navy surface, so the
+              content below is styled for that dark backdrop specifically,
+              not the theme tokens used everywhere else on the page. */}
+          <ScrollRevealOrb>
+            <div className="mx-auto max-w-4xl space-y-6">
               {/* Eyebrow: exactly 1 allowed for this section family */}
-              <StaggerItem className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
+              <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
                 <Sparkles className="size-3.5 text-accent" />
                 <span>AI Portfolio Builder for Developers</span>
                 <span className="h-3 w-px bg-accent/30" />
                 <span className="font-mono text-[11px] font-normal opacity-90">100% BYOK</span>
-              </StaggerItem>
+              </div>
 
               {/* Display Headline: Max 2 lines at desktop, tight tracking */}
-              <StaggerItem
-                as="h1"
-                className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl text-foreground leading-[1.08]"
-              >
+              <h1 className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl text-white leading-[1.08]">
                 This portfolio builder gets you{" "}
                 <span className="relative inline-block text-accent">
                   <AnimatePresence mode="wait">
@@ -491,23 +486,20 @@ export function HomePage() {
                     />
                   </svg>
                 </span>
-              </StaggerItem>
+              </h1>
 
               {/* Subtext: Strict copy constraint (<20 words, max 3 lines) */}
-              <StaggerItem
-                as="p"
-                className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-muted-foreground leading-relaxed"
-              >
+              <p className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-white/70 leading-relaxed">
                 Transform raw resume bullets into an interactive, recruiter-vetted portfolio and deploy to Vercel in minutes with private BYOK AI.
-              </StaggerItem>
+              </p>
 
               {/* Action Buttons: 1 primary + max 1 secondary */}
               {launchMode === "waitlist" ? (
-                <StaggerItem className="flex justify-center pt-3">
+                <div className="flex justify-center pt-3">
                   <WaitlistCta id="waitlist" source="hero" buttonLabel="Join the waitlist" />
-                </StaggerItem>
+                </div>
               ) : (
-                <StaggerItem className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+                <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
                   <Magnetic>
                     <Button
                       asChild
@@ -532,11 +524,11 @@ export function HomePage() {
                       Upload my resume
                     </Link>
                   </Button>
-                </StaggerItem>
+                </div>
               )}
 
               {/* Trust & Proof Bar: Placed directly under CTAs, honest claims only, no invented stats */}
-              <StaggerItem className="pt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-muted-foreground">
+              <div className="pt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-white/80">
                 <div className="flex items-center gap-2">
                   <Clock className="size-4 text-accent" />
                   <span className="font-medium">Live in minutes, not weeks</span>
@@ -551,15 +543,17 @@ export function HomePage() {
                   to="/"
                   hash="portfolios"
                   hashScrollIntoView
-                  className="flex items-center gap-2 font-medium hover:text-foreground"
+                  className="flex items-center gap-2 font-medium hover:text-white"
                 >
                   <ExternalLink className="size-4 text-accent" />
                   <span>See real portfolios built with Shipfolio</span>
                 </Link>
-              </StaggerItem>
-            </StaggerGroup>
+              </div>
+            </div>
+          </ScrollRevealOrb>
 
-            {/* Section 2: Real Portfolio Preview — an actual Shipfolio output, not a mockup */}
+          {/* Section 2: Real Portfolio Preview — an actual Shipfolio output, not a mockup */}
+          <section className="relative">
             <Reveal delay={0.2} y={32} className="mx-auto mt-12 w-full max-w-5xl space-y-3">
               <div className="flex items-center justify-between px-2 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground flex items-center gap-1.5">
