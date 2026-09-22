@@ -27,6 +27,19 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 function OrbAtmosphere() {
   return (
     <>
+      {/* Same dot-grid texture used behind the rest of the page (see the
+          fixed layer in index.tsx), but fixed-white here rather than
+          theme-linked — this stage has its own palette independent of
+          light/dark mode, and its own opaque background would otherwise
+          hide the page's version of this texture completely. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
       <div className="pointer-events-none absolute -left-10 -top-10 size-24 rounded-full bg-[rgba(50,70,90,0.25)] blur-2xl" />
       <div className="pointer-events-none absolute -right-10 top-5 size-24 rounded-full bg-[rgba(50,70,90,0.25)] blur-2xl" />
       <div className="pointer-events-none absolute bottom-5 left-8 size-24 rounded-full bg-[rgba(50,70,90,0.25)] blur-2xl" />
