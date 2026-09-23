@@ -447,7 +447,7 @@ export function HomePage() {
               dark backdrop specifically, not the theme tokens used
               everywhere else on the page. */}
           <HeroOrbIntro>
-            <div className="mx-auto max-w-4xl space-y-6">
+            <div className="mx-auto max-w-5xl space-y-6">
               {/* Eyebrow: exactly 1 allowed for this section family */}
               <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
                 <Sparkles className="size-3.5 text-accent" />
@@ -456,10 +456,16 @@ export function HomePage() {
                 <span className="font-mono text-[11px] font-normal opacity-90">100% BYOK</span>
               </div>
 
-              {/* Display Headline: Max 2 lines at desktop, tight tracking */}
-              <h1 className="text-4xl font-black tracking-tight sm:text-6xl md:text-7xl text-white leading-[1.08]">
-                This portfolio builder gets you{" "}
-                <span className="relative inline-block text-accent">
+              {/* Display Headline: exactly 2 lines — fixed phrase, then the
+                  rotating word on its own line. Forced with block spans
+                  (not a natural wrap) so the line count can't drift when
+                  the rotating word's length changes. */}
+              <h1
+                className="text-3xl font-black tracking-tight text-white leading-[1.12] drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)] sm:text-5xl sm:leading-[1.1] md:text-6xl lg:text-7xl"
+                style={{ textWrap: "balance" }}
+              >
+                <span className="block">This portfolio builder gets you</span>
+                <span className="relative mt-1 inline-block text-accent sm:mt-2">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={ROTATING_WORDS[wordIndex]}
@@ -489,7 +495,7 @@ export function HomePage() {
               </h1>
 
               {/* Subtext: Strict copy constraint (<20 words, max 3 lines) */}
-              <p className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-white/70 leading-relaxed">
+              <p className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-white/80 leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
                 Transform raw resume bullets into an interactive, recruiter-vetted portfolio and deploy to Vercel in minutes with private BYOK AI.
               </p>
 

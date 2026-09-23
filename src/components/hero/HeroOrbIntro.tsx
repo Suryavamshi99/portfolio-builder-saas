@@ -43,7 +43,7 @@ export function HeroOrbIntro({ children }: { children: React.ReactNode }) {
 
   return (
     <section className="relative isolate left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center overflow-hidden bg-[#06101c]">
-      <CinematicHeroVideo scrim="center" scrimOpacity={0.6} />
+      <CinematicHeroVideo scrim="center" scrimOpacity={0.7} />
       <DotGrid />
 
       <motion.div
@@ -54,7 +54,7 @@ export function HeroOrbIntro({ children }: { children: React.ReactNode }) {
           delay: reduceMotion ? 0 : CONTENT_DELAY_S,
           ease: EASE,
         }}
-        className="pointer-events-auto relative z-10 w-[85%] max-w-2xl text-center"
+        className="pointer-events-auto relative z-10 w-[90%] max-w-5xl text-center"
       >
         {children}
       </motion.div>

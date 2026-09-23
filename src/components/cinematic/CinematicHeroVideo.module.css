@@ -57,8 +57,8 @@
 }
 .layer[data-scrim="center"] .scrim {
   background:
-    radial-gradient(ellipse 70% 60% at 50% 50%, var(--cch-s) 0%, transparent 75%),
-    linear-gradient(to bottom, transparent 55%, var(--cch-s-strong) 100%);
+    radial-gradient(ellipse 85% 70% at 50% 50%, var(--cch-s) 0%, transparent 78%),
+    linear-gradient(to bottom, var(--cch-s-strong) 0%, transparent 24%, transparent 55%, var(--cch-s-strong) 100%);
 }
 .layer[data-scrim="left"] .scrim {
   background: linear-gradient(to right, var(--cch-s-strong) 0%, var(--cch-s) 40%, transparent 75%),
