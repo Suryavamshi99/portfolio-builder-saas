@@ -448,12 +448,17 @@ export function HomePage() {
               everywhere else on the page. */}
           <HeroOrbIntro>
             <div className="mx-auto max-w-5xl space-y-6">
-              {/* Eyebrow: exactly 1 allowed for this section family */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent backdrop-blur-md shadow-xs">
+              {/* Eyebrow: exactly 1 allowed for this section family.
+                  Opaque dark surface + white text (not accent-on-accent/10)
+                  so it stays legible over the busy video background;
+                  "100% BYOK" gets its own solid accent chip for hierarchy. */}
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/45 px-4 py-1.5 text-xs font-semibold text-white shadow-lg shadow-black/30 backdrop-blur-xl">
                 <Sparkles className="size-3.5 text-accent" />
                 <span>AI Portfolio Builder for Developers</span>
-                <span className="h-3 w-px bg-accent/30" />
-                <span className="font-mono text-[11px] font-normal opacity-90">100% BYOK</span>
+                <span className="h-3 w-px bg-white/20" />
+                <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide text-accent-foreground">
+                  100% BYOK
+                </span>
               </div>
 
               {/* Display Headline: exactly 2 lines — fixed phrase, then the
@@ -465,31 +470,44 @@ export function HomePage() {
                 style={{ textWrap: "balance" }}
               >
                 <span className="block">This portfolio builder gets you</span>
-                <span className="relative mt-1 inline-block text-accent sm:mt-2">
+                <span className="relative mt-1 inline-block sm:mt-2">
+                  {/* Soft glow behind the word — gives it presence instead of
+                      sitting flat against the video like plain colored text. */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 -z-10 scale-150 rounded-full bg-accent/40 blur-2xl"
+                  />
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={ROTATING_WORDS[wordIndex]}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                      className="inline-block"
+                      initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
+                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      className="inline-block bg-clip-text text-transparent [background-image:var(--hero-word-gradient)]"
                     >
                       {ROTATING_WORDS[wordIndex]}
                     </motion.span>
                   </AnimatePresence>
                   <svg
-                    className="absolute -bottom-2 left-0 w-full text-accent/40"
+                    className="absolute -bottom-2 left-0 w-full text-accent/60"
                     viewBox="0 0 250 12"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path
-                      d="M2 9.5C65 2 185 2 248 9.5"
-                      stroke="currentColor"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                    />
+                    <AnimatePresence mode="wait">
+                      <motion.path
+                        key={`${ROTATING_WORDS[wordIndex]}-underline`}
+                        d="M2 9.5C65 2 185 2 248 9.5"
+                        stroke="currentColor"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+                      />
+                    </AnimatePresence>
                   </svg>
                 </span>
               </h1>

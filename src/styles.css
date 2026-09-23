@@ -134,4 +134,17 @@ a[role="button"]:active:not(:disabled) {
   scrollbar-width: none;
 }
 
+/* Hero rotating-word treatment — component token built from the --accent
+   primitive (three-layer token pattern: primitive -> semantic -> component).
+   A subtle shimmer gradient instead of a flat fill, used with
+   background-clip: text on the hero's rotating headline word. */
+:root {
+  --hero-word-gradient: linear-gradient(
+    90deg,
+    rgb(var(--accent)) 0%,
+    color-mix(in srgb, rgb(var(--accent)) 45%, white) 50%,
+    rgb(var(--accent)) 100%
+  );
+}
+
 
