@@ -1,57 +1,57 @@
 {
   "version": 1,
   "slot": "hero",
-  "generatedAt": "2026-09-23T06:58:40.829Z",
+  "generatedAt": "2026-09-23T12:01:23.194Z",
   "baseUrl": "/media/hero/",
-  "model": null,
-  "engine": null,
-  "generationId": null,
+  "model": "veo-3.x (manual, Gemini subscription — not the billed API)",
+  "engine": "veo (via Gemini app)",
+  "generationId": "2026-09-23_12-01-17",
   "concept": "design",
-  "duration": 9.29,
+  "duration": 9.25,
   "sources": {
     "desktop": [
       {
-        "src": "/media/hero/hero-desktop.f8fa4c0d.webm",
+        "src": "/media/hero/hero-desktop.a6b9dc99.webm",
         "type": "video/webm; codecs=\"vp9\"",
         "width": 1280,
         "height": 720,
-        "bytes": 976058
+        "bytes": 672717
       },
       {
-        "src": "/media/hero/hero-desktop.8c2fed2d.mp4",
+        "src": "/media/hero/hero-desktop.3098eff4.mp4",
         "type": "video/mp4; codecs=\"avc1.640028\"",
         "width": 1280,
         "height": 720,
-        "bytes": 1515434
+        "bytes": 1094074
       }
     ],
     "mobile": [
       {
-        "src": "/media/hero/hero-mobile.f5ae2967.webm",
+        "src": "/media/hero/hero-mobile.1fc4a661.webm",
         "type": "video/webm; codecs=\"vp9\"",
         "width": 406,
         "height": 722,
-        "bytes": 404255
+        "bytes": 232046
       },
       {
-        "src": "/media/hero/hero-mobile.50532817.mp4",
+        "src": "/media/hero/hero-mobile.b2d713ca.mp4",
         "type": "video/mp4; codecs=\"avc1.640028\"",
         "width": 406,
         "height": 722,
-        "bytes": 483140
+        "bytes": 267147
       }
     ]
   },
   "posters": {
     "desktop": [
       {
-        "src": "/media/hero/hero-desktop-poster-1280.57f2d5a1.jpg",
+        "src": "/media/hero/hero-desktop-poster-1280.5814b254.jpg",
         "type": "image/jpeg",
         "width": 1280,
         "height": 720
       },
       {
-        "src": "/media/hero/hero-desktop-poster-768.bf2dd946.jpg",
+        "src": "/media/hero/hero-desktop-poster-768.c9af876f.jpg",
         "type": "image/jpeg",
         "width": 768,
         "height": 432
@@ -59,14 +59,14 @@
     ],
     "mobile": [
       {
-        "src": "/media/hero/hero-mobile-poster-406.49052d6b.jpg",
+        "src": "/media/hero/hero-mobile-poster-406.d8431990.jpg",
         "type": "image/jpeg",
         "width": 406,
         "height": 722
       }
     ]
   },
-  "placeholder": "data:image/jpeg;base64,/9j//gAPTGF2YzYzLjEuMTAyAP/bAEMACAwMDgwOEBAQEBAQExITFBQUExMTExQUFBUVFRkZGRUVFRQUFRUYGBkZGxwbGhoZGhwcHh4eJCQiIioqKzMzPv/EAGAAAAMBAQEBAAAAAAAAAAAAAAMABQQBAgcBAQEBAQEAAAAAAAAAAAAAAAADAQIEEAACAQUBAQEAAAAAAAAAAAAAAgEDQhFxQTEhchEBAQEAAAAAAAAAAAAAAAAAAAER/8AAEQgAEgAgAwESAAISAAMSAP/aAAwDAQACEQMRAD8A+KoDiZ6UY89dKa1ME/JXU0sUUGqGDJTXCeO3pvoKZFckaM1uha3RoAPR6ABqd2pO07vzIAZn8F/DkbGx/9k=",
+  "placeholder": "data:image/jpeg;base64,/9j//gAPTGF2YzYzLjEuMTAyAP/bAEMACAwMDgwOEBAQEBAQExITFBQUExMTExQUFBUVFRkZGRUVFRQUFRUYGBkZGxwbGhoZGhwcHh4eJCQiIioqKzMzPv/EAGUAAAICAwEAAAAAAAAAAAAAAAAEAwUBBgIHAQEAAwEAAAAAAAAAAAAAAAAABAIDARAAAgICAgMBAQAAAAAAAAAAAQACAxFBBDEScYEiIREBAQEBAQAAAAAAAAAAAAAAAAERAhL/wAARCAASACADARIAAhIAAxIA/9oADAMBAAIRAxEAPwDxuogdjLBCUs/wu0ciPVrGw12nP5ifjX1cm3jyPiRl39MKjXnUiHrrTsEe2vt5FvIlmRyR6Dv6YI85xIpSw5LxPyD21WuSLTC2021FgzHopHovQECIBnSaQD//2Q==",
   "focal": {
     "x": 0.5,
     "y": 0.5

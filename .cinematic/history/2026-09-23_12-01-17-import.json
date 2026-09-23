@@ -1,0 +1,17 @@
+{
+  "id": "2026-09-23_12-01-17",
+  "aspects": [
+    "16:9"
+  ],
+  "prompts": {
+    "landscape": "A single continuous, unbroken cinematic shot for the background of a premium website hero.\nSubject: a scattered field of thin rectangular glass and light tiles of varying sizes drifting slowly through a dark void, sliding into place one by one and aligning edge to edge until they lock into a clean, structured grid — reading, from a distance, as the organised layout of a finished portfolio site taking shape, built from light and glass rather than any literal screen, set in a vast dark studio void, the camera slowly settling to a calm, front-on view as the tiles lock into their final grid, like looking at a wall of softly lit panels.\nCamera: a slow, continuous dolly with a gentle parallax arc; locked-off smoothness, no shake, no cuts, no zooms that reset; slow, deliberate, luxurious motion.\nLighting and colour: deep azure and near-black glass, with a single warm muted-amber glow held inside one featured tile near the center. Rich cinematic contrast with deep, clean blacks and controlled highlights; soft volumetric haze, gentle bloom on highlights, subtle film grain.\nLens: large-format cinema camera, 35mm lens, shallow depth of field with smooth bokeh.\nMood: precise and orderly — scattered pieces resolving, tile by tile, into one clean, deliberate structure; the quiet satisfaction of a portfolio finally taking shape; confident and premium.\nComposition: Keep the central area of the frame calm, softly lit and low in detail so a centred headline stays legible; let the richest detail and motion live toward the edges and the lower third.\nMotion is continuous and cyclical so the ending closely resembles the opening composition, suitable for a seamless loop.\nPurely abstract and atmospheric: no people, no faces, no hands, no text, no letters, no logos, no user interface, no screens, no watermarks.\nAudio: near-silent soft ambient room tone, no music, no dialogue."
+  },
+  "raw": {
+    "landscape": ".cinematic/raw/2026-09-23_12-01-17-landscape.mp4"
+  },
+  "engine": "veo (via Gemini app)",
+  "model": "veo-3.x (manual, Gemini subscription — not the billed API)",
+  "modelSource": "manual-import",
+  "importedAt": "2026-09-23T12:01:17.832Z",
+  "sourceFile": "../Desktop/gemini_generated_video_0d820de5.mp4"
+}

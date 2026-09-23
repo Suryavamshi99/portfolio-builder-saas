@@ -1,9 +1,9 @@
 A single continuous, unbroken cinematic shot for the background of a premium website hero.
-Subject: scattered shards of translucent glass drifting slowly through a vast dark void, gradually converging, aligning and fusing into a single smooth, faceted sphere that holds a warm inner light at its core, set in a vast, quiet dark studio void, weightless, no floor or horizon visible.
-Camera: an almost imperceptibly slow forward dolly; locked-off smoothness, no shake, no cuts, no zooms that reset; extremely slow, meditative motion.
-Lighting and colour: deep azure and near-black glass, with a single warm muted-amber glow held inside the forming sphere. Soft, low-contrast grading with gentle highlights and softened blacks; soft volumetric haze, gentle bloom on highlights, subtle film grain.
+Subject: a scattered field of thin rectangular glass and light tiles of varying sizes drifting slowly through a dark void, sliding into place one by one and aligning edge to edge until they lock into a clean, structured grid — reading, from a distance, as the organised layout of a finished portfolio site taking shape, built from light and glass rather than any literal screen, set in a vast dark studio void, the camera slowly settling to a calm, front-on view as the tiles lock into their final grid, like looking at a wall of softly lit panels.
+Camera: a slow, continuous dolly with a gentle parallax arc; locked-off smoothness, no shake, no cuts, no zooms that reset; slow, deliberate, luxurious motion.
+Lighting and colour: deep azure and near-black glass, with a single warm muted-amber glow held inside one featured tile near the center. Rich cinematic contrast with deep, clean blacks and controlled highlights; soft volumetric haze, gentle bloom on highlights, subtle film grain.
 Lens: large-format cinema camera, 35mm lens, shallow depth of field with smooth bokeh.
-Mood: precise and assured, quietly ambitious — the calm of raw, scattered material resolving into one finished, premium form; calm and restrained.
+Mood: precise and orderly — scattered pieces resolving, tile by tile, into one clean, deliberate structure; the quiet satisfaction of a portfolio finally taking shape; confident and premium.
 Composition: Keep the central area of the frame calm, softly lit and low in detail so a centred headline stays legible; let the richest detail and motion live toward the edges and the lower third.
 Motion is continuous and cyclical so the ending closely resembles the opening composition, suitable for a seamless loop.
 Purely abstract and atmospheric: no people, no faces, no hands, no text, no letters, no logos, no user interface, no screens, no watermarks.
