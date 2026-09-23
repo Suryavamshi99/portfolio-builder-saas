@@ -1,0 +1,10 @@
+{
+  "concept": "scattered shards of translucent glass drifting slowly through a vast dark void, gradually converging, aligning and fusing into a single smooth, faceted sphere that holds a warm inner light at its core",
+  "world": "a vast, quiet dark studio void, weightless, no floor or horizon visible",
+  "palette": "deep azure and near-black glass, with a single warm muted-amber glow held inside the forming sphere",
+  "mood": "precise and assured, quietly ambitious — the calm of raw, scattered material resolving into one finished, premium form",
+  "textAlign": "center",
+  "intensity": "subtle",
+  "dark": true,
+  "_help": "Set any field to override the auto-derived creative direction, then run `prompt --force`."
+}

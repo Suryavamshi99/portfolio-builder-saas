@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "slot": "hero",
+  "generatedAt": "2026-09-23T06:58:40.829Z",
+  "baseUrl": "/media/hero/",
+  "model": null,
+  "engine": null,
+  "generationId": null,
+  "concept": "design",
+  "duration": 9.29,
+  "sources": {
+    "desktop": [
+      {
+        "src": "/media/hero/hero-desktop.f8fa4c0d.webm",
+        "type": "video/webm; codecs=\"vp9\"",
+        "width": 1280,
+        "height": 720,
+        "bytes": 976058
+      },
+      {
+        "src": "/media/hero/hero-desktop.8c2fed2d.mp4",
+        "type": "video/mp4; codecs=\"avc1.640028\"",
+        "width": 1280,
+        "height": 720,
+        "bytes": 1515434
+      }
+    ],
+    "mobile": [
+      {
+        "src": "/media/hero/hero-mobile.f5ae2967.webm",
+        "type": "video/webm; codecs=\"vp9\"",
+        "width": 406,
+        "height": 722,
+        "bytes": 404255
+      },
+      {
+        "src": "/media/hero/hero-mobile.50532817.mp4",
+        "type": "video/mp4; codecs=\"avc1.640028\"",
+        "width": 406,
+        "height": 722,
+        "bytes": 483140
+      }
+    ]
+  },
+  "posters": {
+    "desktop": [
+      {
+        "src": "/media/hero/hero-desktop-poster-1280.57f2d5a1.jpg",
+        "type": "image/jpeg",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "src": "/media/hero/hero-desktop-poster-768.bf2dd946.jpg",
+        "type": "image/jpeg",
+        "width": 768,
+        "height": 432
+      }
+    ],
+    "mobile": [
+      {
+        "src": "/media/hero/hero-mobile-poster-406.49052d6b.jpg",
+        "type": "image/jpeg",
+        "width": 406,
+        "height": 722
+      }
+    ]
+  },
+  "placeholder": "data:image/jpeg;base64,/9j//gAPTGF2YzYzLjEuMTAyAP/bAEMACAwMDgwOEBAQEBAQExITFBQUExMTExQUFBUVFRkZGRUVFRQUFRUYGBkZGxwbGhoZGhwcHh4eJCQiIioqKzMzPv/EAGAAAAMBAQEBAAAAAAAAAAAAAAMABQQBAgcBAQEBAQEAAAAAAAAAAAAAAAADAQIEEAACAQUBAQEAAAAAAAAAAAAAAgEDQhFxQTEhchEBAQEAAAAAAAAAAAAAAAAAAAER/8AAEQgAEgAgAwESAAISAAMSAP/aAAwDAQACEQMRAD8A+KoDiZ6UY89dKa1ME/JXU0sUUGqGDJTXCeO3pvoKZFckaM1uha3RoAPR6ABqd2pO07vzIAZn8F/DkbGx/9k=",
+  "focal": {
+    "x": 0.5,
+    "y": 0.5
+  },
+  "width": 1280,
+  "height": 720
+}

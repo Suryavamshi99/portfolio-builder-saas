@@ -14,3 +14,9 @@ dist-ssr
 !.env.example
 
 .DS_Store
+
+# gemini-cinematic-web: secrets + raw generation artifacts
+.env
+.env*.local
+.cinematic/raw/
+.cinematic/tmp/

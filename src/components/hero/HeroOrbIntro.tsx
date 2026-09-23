@@ -1,85 +1,50 @@
 import * as React from "react";
 import { motion, useReducedMotion } from "motion/react";
+import CinematicHeroVideo from "@/components/cinematic/CinematicHeroVideo";
 
 /**
- * Autoplaying hero intro: a small "glass" orb grows to fill the screen and
- * the real hero content fades in over it, once, on mount — like a short
- * video, not tied to scroll. (An earlier version drove this off scroll
- * position instead, pinning the viewport for a 300vh section; the problem
- * with that wasn't the animation itself, it was that a first-time visitor
- * who doesn't scroll never sees the headline — the page just looks blank.
- * Autoplay fixes that directly, and needs less machinery: no sticky
- * pinning, no scroll listeners, no full-bleed breakout hack — this section
- * is just a normal h-screen block that scrolls away like any other.)
+ * Autoplaying hero intro: a cinematic background video (generated with
+ * Gemini/Veo via the gemini-cinematic-web skill — glass shards converging
+ * into a single lit sphere, matching the site's deep-azure/amber palette)
+ * plays behind the hero, and the real hero content fades in over it, once,
+ * on mount. Not tied to scroll — a first-time visitor who never scrolls
+ * still sees the headline immediately.
  *
- * The orb itself is plain CSS (layered radial-gradient + box-shadow, see
- * the .orb-* classes in styles.css) — not WebGL/three.js. An earlier
- * attempt at a similar visual via React Three Fiber was heavy and, per
- * direct feedback, ugly.
+ * CinematicHeroVideo itself handles LCP/CLS/perf: it server-renders a
+ * poster image first (the actual LCP element), only mounts <video> after
+ * load+idle, and skips the video payload entirely for reduced-motion,
+ * Save-Data or 2G. See src/components/cinematic/CinematicHeroVideo.tsx.
+ *
+ * This replaced an earlier plain-CSS "glass orb" (layered radial-gradient
+ * + box-shadow growing to fill the screen) that played the same beat with
+ * no video — kept as the deliberately simple predecessor before the
+ * cinematic video was generated from the site's own brand/copy.
  */
 
-const START_SIZE_PX = 140;
-const GROW_DURATION_S = 2.4;
-const CONTENT_DELAY_S = 1.1;
+const CONTENT_DELAY_S = 0.6;
 const CONTENT_DURATION_S = 1.3;
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-function OrbAtmosphere() {
+function DotGrid() {
   return (
-    <>
-      {/* Same dot-grid texture used behind the rest of the page (see the
-          fixed layer in index.tsx), but fixed-white here rather than
-          theme-linked — this stage has its own palette independent of
-          light/dark mode, and its own opaque background would otherwise
-          hide the page's version of this texture completely. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-      <div className="pointer-events-none absolute -left-10 -top-10 size-24 rounded-full bg-[rgba(50,70,90,0.25)] blur-2xl" />
-      <div className="pointer-events-none absolute -right-10 top-5 size-24 rounded-full bg-[rgba(50,70,90,0.25)] blur-2xl" />
-      <div className="pointer-events-none absolute bottom-5 left-8 size-24 rounded-full bg-[rgba(50,70,90,0.25)] blur-2xl" />
-      <div className="pointer-events-none absolute left-0 top-1/2 h-px w-full bg-white/15" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px bg-white/15" />
-    </>
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-[1] opacity-[0.12]"
+      style={{
+        backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
+      }}
+    />
   );
 }
 
 export function HeroOrbIntro({ children }: { children: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
-  const [maxSize, setMaxSize] = React.useState(1200);
-
-  React.useEffect(() => {
-    const update = () => setMaxSize(Math.max(window.innerWidth, window.innerHeight) * 1.45);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const scaleTarget = maxSize / START_SIZE_PX;
 
   return (
-    <section
-      className="relative left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #b4c0c5, #c3cdd1)" }}
-    >
-      <OrbAtmosphere />
-
-      <motion.div
-        initial={{ scale: reduceMotion ? scaleTarget : 1 }}
-        animate={{ scale: scaleTarget }}
-        transition={{ duration: reduceMotion ? 0 : GROW_DURATION_S, ease: EASE }}
-        className="pointer-events-none absolute left-1/2 top-1/2 size-[140px] -translate-x-1/2 -translate-y-1/2 will-change-transform"
-      >
-        <div className="orb-surface relative size-full overflow-hidden rounded-full">
-          <div className="orb-light" />
-          <div className="orb-texture" />
-        </div>
-      </motion.div>
+    <section className="relative isolate left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center overflow-hidden bg-[#06101c]">
+      <CinematicHeroVideo scrim="center" scrimOpacity={0.6} />
+      <DotGrid />
 
       <motion.div
         initial={{ opacity: reduceMotion ? 1 : 0, scale: reduceMotion ? 1 : 0.75 }}

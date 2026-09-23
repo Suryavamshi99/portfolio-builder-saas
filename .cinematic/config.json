@@ -1,0 +1,26 @@
+{
+  "skill": "gemini-cinematic-web",
+  "appRoot": ".",
+  "framework": "vite-react",
+  "integration": "react",
+  "assetDir": "public/media/hero",
+  "baseUrl": "/media/hero/",
+  "componentPath": "src/components/cinematic/CinematicHeroVideo.tsx",
+  "manifestPath": "src/components/cinematic/hero-video.manifest.json",
+  "heroFile": "src/components/hero/HeroOrbIntro.tsx",
+  "engine": "veo",
+  "tier": "quality",
+  "model": null,
+  "resolution": "1080p",
+  "aspects": [
+    "16:9"
+  ],
+  "loop": "crossfade",
+  "focal": {
+    "x": 0.5,
+    "y": 0.5
+  },
+  "intensity": "subtle",
+  "promptHash": "db7d70b0bd2d",
+  "concept": "design"
+}

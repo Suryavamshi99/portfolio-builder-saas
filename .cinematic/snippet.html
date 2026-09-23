@@ -1,0 +1,17 @@
+<!-- gemini-cinematic-web: paste inside your existing hero <section>, keep your own content in .cch-content -->
+<link rel="stylesheet" href="/media/hero/cinematic-hero-video.css">
+<script type="module" src="/media/hero/cinematic-hero-video.js"></script>
+<section class="cch-hero" style="--cch-focal-x:50%;--cch-focal-y:50%">
+  <cinematic-hero-video class="cch-media" data-sources='{"desktop":[{"src":"/media/hero/hero-desktop.f8fa4c0d.webm","type":"video/webm; codecs=\"vp9\"","width":1280,"height":720,"bytes":976058},{"src":"/media/hero/hero-desktop.8c2fed2d.mp4","type":"video/mp4; codecs=\"avc1.640028\"","width":1280,"height":720,"bytes":1515434}],"mobile":[{"src":"/media/hero/hero-mobile.f5ae2967.webm","type":"video/webm; codecs=\"vp9\"","width":406,"height":722,"bytes":404255},{"src":"/media/hero/hero-mobile.50532817.mp4","type":"video/mp4; codecs=\"avc1.640028\"","width":406,"height":722,"bytes":483140}]}'>
+    <picture>
+      <source media="(max-aspect-ratio: 3/4)" type="image/webp" srcset="" sizes="100vw">
+      <source media="(max-aspect-ratio: 3/4)" srcset="/media/hero/hero-mobile-poster-406.49052d6b.jpg 406w" sizes="100vw">
+      <source type="image/webp" srcset="" sizes="100vw">
+      <img class="cch-poster" src="/media/hero/hero-desktop-poster-1280.57f2d5a1.jpg" srcset="/media/hero/hero-desktop-poster-1280.57f2d5a1.jpg 1280w, /media/hero/hero-desktop-poster-768.bf2dd946.jpg 768w" sizes="100vw" width="1280" height="720" alt="" fetchpriority="high" decoding="async" style="background-image:url(data:image/jpeg;base64,/9j//gAPTGF2YzYzLjEuMTAyAP/bAEMACAwMDgwOEBAQEBAQExITFBQUExMTExQUFBUVFRkZGRUVFRQUFRUYGBkZGxwbGhoZGhwcHh4eJCQiIioqKzMzPv/EAGAAAAMBAQEBAAAAAAAAAAAAAAMABQQBAgcBAQEBAQEAAAAAAAAAAAAAAAADAQIEEAACAQUBAQEAAAAAAAAAAAAAAgEDQhFxQTEhchEBAQEAAAAAAAAAAAAAAAAAAAER/8AAEQgAEgAgAwESAAISAAMSAP/aAAwDAQACEQMRAD8A+KoDiZ6UY89dKa1ME/JXU0sUUGqGDJTXCeO3pvoKZFckaM1uha3RoAPR6ABqd2pO07vzIAZn8F/DkbGx/9k=);background-size:cover">
+    </picture>
+  </cinematic-hero-video>
+  <div class="cch-scrim" aria-hidden="true"></div>
+  <div class="cch-content">
+    <!-- existing hero headline / copy / CTAs go here -->
+  </div>
+</section>
