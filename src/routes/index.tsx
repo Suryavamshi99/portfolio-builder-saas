@@ -690,7 +690,7 @@ export function HomePage() {
         </Reveal>
 
         {/* Section 4: AI Tuning Highlight — The Career Formulation (No Eyebrow) */}
-        <section className="mx-auto max-w-5xl space-y-10">
+        <section id="how-it-works" className="mx-auto max-w-5xl space-y-10 scroll-mt-20">
             <Reveal className="text-center space-y-3">
               <h2 className="text-3xl font-extrabold sm:text-4xl text-foreground tracking-tight">
                 How our AI elevates your resume into a portfolio
@@ -773,7 +773,7 @@ export function HomePage() {
           </section>
 
           {/* Section 4: Feature Bento Grid with Integrated FluidOrb (Eyebrow allowed: count 2) */}
-          <section className="mx-auto max-w-5xl space-y-10">
+          <section id="features" className="mx-auto max-w-5xl space-y-10 scroll-mt-20">
             <Reveal className="text-center space-y-3">
               <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                 <Layers className="size-3.5" />

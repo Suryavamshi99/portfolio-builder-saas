@@ -61,7 +61,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
         <div className="flex items-center gap-6">
           <Link
             to="/"
@@ -132,7 +132,41 @@ export function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Center column: marketing nav for guests only — fills the wide
+            empty gap logged-out visitors saw on desktop. Authenticated
+            users keep their existing nav in the left group untouched. */}
+        {!loading && !user ? (
+          <nav className="hidden items-center justify-center gap-1 md:flex">
+            <Link
+              to="/"
+              hash="how-it-works"
+              hashScrollIntoView
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              How it works
+            </Link>
+            <Link
+              to="/"
+              hash="features"
+              hashScrollIntoView
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              Features
+            </Link>
+            <Link
+              to="/"
+              hash="portfolios"
+              hashScrollIntoView
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              Portfolios
+            </Link>
+          </nav>
+        ) : (
+          <div />
+        )}
+
+        <div className="flex items-center gap-2 sm:gap-3 justify-self-end">
           <Button
             variant="ghost"
             size="icon"
