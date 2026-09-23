@@ -11,5 +11,7 @@
   },
   "engine": "veo (via Gemini app)",
   "model": "veo-3.x (manual, Gemini subscription — not the billed API)",
-  "modelSource": "manual-import"
+  "modelSource": "manual-import",
+  "importedAt": "2026-09-23T12:39:06.388Z",
+  "sourceFile": "../Desktop/gemini_generated_video_0d820de5_gwr_video_mvp.mp4"
 }
