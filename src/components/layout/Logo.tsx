@@ -4,9 +4,14 @@ interface LogoProps {
   className?: string;
   showWordmark?: boolean;
   size?: "sm" | "md" | "lg";
+  /** Override the "Ship" wordmark's color (defaults to text-foreground, a
+   *  theme token) — needed when the logo sits over content with its own
+   *  fixed palette, like a video background, rather than the site's own
+   *  light/dark background. The "folio" half always stays text-accent. */
+  wordmarkClassName?: string;
 }
 
-export function Logo({ className = "", showWordmark = true, size = "md" }: LogoProps) {
+export function Logo({ className = "", showWordmark = true, size = "md", wordmarkClassName = "text-foreground" }: LogoProps) {
   const iconSizes = {
     sm: "size-6",
     md: "size-7 sm:size-8",
@@ -66,7 +71,7 @@ export function Logo({ className = "", showWordmark = true, size = "md" }: LogoP
       </div>
 
       {showWordmark && (
-        <span className={`font-extrabold tracking-tight text-foreground ${textSizes[size]}`}>
+        <span className={`font-extrabold tracking-tight ${wordmarkClassName} ${textSizes[size]}`}>
           <span>Ship</span>
           <span className="text-accent">folio</span>
         </span>

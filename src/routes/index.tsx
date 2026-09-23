@@ -176,7 +176,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="space-y-16 py-2 sm:py-6">
+    <div className={user ? "space-y-16 py-2 sm:py-6" : "space-y-16 pb-2 sm:pb-6"}>
       {/* Vercel OAuth return banner */}
       {vercelJustConnected && (
         <Alert variant="success" className="border-success/40 bg-success/10">
@@ -445,8 +445,13 @@ export function HomePage() {
               content fades in it's grown to cover the frame with its own
               dark navy surface, so the content below is styled for that
               dark backdrop specifically, not the theme tokens used
-              everywhere else on the page. */}
-          <HeroOrbIntro>
+              everywhere else on the page.
+
+              -mt-8 cancels <main>'s own py-8 top padding (the outer wrapper
+              above already drops its top padding for guests) so the video
+              reaches all the way up to the header's bottom edge instead of
+              sitting behind a dead gap of plain page background. */}
+          <HeroOrbIntro className="-mt-8">
             <div className="mx-auto max-w-5xl space-y-6">
               {/* Eyebrow: exactly 1 allowed for this section family.
                   Opaque dark surface + white text (not accent-on-accent/10)

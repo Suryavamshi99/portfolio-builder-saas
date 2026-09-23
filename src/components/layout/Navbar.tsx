@@ -27,10 +27,26 @@ export function Navbar() {
 
   const [darkMode, setDarkMode] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
 
   React.useEffect(() => {
     setMobileMenuOpen(false);
   }, [currentPath]);
+
+  // The guest home page's hero is a full-bleed cinematic video that now
+  // reaches all the way up to the header (see index.tsx / HeroOrbIntro).
+  // While unscrolled there, the header goes transparent so it reads as
+  // floating over the video instead of a flat opaque bar sitting on top of
+  // it; past a small threshold it becomes the normal solid header so it
+  // stays legible over ordinary page content.
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const overHero = currentPath === "/" && !loading && !user && !scrolled;
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -60,7 +76,13 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
+    <header
+      className={`sticky top-0 z-40 w-full border-b transition-colors duration-300 ${
+        overHero
+          ? "border-transparent bg-transparent backdrop-blur-[2px]"
+          : "border-border/80 bg-background/90 backdrop-blur-md"
+      }`}
+    >
       <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
         <div className="flex items-center gap-6">
           <Link
@@ -68,10 +90,12 @@ export function Navbar() {
             className="group flex items-center gap-2 transition-opacity hover:opacity-90"
             aria-label="Shipfolio Home"
           >
-            <Logo size="sm" />
+            <Logo size="sm" wordmarkClassName={overHero ? "text-white" : "text-foreground"} />
             <Badge
               variant="secondary"
-              className="hidden lg:inline-flex text-[10px] uppercase font-mono tracking-wider text-muted-foreground"
+              className={`hidden lg:inline-flex text-[10px] uppercase font-mono tracking-wider transition-colors duration-300 ${
+                overHero ? "border-white/20 bg-white/10 text-white/90" : "text-muted-foreground"
+              }`}
             >
               AI Builder
             </Badge>
@@ -135,32 +159,27 @@ export function Navbar() {
         {/* Center column: marketing nav for guests only — fills the wide
             empty gap logged-out visitors saw on desktop. Authenticated
             users keep their existing nav in the left group untouched. */}
-        {!loading && !user ? (
+        {currentPath === "/" && !loading && !user ? (
           <nav className="hidden items-center justify-center gap-1 md:flex">
-            <Link
-              to="/"
-              hash="how-it-works"
-              hashScrollIntoView
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              How it works
-            </Link>
-            <Link
-              to="/"
-              hash="features"
-              hashScrollIntoView
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              Features
-            </Link>
-            <Link
-              to="/"
-              hash="portfolios"
-              hashScrollIntoView
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              Portfolios
-            </Link>
+            {[
+              { hash: "how-it-works", label: "How it works" },
+              { hash: "features", label: "Features" },
+              { hash: "portfolios", label: "Portfolios" },
+            ].map(({ hash, label }) => (
+              <Link
+                key={hash}
+                to="/"
+                hash={hash}
+                hashScrollIntoView
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors duration-300 ${
+                  overHero
+                    ? "text-white/80 hover:bg-white/10 hover:text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
         ) : (
           <div />
@@ -172,7 +191,9 @@ export function Navbar() {
             size="icon"
             onClick={toggleTheme}
             aria-label={darkMode ? "Switch to light theme" : "Switch to dark theme"}
-            className="size-8 text-muted-foreground hover:text-foreground"
+            className={`size-8 transition-colors duration-300 ${
+              overHero ? "text-white/80 hover:bg-white/10 hover:text-white" : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
@@ -217,7 +238,14 @@ export function Navbar() {
                 </Button>
               ) : (
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Button asChild variant="ghost" size="sm" className="h-8 px-2 sm:px-3 text-xs font-medium">
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 px-2 text-xs font-medium transition-colors duration-300 sm:px-3 ${
+                      overHero ? "text-white/90 hover:bg-white/10 hover:text-white" : ""
+                    }`}
+                  >
                     <Link to="/login" search={{ redirect: currentPath }}>
                       <LogIn className="mr-1 sm:mr-1.5 size-3.5" />
                       <span>Sign in</span>
