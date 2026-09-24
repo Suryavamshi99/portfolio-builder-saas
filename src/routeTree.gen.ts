@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -23,18 +24,28 @@ import { Route as ApiResetRouteImport } from './routes/api/reset'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
+import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
+import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
+import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
+import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
 import { Route as ApiWebhooksDodoRouteImport } from './routes/api/webhooks/dodo'
+import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -102,6 +113,26 @@ const ApiWaitlistRoute = ApiWaitlistRouteImport.update({
   path: '/api/waitlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
+  id: '/api/admin/login',
+  path: '/api/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLogoutRoute = ApiAdminLogoutRouteImport.update({
+  id: '/api/admin/logout',
+  path: '/api/admin/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSessionRoute = ApiAdminSessionRouteImport.update({
+  id: '/api/admin/session',
+  path: '/api/admin/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin/users',
+  path: '/api/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBillingCheckoutRoute = ApiBillingCheckoutRouteImport.update({
   id: '/api/billing/checkout',
   path: '/api/billing/checkout',
@@ -132,6 +163,11 @@ const ApiWebhooksDodoRoute = ApiWebhooksDodoRouteImport.update({
   path: '/api/webhooks/dodo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminUsersIdRoute = ApiAdminUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminUsersRoute,
+} as any)
 const ApiVercelOauthCallbackRoute = ApiVercelOauthCallbackRouteImport.update({
   id: '/oauth/callback',
   path: '/oauth/callback',
@@ -145,6 +181,7 @@ const ApiVercelOauthStartRoute = ApiVercelOauthStartRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -158,17 +195,23 @@ export interface FileRoutesByFullPath {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -182,18 +225,24 @@ export interface FileRoutesByTo {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -207,12 +256,17 @@ export interface FileRoutesById {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
 }
@@ -220,6 +274,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/login'
     | '/onboarding'
     | '/settings'
@@ -233,17 +288,23 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
+    | '/api/admin/login'
+    | '/api/admin/logout'
+    | '/api/admin/session'
+    | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
+    | '/api/admin/users/$id'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/login'
     | '/onboarding'
     | '/settings'
@@ -257,17 +318,23 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
+    | '/api/admin/login'
+    | '/api/admin/logout'
+    | '/api/admin/session'
+    | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
+    | '/api/admin/users/$id'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/login'
     | '/onboarding'
     | '/settings'
@@ -281,18 +348,24 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
+    | '/api/admin/login'
+    | '/api/admin/logout'
+    | '/api/admin/session'
+    | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
+    | '/api/admin/users/$id'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
@@ -306,6 +379,10 @@ export interface RootRouteChildren {
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
   ApiWaitlistRoute: typeof ApiWaitlistRoute
+  ApiAdminLoginRoute: typeof ApiAdminLoginRoute
+  ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
+  ApiAdminSessionRoute: typeof ApiAdminSessionRoute
+  ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
 }
@@ -317,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -410,6 +494,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWaitlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/login': {
+      id: '/api/admin/login'
+      path: '/api/admin/login'
+      fullPath: '/api/admin/login'
+      preLoaderRoute: typeof ApiAdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/logout': {
+      id: '/api/admin/logout'
+      path: '/api/admin/logout'
+      fullPath: '/api/admin/logout'
+      preLoaderRoute: typeof ApiAdminLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/session': {
+      id: '/api/admin/session'
+      path: '/api/admin/session'
+      fullPath: '/api/admin/session'
+      preLoaderRoute: typeof ApiAdminSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users': {
+      id: '/api/admin/users'
+      path: '/api/admin/users'
+      fullPath: '/api/admin/users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/billing/checkout': {
       id: '/api/billing/checkout'
       path: '/api/billing/checkout'
@@ -451,6 +563,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/webhooks/dodo'
       preLoaderRoute: typeof ApiWebhooksDodoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users/$id': {
+      id: '/api/admin/users/$id'
+      path: '/$id'
+      fullPath: '/api/admin/users/$id'
+      preLoaderRoute: typeof ApiAdminUsersIdRouteImport
+      parentRoute: typeof ApiAdminUsersRoute
     }
     '/api/vercel/oauth/callback': {
       id: '/api/vercel/oauth/callback'
@@ -521,8 +640,21 @@ const ApiVercelRouteWithChildren = ApiVercelRoute._addFileChildren(
   ApiVercelRouteChildren,
 )
 
+interface ApiAdminUsersRouteChildren {
+  ApiAdminUsersIdRoute: typeof ApiAdminUsersIdRoute
+}
+
+const ApiAdminUsersRouteChildren: ApiAdminUsersRouteChildren = {
+  ApiAdminUsersIdRoute: ApiAdminUsersIdRoute,
+}
+
+const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
+  ApiAdminUsersRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
@@ -536,6 +668,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
   ApiWaitlistRoute: ApiWaitlistRoute,
+  ApiAdminLoginRoute: ApiAdminLoginRoute,
+  ApiAdminLogoutRoute: ApiAdminLogoutRoute,
+  ApiAdminSessionRoute: ApiAdminSessionRoute,
+  ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
 }

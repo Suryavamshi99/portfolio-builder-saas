@@ -20,3 +20,4 @@ dist-ssr
 .env*.local
 .cinematic/raw/
 .cinematic/tmp/
+.env*
