@@ -1,15 +1,10 @@
-import type { Content } from "@/data/content";
-
 /**
- * A portfolio counts as "ready" once it has real profile content — the
- * same heuristic LivePreview already uses to decide whether to show the
- * empty state. Works whichever way the content got there (AI generation
- * or direct edits), since it just looks at the data, not how it arrived.
+ * A portfolio counts as "ready" once generation has produced real HTML —
+ * works whichever way it got there (AI generation is currently the only
+ * way, but this doesn't care how).
  */
-export function isPortfolioReady(content: Pick<Content, "profile"> | null | undefined): boolean {
-  if (!content) return false;
-  const p = content.profile;
-  return Boolean(p.name?.trim() || p.role?.trim() || p.thesis?.trim());
+export function isPortfolioReady(html: string | null | undefined): boolean {
+  return Boolean(html?.trim());
 }
 
 /**

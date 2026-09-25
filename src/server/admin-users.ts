@@ -25,7 +25,7 @@ export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSu
   const [authUsersRes, appUsersRes, portfoliosRes, uploadsRes, vercelRes, byokRes] = await Promise.all([
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     admin.from("users").select("id, plan, is_admin"),
-    admin.from("portfolios").select("user_id, content, updated_at"),
+    admin.from("portfolios").select("user_id, generated_html, updated_at"),
     admin.from("uploads").select("user_id, size_bytes"),
     admin.from("vercel_connections").select("user_id"),
     admin.from("byok_keys").select("user_id, provider"),
@@ -38,7 +38,7 @@ export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSu
   const portfolioByUser = new Map(
     (portfoliosRes.data ?? []).map((r) => [
       r.user_id as string,
-      { updatedAt: r.updated_at as string, hasContent: Object.keys((r.content as object) ?? {}).length > 0 },
+      { updatedAt: r.updated_at as string, hasContent: Boolean((r.generated_html as string | null)?.trim()) },
     ]),
   );
   const storageByUser = new Map<string, number>();

@@ -1,16 +1,22 @@
 import { LLM_MODELS } from "@/config/llm";
 import { LlmAuthError, LlmProviderError, type LlmCallInput, type LlmCallResult } from "./types";
 
-export async function callGoogle({ apiKey, systemPrompt, userMessage }: LlmCallInput): Promise<LlmCallResult> {
+export async function callGoogle({ apiKey, systemPrompt, userMessage, images }: LlmCallInput): Promise<LlmCallResult> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${LLM_MODELS.google}:generateContent`;
+
+  const imageParts = (images ?? []).map((img) => ({
+    inline_data: { mime_type: img.mimeType, data: img.base64Data },
+  }));
 
   const res = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: "user", parts: [{ text: userMessage }] }],
-      generationConfig: { responseMimeType: "application/json" },
+      // Images first, then the text instructions — Gemini reads visual
+      // context better when it precedes what to do with it. Output is a
+      // free-form HTML document now, not JSON, so no responseMimeType.
+      contents: [{ role: "user", parts: [...imageParts, { text: userMessage }] }],
     }),
   });
 

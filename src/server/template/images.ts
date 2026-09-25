@@ -1,63 +1,49 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Content } from "@/data/content";
 
 /**
- * Studio's image fields (profile.portrait, project images) are still
- * plain URL text inputs — there's no "attach an uploaded photo" picker
- * yet (that's UI work, not built). In practice a user who does use our
- * own Storage for an image will have pasted one of the signed URLs
- * `GET /api/uploads` returns, which expire after an hour. This detects
- * that specific case — our own `uploads` bucket's signed-URL shape — and
- * copies the underlying bytes into the deploy bundle so the live site
- * doesn't depend on a token that's about to expire, or on our Storage
- * staying populated at all. Anything else (an external URL) is left
- * untouched by design; it isn't ours to copy.
+ * The LLM is told to embed the profile photo (and, indirectly, any other
+ * Storage-backed image it references) using a signed URL from our own
+ * `uploads` bucket, valid for 7 days (see PHOTO_SIGNED_URL_TTL_SECONDS in
+ * api/generate.ts) — plenty of time between generating and publishing, but
+ * still a token that expires. This scans the generated HTML for that
+ * specific signed-URL shape, downloads the underlying bytes once per
+ * distinct path, and rewrites every occurrence to a relative path bundled
+ * into the deploy — so the live site never depends on a token expiring or
+ * on our Storage staying populated at all.
  */
+const SIGNED_URL_PATTERN = /https?:\/\/[^"'\s)]+\/storage\/v1\/object\/sign\/uploads\/([^?"'\s]+)\?[^"'\s)]*/g;
 
-const SIGNED_URL_PATTERN = /\/storage\/v1\/object\/sign\/uploads\/([^?]+)\?/;
-
-function extractStoragePath(url: string): string | null {
-  const match = SIGNED_URL_PATTERN.exec(url);
-  return match?.[1] ? decodeURIComponent(match[1]) : null;
-}
-
-export async function embedStorageImages(
-  content: Content,
+export async function embedStorageImagesInHtml(
+  html: string,
   supabase: SupabaseClient,
-): Promise<{ content: Content; files: Record<string, Buffer>; embeddedStoragePaths: string[] }> {
+): Promise<{ html: string; files: Record<string, Buffer>; embeddedStoragePaths: string[] }> {
   const files: Record<string, Buffer> = {};
-  const resolvedPaths = new Map<string, string>();
+  const bundlePathByFullUrl = new Map<string, string>();
+  const storagePaths = new Set<string>();
 
-  async function resolve(url: string): Promise<string> {
-    if (!url) return url;
-    const storagePath = extractStoragePath(url);
-    if (!storagePath) return url;
-
-    const cached = resolvedPaths.get(storagePath);
-    if (cached) return cached;
+  const matches = [...html.matchAll(SIGNED_URL_PATTERN)];
+  for (const match of matches) {
+    const fullUrl = match[0];
+    const storagePath = decodeURIComponent(match[1]!);
+    if (bundlePathByFullUrl.has(fullUrl)) continue;
 
     const download = await supabase.storage.from("uploads").download(storagePath);
     // A stale/deleted reference shouldn't fail the whole publish — leave the
-    // (broken) URL as-is rather than blocking on one bad image.
-    if (download.error || !download.data) return url;
+    // (broken, soon-to-expire) URL as-is rather than blocking on one image.
+    if (download.error || !download.data) continue;
 
     const buffer = Buffer.from(await download.data.arrayBuffer());
     const basename = storagePath.split("/").pop() ?? "image";
     const bundlePath = `images/${basename}`;
     files[bundlePath] = buffer;
-    resolvedPaths.set(storagePath, bundlePath);
-    return bundlePath;
+    bundlePathByFullUrl.set(fullUrl, bundlePath);
+    storagePaths.add(storagePath);
   }
 
-  const next = structuredClone(content);
-  next.profile.portrait = await resolve(next.profile.portrait);
-
-  for (const project of next.projects) {
-    if (!project.images) continue;
-    for (const image of project.images) {
-      image.src = await resolve(image.src);
-    }
+  let nextHtml = html;
+  for (const [fullUrl, bundlePath] of bundlePathByFullUrl) {
+    nextHtml = nextHtml.split(fullUrl).join(bundlePath);
   }
 
-  return { content: next, files, embeddedStoragePaths: [...resolvedPaths.keys()] };
+  return { html: nextHtml, files, embeddedStoragePaths: [...storagePaths] };
 }

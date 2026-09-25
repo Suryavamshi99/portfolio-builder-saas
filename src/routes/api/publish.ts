@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
-import { getAppOrigin } from "@/config/app";
-import { emptyContent, type Content } from "@/data/content";
-import { embedStorageImages } from "@/server/template/images";
-import { renderSiteHtml } from "@/server/template/render";
+import { embedStorageImagesInHtml } from "@/server/template/images";
 import { createVercelDeployment, VercelDeployError } from "@/server/vercel/deploy";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 
@@ -14,9 +11,8 @@ function errorResponse(status: number, code: string, message: string) {
 }
 
 /**
- * Renders the current draft and pushes it to the user's own Vercel
- * account. Studio's Save (PUT /api/content) never calls this — only an
- * explicit Publish action does.
+ * Pushes the generated portfolio HTML to the user's own Vercel account.
+ * Studio never calls this on its own — only an explicit Publish action does.
  */
 export const Route = createFileRoute("/api/publish")({
   server: {
@@ -39,33 +35,35 @@ export const Route = createFileRoute("/api/publish")({
         if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
 
         // The one server-side gate that actually enforces "generate free,
-        // pay to deploy": this is the only place the final, deployable
-        // static HTML ever gets produced (renderSiteHtml, below) and the
-        // only place it ever leaves the server. Studio's own live preview
-        // is a separate React component, not this — see LivePreview.tsx.
+        // pay to deploy": this is the only place the generated HTML ever
+        // leaves the server. Studio's own live preview renders it inline
+        // (an iframe over the same stored string), never through this route.
         if (!hasPaidAccess(appUser)) {
           return errorResponse(402, "payment_required", "Upgrade to Pro to publish your portfolio");
         }
 
         const { data: portfolio } = await supabase
           .from("portfolios")
-          .select("content")
+          .select("generated_html")
           .eq("user_id", user.id)
           .maybeSingle();
-        const content: Content = (portfolio?.content as Content | undefined) ?? emptyContent;
 
-        const { content: embeddedContent, files: imageFiles, embeddedStoragePaths } = await embedStorageImages(
-          content,
+        const generatedHtml = portfolio?.generated_html;
+        if (!generatedHtml || !generatedHtml.trim()) {
+          return errorResponse(400, "no_portfolio", "Generate a portfolio before publishing");
+        }
+
+        const { html, files: imageFiles, embeddedStoragePaths } = await embedStorageImagesInHtml(
+          generatedHtml,
           supabase,
         );
-        const html = renderSiteHtml(embeddedContent, appUser.plan, getAppOrigin());
 
         const accessToken = decryptSecret(
           byteaToBuffer(connection.encrypted_access_token),
           byteaToBuffer(connection.nonce),
         );
 
-        const projectName = slugifyProjectName(content.profile.name || user.id);
+        const projectName = slugifyProjectName(extractTitle(html) ?? user.email ?? user.id);
 
         let deployment: { deploymentId: string; url: string };
         try {
@@ -106,6 +104,11 @@ export const Route = createFileRoute("/api/publish")({
     },
   },
 });
+
+function extractTitle(html: string): string | null {
+  const match = /<title>([^<]*)<\/title>/i.exec(html);
+  return match?.[1]?.trim() || null;
+}
 
 function slugifyProjectName(name: string): string {
   const slug = name

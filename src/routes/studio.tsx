@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { isPortfolioReady } from "@/lib/portfolio-gate";
 
-import type { Content } from "@/data/content";
-
 export const Route = createFileRoute("/studio")({
   head: () => ({
     meta: [{ title: "Studio — Shipfolio" }, { name: "robots", content: "noindex, nofollow" }],
@@ -27,14 +25,14 @@ type LoadState =
   | { status: "loading" }
   | { status: "unauthenticated" }
   | { status: "error"; message: string }
-  | { status: "ready"; content: Content };
+  | { status: "ready"; html: string };
 
 function StudioRoute() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (state.status === "ready" && !isPortfolioReady(state.content)) {
+    if (state.status === "ready" && !isPortfolioReady(state.html)) {
       void navigate({ to: "/onboarding" });
     }
   }, [state, navigate]);
@@ -50,8 +48,8 @@ function StudioRoute() {
           const err = await res.json().catch(() => ({}));
           return setState({ status: "error", message: err?.error?.message ?? res.statusText });
         }
-        const json = (await res.json()) as { content: Content };
-        setState({ status: "ready", content: json.content });
+        const json = (await res.json()) as { html: string | null };
+        setState({ status: "ready", html: json.html ?? "" });
       })
       .catch((e: unknown) => {
         if (alive) setState({ status: "error", message: String(e) });
@@ -101,7 +99,7 @@ function StudioRoute() {
     return null; // Handled by AuthGuard
   }
 
-  if (!isPortfolioReady(state.content)) {
+  if (!isPortfolioReady(state.html)) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center" role="status">
         <Loader2 className="size-8 animate-spin text-accent" aria-hidden="true" />
@@ -112,11 +110,20 @@ function StudioRoute() {
     );
   }
 
-  return <StudioClient initialContent={state.content} />;
+  return <StudioClient initialHtml={state.html} onRegenerated={(html) => setState({ status: "ready", html })} />;
 }
 
-function StudioClient({ initialContent }: { initialContent: Content }) {
-  const [Cmp, setCmp] = useState<ComponentType<{ initialContent: Content }> | null>(null);
+function StudioClient({
+  initialHtml,
+  onRegenerated,
+}: {
+  initialHtml: string;
+  onRegenerated: (html: string) => void;
+}) {
+  const [Cmp, setCmp] = useState<ComponentType<{
+    initialHtml: string;
+    onRegenerated: (html: string) => void;
+  }> | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -137,5 +144,5 @@ function StudioClient({ initialContent }: { initialContent: Content }) {
     );
   }
 
-  return <Cmp initialContent={initialContent} />;
+  return <Cmp initialHtml={initialHtml} onRegenerated={onRegenerated} />;
 }

@@ -1,0 +1,12 @@
+-- Portfolio generation switched from "LLM extracts structured JSON -> one
+-- fixed template" to "LLM writes one complete, bespoke HTML/CSS document per
+-- user" (resume + visual-reference screenshots as design input). The new
+-- pipeline stores that document directly; there's no structured schema to
+-- validate against anymore.
+--
+-- `content` is left in place (unused, nullable-by-default '{}'::jsonb) rather
+-- than dropped — it's a live column on a production-connected project and
+-- nothing reads it after this migration, so leaving it costs nothing and
+-- keeps this change non-destructive. Drop it in a later cleanup pass once
+-- the new pipeline has been running for a while.
+alter table public.portfolios add column generated_html text;

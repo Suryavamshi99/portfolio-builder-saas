@@ -42,7 +42,7 @@ type UserDetail = {
   createdAt: string;
   plan: "free" | "pro";
   isAdmin: boolean;
-  portfolio: { content: unknown; updatedAt: string } | null;
+  portfolio: { html: string | null; updatedAt: string } | null;
   uploads: { id: string; kind: string; filename: string; size_bytes: number; created_at: string }[];
   byokProviders: { provider: string; created_at: string }[];
   vercelConnection: { vercel_username: string | null; connected_at: string } | null;
@@ -120,7 +120,7 @@ function AdminPage() {
     if (!res.ok) return;
     const detail = (await res.json()) as UserDetail;
     setSelected(detail);
-    setContentDraft(JSON.stringify(detail.portfolio?.content ?? {}, null, 2));
+    setContentDraft(detail.portfolio?.html ?? "");
     setContentError(null);
   }
 
@@ -128,20 +128,12 @@ function AdminPage() {
     if (!selected) return;
     setContentError(null);
 
-    let parsedContent: unknown;
-    try {
-      parsedContent = JSON.parse(contentDraft);
-    } catch {
-      setContentError("Portfolio content is not valid JSON.");
-      return;
-    }
-
     setSaving(true);
     try {
       const res = await fetch(`/api/admin/users/${selected.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ plan: planOverride ?? selected.plan, content: parsedContent }),
+        body: JSON.stringify({ plan: planOverride ?? selected.plan, html: contentDraft }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
@@ -364,7 +356,7 @@ function AdminPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-xs font-medium text-muted-foreground">Portfolio content (raw JSON)</span>
+                  <span className="text-xs font-medium text-muted-foreground">Portfolio HTML (raw)</span>
                   <Textarea
                     value={contentDraft}
                     onChange={(e) => setContentDraft(e.target.value)}

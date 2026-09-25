@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
-import { emptyContent } from "@/data/content";
 
 const BUCKET = "uploads";
 
@@ -51,7 +50,7 @@ export const Route = createFileRoute("/api/reset")({
         const updatedAt = new Date().toISOString();
         const { error: contentError } = await supabase
           .from("portfolios")
-          .upsert({ user_id: user.id, content: emptyContent, updated_at: updatedAt }, { onConflict: "user_id" });
+          .upsert({ user_id: user.id, generated_html: null, updated_at: updatedAt }, { onConflict: "user_id" });
 
         if (contentError) {
           return Response.json(

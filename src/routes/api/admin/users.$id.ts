@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { adminMiddleware } from "@/server/admin-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { contentSchema } from "@/data/content";
 import type { Plan } from "@/config/plans";
 
 const UPLOADS_BUCKET = "uploads";
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
         const [{ data: appUser }, { data: portfolio }, { data: uploads }, { data: byokKeys }, { data: vercelConn }] =
           await Promise.all([
             admin.from("users").select("plan, created_at, is_admin").eq("id", params.id).maybeSingle(),
-            admin.from("portfolios").select("content, updated_at").eq("user_id", params.id).maybeSingle(),
+            admin.from("portfolios").select("generated_html, updated_at").eq("user_id", params.id).maybeSingle(),
             admin.from("uploads").select("id, kind, filename, size_bytes, created_at").eq("user_id", params.id),
             // Metadata only — never the encrypted_key/nonce columns. Decrypting
             // a user's BYOK key is not something this panel does, ever.
@@ -36,7 +35,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
           createdAt: authUser.user.created_at,
           plan: appUser?.plan ?? "free",
           isAdmin: appUser?.is_admin ?? false,
-          portfolio: portfolio ? { content: portfolio.content, updatedAt: portfolio.updated_at } : null,
+          portfolio: portfolio ? { html: portfolio.generated_html, updatedAt: portfolio.updated_at } : null,
           uploads: uploads ?? [],
           byokProviders: byokKeys ?? [],
           vercelConnection: vercelConn,
@@ -52,7 +51,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
         } catch {
           return Response.json({ error: { message: "Invalid request body" } }, { status: 400 });
         }
-        const { plan, isAdmin, content } = (body ?? {}) as { plan?: unknown; isAdmin?: unknown; content?: unknown };
+        const { plan, isAdmin, html } = (body ?? {}) as { plan?: unknown; isAdmin?: unknown; html?: unknown };
 
         if (plan !== undefined) {
           if (plan !== "free" && plan !== "pro") {
@@ -70,18 +69,14 @@ export const Route = createFileRoute("/api/admin/users/$id")({
           if (error) return Response.json({ error: { message: "Could not update admin flag" } }, { status: 500 });
         }
 
-        if (content !== undefined) {
-          const parsed = contentSchema.safeParse(content);
-          if (!parsed.success) {
-            return Response.json(
-              { error: { message: "content failed validation", issues: parsed.error.issues } },
-              { status: 422 },
-            );
+        if (html !== undefined) {
+          if (typeof html !== "string") {
+            return Response.json({ error: { message: "html must be a string" } }, { status: 422 });
           }
           const { error } = await admin
             .from("portfolios")
             .upsert(
-              { user_id: params.id, content: parsed.data, updated_at: new Date().toISOString() },
+              { user_id: params.id, generated_html: html, updated_at: new Date().toISOString() },
               { onConflict: "user_id" },
             );
           if (error) return Response.json({ error: { message: "Could not update portfolio" } }, { status: 500 });

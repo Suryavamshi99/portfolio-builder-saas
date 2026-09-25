@@ -1,7 +1,15 @@
+export type LlmImageInput = {
+  mimeType: string;
+  /** Raw base64, no "data:" URL prefix. */
+  base64Data: string;
+};
+
 export type LlmCallInput = {
   apiKey: string;
   systemPrompt: string;
   userMessage: string;
+  /** Visual-reference screenshots for design inspiration — currently only callGoogle attaches these. */
+  images?: LlmImageInput[];
 };
 
 export type LlmCallResult = { text: string };

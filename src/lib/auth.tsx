@@ -2,7 +2,6 @@ import * as React from "react";
 import type { User, Session, SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { isPortfolioReady } from "@/lib/portfolio-gate";
-import type { Content } from "@/data/content";
 
 interface AuthContextType {
   user: User | null;
@@ -54,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setPortfolioReady(false);
         return false;
       }
-      const json = (await res.json()) as { content: Content };
-      const ready = isPortfolioReady(json.content);
+      const json = (await res.json()) as { html: string | null };
+      const ready = isPortfolioReady(json.html);
       setPortfolioReady(ready);
       return ready;
     } catch {
