@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
-import { isLlmProvider } from "@/config/llm";
+import { isByokEnabledProvider } from "@/config/llm";
 import { bufferToBytea, encryptSecret } from "@/lib/crypto";
 
 function errorResponse(status: number, code: string, message: string) {
@@ -38,8 +38,8 @@ export const Route = createFileRoute("/api/byok-keys")({
           return errorResponse(400, "invalid_json", "Body must be valid JSON");
         }
 
-        if (!isLlmProvider(body.provider)) {
-          return errorResponse(400, "invalid_provider", "provider must be one of: anthropic, openai, google");
+        if (!isByokEnabledProvider(body.provider)) {
+          return errorResponse(400, "invalid_provider", "provider must be: google (Gemini is the only supported provider right now)");
         }
         if (typeof body.apiKey !== "string" || body.apiKey.trim().length === 0) {
           return errorResponse(400, "invalid_api_key", "apiKey is required");

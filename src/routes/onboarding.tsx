@@ -64,7 +64,7 @@ function OnboardingWizard() {
   const [visualReferences, setVisualReferences] = React.useState<UploadItem[]>([]);
   const [photoUpload, setPhotoUpload] = React.useState<UploadItem | null>(null);
   const [otherSpecifics, setOtherSpecifics] = React.useState("");
-  const [selectedProvider, setSelectedProvider] = React.useState<LLMProvider>("anthropic");
+  const [selectedProvider, setSelectedProvider] = React.useState<LLMProvider>("google");
   const [hasProviderKey, setHasProviderKey] = React.useState(false);
 
   // Generation state
@@ -498,7 +498,7 @@ function OnboardingWizard() {
             <CardHeader>
               <CardTitle className="text-lg">Step 5: Connect Your API Key</CardTitle>
               <CardDescription>
-                Choose an AI provider and connect your personal API key. We never bill you for inference.
+                Connect your free Google Gemini API key. We never bill you for inference.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

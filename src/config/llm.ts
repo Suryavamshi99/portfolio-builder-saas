@@ -6,6 +6,20 @@ export function isLlmProvider(value: unknown): value is LlmProvider {
 }
 
 /**
+ * Phase 1 guardrail: Anthropic and OpenAI both require a funded/billed
+ * account before a key works at all, which defeats the point of a free
+ * "generate first, pay to deploy" BYOK flow. Google Gemini is the only
+ * provider with a real no-card-required free tier, so it's the only one
+ * users can connect for now. The other two stay in LLM_PROVIDERS/LLM_MODELS/
+ * callLlmProvider so re-enabling them later is a one-line change here.
+ */
+export const BYOK_ENABLED_PROVIDERS: readonly LlmProvider[] = ["google"];
+
+export function isByokEnabledProvider(value: unknown): value is LlmProvider {
+  return isLlmProvider(value) && (BYOK_ENABLED_PROVIDERS as readonly string[]).includes(value);
+}
+
+/**
  * Verified against each provider's official docs on 2026-09-17 (the
  * original gpt-4o/gemini-2.0-flash picks had gone stale — gemini-2.0-flash
  * was actually shut down by Google on 2026-06-01, a real production break,

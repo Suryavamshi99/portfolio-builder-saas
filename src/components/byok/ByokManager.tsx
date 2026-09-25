@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Tooltip } from "@/components/ui/tooltip";
 import {
   KeyRound,
   ShieldCheck,
@@ -14,7 +13,7 @@ import {
   Loader2,
   ExternalLink,
   Lock,
-  HelpCircle,
+  Sparkles,
 } from "lucide-react";
 
 export type LLMProvider = "anthropic" | "openai" | "google";
@@ -24,6 +23,14 @@ export interface ConnectedKey {
   connectedAt: string;
 }
 
+/**
+ * Phase 1: Gemini is the only connectable provider (see BYOK_ENABLED_PROVIDERS
+ * in src/config/llm.ts — the server rejects anything else). Anthropic and
+ * OpenAI both require a funded account before a key works at all, which
+ * defeats a free "generate first, pay to deploy" flow; Gemini has a real,
+ * ongoing, no-card-required free tier. Kept as a Record so re-adding a
+ * provider later is additive, not a rewrite.
+ */
 const PROVIDER_METADATA: Record<
   LLMProvider,
   {
@@ -32,50 +39,42 @@ const PROVIDER_METADATA: Record<
     placeholder: string;
     docsUrl: string;
     steps: string[];
-    recommended?: boolean;
+    freeTier: { label: string; variant: "success" | "warning" | "outline" };
   }
 > = {
+  google: {
+    name: "Google Gemini",
+    description: "Gemini 3.5 Flash. Fast, accurate structured extraction from your resume — and free to use.",
+    placeholder: "AIzaSy...",
+    docsUrl: "https://aistudio.google.com/app/apikey",
+    freeTier: { label: "Free, no card needed", variant: "success" },
+    steps: [
+      "Open aistudio.google.com/app/apikey in a new tab and sign in with any Google account.",
+      "Click the blue \"Create API key\" button.",
+      "Pick an existing Google Cloud project from the dropdown, or choose \"Create API key in new project\" — either works.",
+      "Copy the key that appears (it starts with \"AIzaSy\").",
+      "Paste it into the box below and click Save Key.",
+    ],
+  },
   anthropic: {
     name: "Anthropic Claude",
-    description: "Claude 3.7 Sonnet / 3.5 Sonnet. Excellent reasoning and structured extraction.",
+    description: "Claude Sonnet 5. Not available yet — coming in a later phase.",
     placeholder: "sk-ant-...",
     docsUrl: "https://console.anthropic.com/settings/keys",
-    recommended: true,
-    steps: [
-      "Go to console.anthropic.com and sign in (or create a free account).",
-      "In the left sidebar, click \"API Keys\".",
-      "Click \"Create Key\", give it any name.",
-      "Copy the key right away — Anthropic only shows it once.",
-      "Paste it into the box below.",
-    ],
+    freeTier: { label: "$5 one-time trial credit", variant: "warning" },
+    steps: [],
   },
   openai: {
     name: "OpenAI",
-    description: "GPT-4o / GPT-4o-mini. Fast and dependable content drafting.",
+    description: "GPT-5.6 Terra. Not available yet — coming in a later phase.",
     placeholder: "sk-...",
     docsUrl: "https://platform.openai.com/api-keys",
-    steps: [
-      "Go to platform.openai.com/api-keys and sign in (or create a free account).",
-      "Click \"Create new secret key\".",
-      "Give it any name and click \"Create secret key\".",
-      "Copy the key right away — OpenAI only shows it once.",
-      "Paste it into the box below.",
-    ],
-  },
-  google: {
-    name: "Google Gemini",
-    description: "Gemini 2.5 Flash / Pro. Generous free tier quotas for students.",
-    placeholder: "AIzaSy...",
-    docsUrl: "https://aistudio.google.com/app/apikey",
-    steps: [
-      "Go to aistudio.google.com/app/apikey and sign in with your Google account.",
-      "Click \"Create API key\".",
-      "Pick an existing Google Cloud project, or let it create one for you.",
-      "Copy the generated key.",
-      "Paste it into the box below.",
-    ],
+    freeTier: { label: "Requires billing set up first", variant: "outline" },
+    steps: [],
   },
 };
+
+const ACTIVE_PROVIDER: LLMProvider = "google";
 
 interface ByokManagerProps {
   onKeyConnected?: (provider: LLMProvider) => void;
@@ -88,8 +87,8 @@ export function ByokManager({ onKeyConnected, compact = false }: ByokManagerProp
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
 
-  // Form states per provider
-  const [activeProvider, setActiveProvider] = React.useState<LLMProvider>("anthropic");
+  // Phase 1 only connects Gemini — see ACTIVE_PROVIDER above.
+  const activeProvider = ACTIVE_PROVIDER;
   const [keyInput, setKeyInput] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [deletingProvider, setDeletingProvider] = React.useState<LLMProvider | null>(null);
@@ -209,90 +208,76 @@ export function ByokManager({ onKeyConnected, compact = false }: ByokManagerProp
         </Alert>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {(["anthropic", "openai", "google"] as LLMProvider[]).map((prov) => {
-          const meta = PROVIDER_METADATA[prov];
-          const connected = isConnected(prov);
-          const keyData = getKey(prov);
-          const isSelected = activeProvider === prov;
+      {(() => {
+        const meta = PROVIDER_METADATA[activeProvider];
+        const connected = isConnected(activeProvider);
+        const keyData = getKey(activeProvider);
 
-          return (
-            <div
-              key={prov}
-              onClick={() => setActiveProvider(prov)}
-              className={`cursor-pointer rounded-xl border p-4 transition-all ${
-                isSelected
-                  ? "border-accent ring-1 ring-accent bg-accent/5"
-                  : "border-border hover:border-border/80 bg-card"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-sm">{meta.name}</span>
-                  <Tooltip
-                    align="start"
-                    content={
-                      <div className="space-y-1.5">
-                        <p className="font-semibold text-foreground">How to get your {meta.name} key</p>
-                        <ol className="list-decimal space-y-1 pl-4">
-                          {meta.steps.map((step, i) => (
-                            <li key={i}>{step}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex size-4 items-center justify-center rounded-full text-muted-foreground hover:text-accent"
-                      aria-label={`How to get a ${meta.name} API key`}
-                    >
-                      <HelpCircle className="size-3.5" />
-                    </button>
-                  </Tooltip>
-                </div>
-                {connected ? (
-                  <Badge variant="success" className="gap-1 text-[10px]">
-                    <CheckCircle2 className="size-3" />
-                    Connected
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                    Not connected
-                  </Badge>
-                )}
+        return (
+          <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm">{meta.name}</span>
+                <Badge variant={meta.freeTier.variant} className="text-[10px]">
+                  {meta.freeTier.label}
+                </Badge>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{meta.description}</p>
-              {connected && keyData && (
-                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-[11px] text-muted-foreground">
-                  <span>
-                    Linked {new Date(keyData.connectedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={deletingProvider === prov}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void handleDelete(prov);
-                    }}
-                    className="h-6 px-1.5 text-destructive hover:bg-destructive/10 text-[11px]"
-                    aria-label={`Disconnect ${meta.name} key`}
-                  >
-                    {deletingProvider === prov ? (
-                      <Loader2 className="size-3 animate-spin" />
-                    ) : (
-                      <Trash2 className="size-3" />
-                    )}
-                  </Button>
-                </div>
+              {connected ? (
+                <Badge variant="success" className="gap-1 text-[10px]">
+                  <CheckCircle2 className="size-3" />
+                  Connected
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  Not connected
+                </Badge>
               )}
             </div>
-          );
-        })}
-      </div>
+            <p className="mt-1.5 text-xs text-muted-foreground">{meta.description}</p>
+
+            <div className="mt-4 rounded-lg border border-border/60 bg-card p-3.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                <Sparkles className="size-3.5 text-accent" />
+                How to get your free Gemini API key
+              </p>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-xs text-muted-foreground leading-relaxed">
+                {meta.steps.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </div>
+
+            {connected && keyData && (
+              <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2.5 text-[11px] text-muted-foreground">
+                <span>
+                  Linked {new Date(keyData.connectedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={deletingProvider === activeProvider}
+                  onClick={() => void handleDelete(activeProvider)}
+                  className="h-6 px-1.5 text-destructive hover:bg-destructive/10 text-[11px]"
+                  aria-label={`Disconnect ${meta.name} key`}
+                >
+                  {deletingProvider === activeProvider ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 className="size-3" /> Disconnect
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      <p className="text-center text-[11px] text-muted-foreground">
+        Claude and OpenAI keys are coming in a later phase — Gemini is the only supported provider for now.
+      </p>
 
       {/* Add / Rotate form */}
       <Card>

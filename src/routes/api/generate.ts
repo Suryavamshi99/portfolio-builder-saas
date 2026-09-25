@@ -2,7 +2,7 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
-import { isLlmProvider } from "@/config/llm";
+import { isByokEnabledProvider } from "@/config/llm";
 import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { extractResumeText } from "@/server/resume-text";
@@ -48,8 +48,8 @@ export const Route = createFileRoute("/api/generate")({
           return errorResponse(400, "invalid_json", "Body must be valid JSON");
         }
 
-        if (!isLlmProvider(body.provider)) {
-          return errorResponse(400, "invalid_provider", "provider must be one of: anthropic, openai, google");
+        if (!isByokEnabledProvider(body.provider)) {
+          return errorResponse(400, "invalid_provider", "provider must be: google (Gemini is the only supported provider right now)");
         }
         if (typeof body.resumeUploadId !== "string") {
           return errorResponse(400, "invalid_request", "resumeUploadId is required");
@@ -81,7 +81,7 @@ export const Route = createFileRoute("/api/generate")({
           .eq("provider", provider)
           .maybeSingle();
         if (!keyRow) {
-          return errorResponse(401, "byok_key_missing", "Connect an Anthropic/OpenAI/Google API key first");
+          return errorResponse(401, "byok_key_missing", "Connect a Google Gemini API key first");
         }
 
         const { data: resumeRow } = await supabase

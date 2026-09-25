@@ -133,8 +133,8 @@ function LivePortfolioFrame({ url, title }: { url: string; title: string }) {
 export function HomePage() {
   const { vercel } = Route.useSearch();
   const navigate = useNavigate();
-  const { user, portfolioReady } = useAuth();
-  const studioUnlocked = canAccessStudio({ portfolioReady });
+  const { user, portfolioReady, isAdmin } = useAuth();
+  const studioUnlocked = canAccessStudio({ portfolioReady, isAdmin });
   const launchMode = getLaunchMode();
 
   const [vercelJustConnected, setVercelJustConnected] = React.useState(vercel === "connected");
@@ -376,7 +376,7 @@ export function HomePage() {
                   </Badge>
                 </div>
                 <CardDescription className="text-xs">
-                  Zero inference markup — run generation with your own Anthropic, OpenAI, or Google keys.
+                  Zero inference markup — run generation with your own free Google Gemini key.
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground">
@@ -832,7 +832,7 @@ export function HomePage() {
                 </div>
                 <h3 className="text-xl font-bold text-foreground">100% BYOK Privacy</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Connect your Claude, OpenAI, or Gemini API keys. Keys are protected with AES-256-GCM envelope encryption at rest.
+                  Connect your own free Google Gemini API key. Keys are protected with AES-256-GCM envelope encryption at rest.
                 </p>
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
@@ -915,14 +915,14 @@ export function HomePage() {
                   Your AI keys. Your Vercel account. Zero markup.
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Shipfolio orchestrates Claude, OpenAI, and Gemini with the API keys you already have, then
+                  Shipfolio runs generation with your own free Google Gemini API key, then
                   deploys the finished portfolio straight to your own Vercel account — no proxy inference fees,
                   no vendor lock-in.
                 </p>
                 <ul className="space-y-2 text-xs text-muted-foreground sm:text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Switch between Claude, OpenAI, or Gemini per generation
+                    Free Gemini key — no card required, more providers coming soon
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
