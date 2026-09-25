@@ -43,6 +43,8 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
   const [liveUrl, setLiveUrl] = React.useState<string | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const [paymentRequired, setPaymentRequired] = React.useState(false);
+  const [checkingOut, setCheckingOut] = React.useState(false);
 
   // Check vercel connection and initial publish status
   const checkStatus = React.useCallback(async () => {
@@ -124,6 +126,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
     setIsPublishing(true);
     setDeployStatus("queued");
     setErrorMessage(null);
+    setPaymentRequired(false);
     onPublishStarted?.();
 
     try {
@@ -135,7 +138,10 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        if (res.status === 409) {
+        if (res.status === 402) {
+          setPaymentRequired(true);
+          throw new Error(json?.error?.message ?? "Upgrade to Pro to publish your portfolio.");
+        } else if (res.status === 409) {
           throw new Error("Vercel account is not connected. Connect Vercel first.");
         } else if (res.status === 502) {
           throw new Error(json?.error?.message ?? "Vercel deployment API rejected the request.");
@@ -149,6 +155,21 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       setIsPublishing(false);
       setDeployStatus("error");
       setErrorMessage(e instanceof Error ? e.message : "Publication failed.");
+    }
+  };
+
+  const handleUpgrade = async () => {
+    setCheckingOut(true);
+    try {
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const json = (await res.json().catch(() => ({}))) as { checkoutUrl?: string };
+      if (!res.ok || !json.checkoutUrl) {
+        setErrorMessage("Could not start checkout. Try again from Settings.");
+        return;
+      }
+      window.location.href = json.checkoutUrl;
+    } finally {
+      setCheckingOut(false);
     }
   };
 
@@ -263,13 +284,32 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
         </Alert>
       )}
 
-      {/* Deployment error alert */}
-      {errorMessage && (
-        <Alert variant="destructive" className="py-2.5">
-          <AlertCircle className="size-4" />
-          <AlertTitle className="text-xs font-semibold">Publish Error</AlertTitle>
-          <AlertDescription className="text-xs">{errorMessage}</AlertDescription>
+      {/* Payment-required: deploying is a Pro-only action — see /api/publish */}
+      {paymentRequired ? (
+        <Alert className="border-accent/40 bg-accent/5 py-2.5">
+          <Sparkles className="size-4 text-accent" />
+          <AlertTitle className="text-xs font-semibold">Upgrade to publish</AlertTitle>
+          <AlertDescription className="text-xs flex items-center justify-between gap-2">
+            <span>Your portfolio is ready — deploying to a live URL needs the one-time Pro unlock.</span>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void handleUpgrade()}
+              disabled={checkingOut}
+              className="h-7 shrink-0 gap-1.5 bg-accent text-xs font-semibold text-accent-foreground hover:bg-accent/90"
+            >
+              {checkingOut ? <Loader2 className="size-3 animate-spin" /> : "Upgrade"}
+            </Button>
+          </AlertDescription>
         </Alert>
+      ) : (
+        errorMessage && (
+          <Alert variant="destructive" className="py-2.5">
+            <AlertCircle className="size-4" />
+            <AlertTitle className="text-xs font-semibold">Publish Error</AlertTitle>
+            <AlertDescription className="text-xs">{errorMessage}</AlertDescription>
+          </Alert>
+        )
       )}
     </div>
   );

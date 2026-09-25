@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
 
         const [{ data: appUser }, { data: portfolio }, { data: uploads }, { data: byokKeys }, { data: vercelConn }] =
           await Promise.all([
-            admin.from("users").select("plan, created_at").eq("id", params.id).maybeSingle(),
+            admin.from("users").select("plan, created_at, is_admin").eq("id", params.id).maybeSingle(),
             admin.from("portfolios").select("content, updated_at").eq("user_id", params.id).maybeSingle(),
             admin.from("uploads").select("id, kind, filename, size_bytes, created_at").eq("user_id", params.id),
             // Metadata only — never the encrypted_key/nonce columns. Decrypting
@@ -35,6 +35,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
           email: authUser.user.email ?? null,
           createdAt: authUser.user.created_at,
           plan: appUser?.plan ?? "free",
+          isAdmin: appUser?.is_admin ?? false,
           portfolio: portfolio ? { content: portfolio.content, updatedAt: portfolio.updated_at } : null,
           uploads: uploads ?? [],
           byokProviders: byokKeys ?? [],
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
         } catch {
           return Response.json({ error: { message: "Invalid request body" } }, { status: 400 });
         }
-        const { plan, content } = (body ?? {}) as { plan?: unknown; content?: unknown };
+        const { plan, isAdmin, content } = (body ?? {}) as { plan?: unknown; isAdmin?: unknown; content?: unknown };
 
         if (plan !== undefined) {
           if (plan !== "free" && plan !== "pro") {
@@ -59,6 +60,14 @@ export const Route = createFileRoute("/api/admin/users/$id")({
           }
           const { error } = await admin.from("users").update({ plan: plan as Plan }).eq("id", params.id);
           if (error) return Response.json({ error: { message: "Could not update plan" } }, { status: 500 });
+        }
+
+        if (isAdmin !== undefined) {
+          if (typeof isAdmin !== "boolean") {
+            return Response.json({ error: { message: "isAdmin must be a boolean" } }, { status: 422 });
+          }
+          const { error } = await admin.from("users").update({ is_admin: isAdmin }).eq("id", params.id);
+          if (error) return Response.json({ error: { message: "Could not update admin flag" } }, { status: 500 });
         }
 
         if (content !== undefined) {

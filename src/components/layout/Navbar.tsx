@@ -20,8 +20,8 @@ import {
 } from "lucide-react";
 
 export function Navbar() {
-  const { user, signOut, loading, portfolioReady } = useAuth();
-  const studioUnlocked = canAccessStudio({ portfolioReady });
+  const { user, signOut, loading, portfolioReady, isAdmin } = useAuth();
+  const studioUnlocked = canAccessStudio({ portfolioReady, isAdmin });
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 

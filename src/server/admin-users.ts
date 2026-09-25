@@ -7,6 +7,7 @@ export type AdminUserSummary = {
   email: string | null;
   createdAt: string;
   plan: Plan;
+  isAdmin: boolean;
   portfolioUpdatedAt: string | null;
   hasPortfolioContent: boolean;
   storageUsedBytes: number;
@@ -23,7 +24,7 @@ export type AdminUserSummary = {
 export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSummary[]> {
   const [authUsersRes, appUsersRes, portfoliosRes, uploadsRes, vercelRes, byokRes] = await Promise.all([
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-    admin.from("users").select("id, plan"),
+    admin.from("users").select("id, plan, is_admin"),
     admin.from("portfolios").select("user_id, content, updated_at"),
     admin.from("uploads").select("user_id, size_bytes"),
     admin.from("vercel_connections").select("user_id"),
@@ -33,6 +34,7 @@ export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSu
   if (authUsersRes.error) throw authUsersRes.error;
 
   const planByUser = new Map((appUsersRes.data ?? []).map((r) => [r.id as string, r.plan as Plan]));
+  const isAdminByUser = new Map((appUsersRes.data ?? []).map((r) => [r.id as string, r.is_admin as boolean]));
   const portfolioByUser = new Map(
     (portfoliosRes.data ?? []).map((r) => [
       r.user_id as string,
@@ -61,6 +63,7 @@ export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSu
         email: u.email ?? null,
         createdAt: u.created_at,
         plan: planByUser.get(u.id) ?? "free",
+        isAdmin: isAdminByUser.get(u.id) ?? false,
         portfolioUpdatedAt: portfolio?.updatedAt ?? null,
         hasPortfolioContent: portfolio?.hasContent ?? false,
         storageUsedBytes: storageByUser.get(u.id) ?? 0,

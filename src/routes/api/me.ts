@@ -34,6 +34,7 @@ export const Route = createFileRoute("/api/me")({
           id: appUser.id,
           email: user.email,
           plan: appUser.plan,
+          isAdmin: appUser.isAdmin,
           createdAt: appUser.createdAt,
           storage: { usedBytes, quotaBytes: PLAN_STORAGE_QUOTA_BYTES[appUser.plan] },
           vercel: { connected: vercelConnection != null },

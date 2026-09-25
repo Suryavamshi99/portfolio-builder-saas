@@ -41,6 +41,7 @@ type UserDetail = {
   email: string | null;
   createdAt: string;
   plan: "free" | "pro";
+  isAdmin: boolean;
   portfolio: { content: unknown; updatedAt: string } | null;
   uploads: { id: string; kind: string; filename: string; size_bytes: number; created_at: string }[];
   byokProviders: { provider: string; created_at: string }[];
@@ -154,6 +155,24 @@ function AdminPage() {
     }
   }
 
+  async function toggleAdmin(next: boolean) {
+    if (!selected) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${selected.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ isAdmin: next }),
+      });
+      if (res.ok) {
+        setSelected({ ...selected, isAdmin: next });
+        void loadUsers();
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function confirmDelete() {
     if (!pendingDelete) return;
     setDeleting(true);
@@ -244,6 +263,11 @@ function AdminPage() {
                     <Badge variant={u.plan === "pro" ? "default" : "secondary"} className="text-[10px] uppercase">
                       {u.plan}
                     </Badge>
+                    {u.isAdmin && (
+                      <Badge variant="accent" className="text-[10px] uppercase">
+                        admin
+                      </Badge>
+                    )}
                     {u.hasPortfolioContent && (
                       <Badge variant="outline" className="text-[10px]">
                         has portfolio
@@ -324,6 +348,18 @@ function AdminPage() {
                     disabled={saving}
                   >
                     Pro
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Admin</span>
+                  <Button
+                    size="sm"
+                    variant={selected.isAdmin ? "default" : "outline"}
+                    onClick={() => void toggleAdmin(!selected.isAdmin)}
+                    disabled={saving}
+                  >
+                    {selected.isAdmin ? "Admin — Studio unlocked, never pays" : "Grant admin"}
                   </Button>
                 </div>
 

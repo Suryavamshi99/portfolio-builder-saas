@@ -12,6 +12,8 @@ interface AuthContextType {
   /** null = not checked yet. See src/lib/portfolio-gate.ts for what "ready" means and how it's used. */
   portfolioReady: boolean | null;
   refreshPortfolioStatus: () => Promise<boolean>;
+  /** From users.is_admin (see supabase/migrations/0006_admin_flag.sql) — granted only via the /admin panel. */
+  isAdmin: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
   signOut: () => Promise<void>;
@@ -41,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
   const [supabaseConfigured, setSupabaseConfigured] = React.useState(true);
   const [portfolioReady, setPortfolioReady] = React.useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
   const client = React.useMemo(() => getBrowserClient(), []);
 
@@ -97,6 +100,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void refreshPortfolioStatus();
   }, [user, refreshPortfolioStatus]);
 
+  React.useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    void (async () => {
+      try {
+        const res = await fetch("/api/me");
+        if (!res.ok) return;
+        const json = (await res.json()) as { isAdmin?: boolean };
+        setIsAdmin(json.isAdmin === true);
+      } catch {
+        // isAdmin stays false — fail closed, not open.
+      }
+    })();
+  }, [user]);
+
   const signInWithPassword = async (email: string, password: string) => {
     if (!client) {
       return { error: new Error("Supabase is not configured yet. Check environment variables.") };
@@ -144,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         supabaseConfigured,
         portfolioReady,
         refreshPortfolioStatus,
+        isAdmin,
         signInWithPassword,
         signUp,
         signOut,

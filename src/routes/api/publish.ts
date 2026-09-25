@@ -7,7 +7,7 @@ import { emptyContent, type Content } from "@/data/content";
 import { embedStorageImages } from "@/server/template/images";
 import { renderSiteHtml } from "@/server/template/render";
 import { createVercelDeployment, VercelDeployError } from "@/server/vercel/deploy";
-import { getOrCreateAppUser } from "@/server/users";
+import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -37,6 +37,15 @@ export const Route = createFileRoute("/api/publish")({
 
         const appUser = await getOrCreateAppUser(supabase, user.id);
         if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
+
+        // The one server-side gate that actually enforces "generate free,
+        // pay to deploy": this is the only place the final, deployable
+        // static HTML ever gets produced (renderSiteHtml, below) and the
+        // only place it ever leaves the server. Studio's own live preview
+        // is a separate React component, not this — see LivePreview.tsx.
+        if (!hasPaidAccess(appUser)) {
+          return errorResponse(402, "payment_required", "Upgrade to Pro to publish your portfolio");
+        }
 
         const { data: portfolio } = await supabase
           .from("portfolios")

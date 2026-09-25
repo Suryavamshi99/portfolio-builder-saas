@@ -6,13 +6,18 @@ import type { Plan } from "@/config/plans";
 export async function getOrCreateAppUser(
   supabase: SupabaseClient,
   userId: string,
-): Promise<{ id: string; plan: Plan; createdAt: string } | null> {
+): Promise<{ id: string; plan: Plan; createdAt: string; isAdmin: boolean } | null> {
   const { data, error } = await supabase
     .from("users")
     .upsert({ id: userId }, { onConflict: "id" })
-    .select("id, plan, created_at")
+    .select("id, plan, created_at, is_admin")
     .single();
 
   if (error || !data) return null;
-  return { id: data.id, plan: data.plan as Plan, createdAt: data.created_at };
+  return { id: data.id, plan: data.plan as Plan, createdAt: data.created_at, isAdmin: data.is_admin as boolean };
+}
+
+/** True if this plan (or the admin exemption) grants access to paid-gated actions — deploying, in particular. */
+export function hasPaidAccess(appUser: { plan: Plan; isAdmin: boolean }): boolean {
+  return appUser.isAdmin || appUser.plan === "pro";
 }

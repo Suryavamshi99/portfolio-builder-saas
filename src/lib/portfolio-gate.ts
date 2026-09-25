@@ -17,12 +17,10 @@ export function isPortfolioReady(content: Pick<Content, "profile"> | null | unde
  * every place that shows or guards the Studio link calls this, not its
  * own copy of the check.
  *
- * `plan` is accepted (and currently ignored) on purpose: it's the
- * extension point for future paid-tier rules — e.g. free tier stays
- * wizard-only until a portfolio exists, a paid tier might skip that gate
- * entirely — without touching every call site again once billing exists.
- * Not enforced yet, matching how `users.plan` itself is handled server-side.
+ * `isAdmin` (see users.is_admin, granted only via the /admin panel) skips
+ * the "generate a portfolio first" gate entirely — the admin exemption
+ * requested for that flag. Everyone else keeps the existing rule.
  */
-export function canAccessStudio(opts: { portfolioReady: boolean | null; plan?: string }): boolean {
-  return opts.portfolioReady === true;
+export function canAccessStudio(opts: { portfolioReady: boolean | null; isAdmin?: boolean }): boolean {
+  return opts.isAdmin === true || opts.portfolioReady === true;
 }
