@@ -17,5 +17,14 @@ export type LlmCallResult = { text: string };
 /** The provider rejected the key itself (bad/expired/revoked) — distinct from any other failure. */
 export class LlmAuthError extends Error {}
 
-/** Any other provider-side failure (network, 5xx, malformed response, rate limit on their end). */
+/** The provider is rate-limiting this key (429) — distinct so callers can suggest a concrete retry time instead of a generic failure. */
+export class LlmRateLimitError extends Error {
+  retryAfterSeconds: number;
+  constructor(message: string, retryAfterSeconds: number) {
+    super(message);
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
+/** Any other provider-side failure (network, 5xx, malformed response). */
 export class LlmProviderError extends Error {}

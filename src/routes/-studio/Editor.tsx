@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { LivePreview } from "@/components/preview/LivePreview";
 import { PublishToolbar } from "@/components/publish/PublishToolbar";
+import { useAuth } from "@/lib/auth";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Download, Loader2, Sparkles, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Download, Lock, Loader2, Sparkles, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 interface EditorProps {
   initialHtml: string;
@@ -20,11 +21,13 @@ interface EditorProps {
 }
 
 export function Editor({ initialHtml, onRegenerated }: EditorProps) {
+  const { hasPaidAccess } = useAuth();
   const [html, setHtml] = useState(initialHtml);
   const [instructions, setInstructions] = useState("");
   const [resumeUploadId, setResumeUploadId] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
   const [status, setStatus] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
 
   useEffect(() => {
@@ -83,6 +86,28 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     URL.revokeObjectURL(url);
   }
 
+  // Downloading the source HTML is as much "taking the deliverable" as
+  // deploying it is — gated the same way /api/publish gates deploys, so a
+  // free user can't sidestep payment by downloading instead of publishing.
+  async function handleDownloadClick() {
+    if (hasPaidAccess) {
+      download();
+      return;
+    }
+    setCheckingOut(true);
+    try {
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const json = (await res.json().catch(() => ({}))) as { checkoutUrl?: string };
+      if (!res.ok || !json.checkoutUrl) {
+        setStatus({ kind: "err", msg: "Could not start checkout. Try again from Settings." });
+        return;
+      }
+      window.location.href = json.checkoutUrl;
+    } finally {
+      setCheckingOut(false);
+    }
+  }
+
   return (
     <div className="space-y-6 pb-10">
       {/* Top Header */}
@@ -94,9 +119,22 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               A fully custom, AI-generated site — regenerate with new instructions, or publish as-is.
             </p>
           </div>
-          <Button type="button" variant="outline" onClick={download} className="gap-1.5 text-xs">
-            <Download className="size-3.5" />
-            Download HTML
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void handleDownloadClick()}
+            disabled={checkingOut}
+            className="gap-1.5 text-xs"
+            title={hasPaidAccess ? undefined : "Pay now to deploy and download your HTML"}
+          >
+            {checkingOut ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : hasPaidAccess ? (
+              <Download className="size-3.5" />
+            ) : (
+              <Lock className="size-3.5" />
+            )}
+            {hasPaidAccess ? "Download HTML" : "Unlock Download"}
           </Button>
         </div>
 

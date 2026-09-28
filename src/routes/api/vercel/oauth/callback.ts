@@ -22,11 +22,12 @@ export const Route = createFileRoute("/api/vercel/oauth/callback")({
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
 
+        // This whole flow is a full-page navigation (Vercel redirects the
+        // browser here directly) — every failure branch must redirect back
+        // into the app with an error the UI can show, never return raw JSON,
+        // or the user just sees an unstyled error blob instead of the app.
         if (!code || !state || !verifyOAuthState(state, user.id)) {
-          return Response.json(
-            { error: { code: "invalid_oauth_state", message: "OAuth state missing, expired, or mismatched" } },
-            { status: 400 },
-          );
+          return Response.redirect(`${getAppOrigin()}/studio?vercel_error=invalid_state`, 302);
         }
 
         let accessToken: string;
@@ -36,8 +37,8 @@ export const Route = createFileRoute("/api/vercel/oauth/callback")({
           accessToken = result.accessToken;
           teamId = result.teamId;
         } catch (e) {
-          const message = e instanceof VercelOAuthError ? e.message : String(e);
-          return Response.json({ error: { code: "vercel_oauth_failed", message } }, { status: 502 });
+          console.error("Vercel OAuth code exchange failed:", e instanceof VercelOAuthError ? e.message : e);
+          return Response.redirect(`${getAppOrigin()}/studio?vercel_error=oauth_failed`, 302);
         }
 
         const username = await fetchVercelUsername(accessToken, teamId);
@@ -55,14 +56,10 @@ export const Route = createFileRoute("/api/vercel/oauth/callback")({
         );
 
         if (error) {
-          return Response.json(
-            { error: { code: "internal_error", message: "Could not save Vercel connection" } },
-            { status: 500 },
-          );
+          return Response.redirect(`${getAppOrigin()}/studio?vercel_error=save_failed`, 302);
         }
 
-        // Placeholder destination — Antigravity owns the actual "connected" page.
-        return Response.redirect(`${getAppOrigin()}/?vercel=connected`, 302);
+        return Response.redirect(`${getAppOrigin()}/studio?vercel=connected`, 302);
       },
     },
   },

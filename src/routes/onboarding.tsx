@@ -76,7 +76,8 @@ function OnboardingWizard() {
     title: string;
     message: string;
     issues?: Array<{ path: string; message: string }>;
-    retryAfter?: number;
+    /** Absolute timestamp (epoch ms), computed once when the error lands, so the displayed clock time doesn't drift across re-renders. */
+    retryAtMs?: number | undefined;
   } | null>(null);
 
   // Check on mount for existing resume and keys
@@ -112,15 +113,19 @@ function OnboardingWizard() {
 
     setGenerating(true);
     setErrorDetails(null);
-    setGenerationPhase("Extracting text from resume buffer…");
+    setGenerationPhase("Reading your resume and getting to know your story…");
 
     const timer1 = setTimeout(() => {
-      setGenerationPhase("Prompting LLM with strict content-integrity guardrails…");
+      setGenerationPhase("Designing a portfolio that actually looks like you…");
     }, 1500);
 
     const timer2 = setTimeout(() => {
-      setGenerationPhase("Validating structured JSON against portfolio content schema…");
+      setGenerationPhase("Writing the code for your site — this can take a minute or two…");
     }, 4500);
+
+    const timer3 = setTimeout(() => {
+      setGenerationPhase("Almost there — polishing the final details…");
+    }, 12000);
 
     try {
       const res = await fetch("/api/generate", {
@@ -152,13 +157,23 @@ function OnboardingWizard() {
             setCurrentStep(5);
           }
         } else if (res.status === 429) {
-          setErrorDetails({
-            title: "Generation Rate Limited",
-            message:
-              err?.message ??
-              "You have reached the limit of 5 generations per hour. Please wait before trying again.",
-            retryAfter: err?.retryAfterSeconds,
-          });
+          const retryAtMs = err?.retryAfterSeconds ? Date.now() + err.retryAfterSeconds * 1000 : undefined;
+          if (err?.code === "provider_rate_limited") {
+            setErrorDetails({
+              title: "The AI model is busy right now",
+              message:
+                "Gemini is handling a lot of requests at the moment and needs a little time to catch up. Please try again after the time below.",
+              retryAtMs,
+            });
+          } else {
+            setErrorDetails({
+              title: "Generation Rate Limited",
+              message:
+                err?.message ??
+                "You have reached the limit of 5 generations per hour. Please wait before trying again.",
+              retryAtMs,
+            });
+          }
         } else if (res.status === 422) {
           setErrorDetails({
             title: "Schema Validation Issue",
@@ -185,7 +200,7 @@ function OnboardingWizard() {
       // and the /studio route both gate on), then show a deliberate
       // hand-off screen rather than silently whisking the user away —
       // they should land on a clear next step, not a surprise redirect.
-      setGenerationPhase("Content created successfully! Unlocking Studio…");
+      setGenerationPhase("Your portfolio is ready! Unlocking Studio…");
       await refreshPortfolioStatus();
       setGenerationComplete(true);
     } catch (e: unknown) {
@@ -196,6 +211,7 @@ function OnboardingWizard() {
     } finally {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(timer3);
       setGenerating(false);
     }
   };
@@ -620,10 +636,17 @@ function OnboardingWizard() {
                         ))}
                       </div>
                     )}
-                    {errorDetails.retryAfter && (
+                    {errorDetails.retryAtMs && (
                       <div className="mt-2 flex items-center gap-1.5 text-xs">
                         <Clock className="size-3.5" />
-                        <span>Try again in approximately {Math.ceil(errorDetails.retryAfter / 60)} minutes.</span>
+                        <span>
+                          Please try again after{" "}
+                          {new Date(errorDetails.retryAtMs).toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                          .
+                        </span>
                       </div>
                     )}
                   </AlertDescription>
@@ -640,12 +663,12 @@ function OnboardingWizard() {
                     </div>
                   </div>
                   <div className="space-y-1.5 max-w-sm">
-                    <h3 className="font-bold text-lg text-foreground tracking-tight">Synthesizing Your Portfolio…</h3>
+                    <h3 className="font-bold text-lg text-foreground tracking-tight">A beautiful portfolio is in the works…</h3>
                     <p className="text-xs text-accent font-medium animate-pulse">{generationPhase}</p>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="size-3.5 animate-spin text-accent" />
-                    <span>Enforcing Google X-Y-Z and zero-hallucination guardrails</span>
+                    <span>Sticking to the facts on your resume — nothing made up</span>
                   </div>
                 </div>
               )}

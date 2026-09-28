@@ -4,7 +4,7 @@ import { callOpenAI } from "./openai";
 import { callGoogle } from "./google";
 import type { LlmCallInput, LlmCallResult } from "./types";
 
-export { LlmAuthError, LlmProviderError } from "./types";
+export { LlmAuthError, LlmProviderError, LlmRateLimitError } from "./types";
 export type { LlmImageInput } from "./types";
 export { GUARDRAIL_SYSTEM_PROMPT } from "./guardrail-prompt";
 

@@ -79,6 +79,34 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
     void checkStatus();
   }, [checkStatus]);
 
+  // The Vercel OAuth flow is a full-page redirect (start.ts / callback.ts),
+  // so failures come back as a query param on this page rather than a fetch
+  // response — surface them here instead of leaving the user on a blank or
+  // crashed page, then strip the param so a refresh doesn't re-show it.
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const vercelError = params.get("vercel_error");
+    const connected = params.get("vercel") === "connected";
+    if (!vercelError && !connected) return;
+
+    if (vercelError) {
+      const messages: Record<string, string> = {
+        not_configured: "Vercel deployment isn't configured on this server yet. Contact support.",
+        invalid_state: "That Vercel connection link expired or was invalid — please try connecting again.",
+        oauth_failed: "Vercel couldn't complete the connection. Please try again.",
+        save_failed: "Connected to Vercel, but we couldn't save it — please try again.",
+      };
+      setErrorMessage(messages[vercelError] ?? "Could not connect your Vercel account. Please try again.");
+    }
+
+    params.delete("vercel_error");
+    params.delete("vercel");
+    const query = params.toString();
+    window.history.replaceState({}, "", window.location.pathname + (query ? `?${query}` : ""));
+
+    if (connected) void checkStatus();
+  }, [checkStatus]);
+
   // Polling loop when publishing
   React.useEffect(() => {
     if (!isPublishing) return;
@@ -288,9 +316,9 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       {paymentRequired ? (
         <Alert className="border-accent/40 bg-accent/5 py-2.5">
           <Sparkles className="size-4 text-accent" />
-          <AlertTitle className="text-xs font-semibold">Upgrade to publish</AlertTitle>
+          <AlertTitle className="text-xs font-semibold">Pay now to deploy and download</AlertTitle>
           <AlertDescription className="text-xs flex items-center justify-between gap-2">
-            <span>Your portfolio is ready — deploying to a live URL needs the one-time Pro unlock.</span>
+            <span>Your portfolio is ready — deploying it live and downloading the HTML both need the one-time Pro unlock.</span>
             <Button
               type="button"
               size="sm"

@@ -8,6 +8,7 @@ import { extractResumeText } from "@/server/resume-text";
 import {
   GUARDRAIL_SYSTEM_PROMPT,
   LlmAuthError,
+  LlmRateLimitError,
   buildPortfolioHtmlUserMessage,
   callLlmProvider,
   extractHtmlDocument,
@@ -155,6 +156,14 @@ export const Route = createFileRoute("/api/generate")({
           await recordGeneration(supabase, user.id, resumeRow.id, "failed");
           if (e instanceof LlmAuthError) {
             return errorResponse(401, "byok_key_invalid", "Your API key was rejected by the provider");
+          }
+          if (e instanceof LlmRateLimitError) {
+            return errorResponse(
+              429,
+              "provider_rate_limited",
+              "The AI model is busy handling other requests right now. Please try again shortly.",
+              { retryAfterSeconds: e.retryAfterSeconds },
+            );
           }
           return errorResponse(502, "llm_provider_error", e instanceof Error ? e.message : String(e));
         }

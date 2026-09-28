@@ -13,6 +13,8 @@ interface AuthContextType {
   refreshPortfolioStatus: () => Promise<boolean>;
   /** From users.is_admin (see supabase/migrations/0006_admin_flag.sql) — granted only via the /admin panel. */
   isAdmin: boolean;
+  /** isAdmin || plan === "pro" — mirrors hasPaidAccess() in src/server/users.ts. Gates client-side UI (e.g. Studio's download button); the server enforces its own copy of this check independently. */
+  hasPaidAccess: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
   signOut: () => Promise<void>;
@@ -43,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [supabaseConfigured, setSupabaseConfigured] = React.useState(true);
   const [portfolioReady, setPortfolioReady] = React.useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [hasPaidAccess, setHasPaidAccess] = React.useState(false);
 
   const client = React.useMemo(() => getBrowserClient(), []);
 
@@ -102,16 +105,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setHasPaidAccess(false);
       return;
     }
     void (async () => {
       try {
         const res = await fetch("/api/me");
         if (!res.ok) return;
-        const json = (await res.json()) as { isAdmin?: boolean };
-        setIsAdmin(json.isAdmin === true);
+        const json = (await res.json()) as { isAdmin?: boolean; plan?: string };
+        const admin = json.isAdmin === true;
+        setIsAdmin(admin);
+        setHasPaidAccess(admin || json.plan === "pro");
       } catch {
-        // isAdmin stays false — fail closed, not open.
+        // fail closed, not open.
       }
     })();
   }, [user]);
@@ -164,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         portfolioReady,
         refreshPortfolioStatus,
         isAdmin,
+        hasPaidAccess,
         signInWithPassword,
         signUp,
         signOut,
