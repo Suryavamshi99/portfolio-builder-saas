@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getDodoWebhookSecret } from "@/config/dodo";
 import { verifyStandardWebhook } from "@/lib/standard-webhooks";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { grantProAccess } from "@/server/payments";
 
 /**
  * Server-to-server call from Dodo — no user session, exempted from the
@@ -71,24 +72,15 @@ export const Route = createFileRoute("/api/webhooks/dodo")({
 
         const admin = createSupabaseAdminClient();
 
-        // Idempotent: dodo_payment_id is unique, so a replayed webhook for
-        // the same payment hits the conflict and does nothing further —
-        // never double-processes, never double-"grants" anything.
-        const { error: insertError } = await admin.from("purchases").insert({
-          user_id: userId,
-          dodo_payment_id: paymentId,
-          status: "succeeded",
-          amount_cents: event.data?.total_amount ?? null,
-          currency: event.data?.currency ?? null,
-        });
-
-        const isDuplicate = insertError?.code === "23505";
-        if (insertError && !isDuplicate) {
+        try {
+          await grantProAccess(admin, {
+            userId,
+            paymentId,
+            amountCents: event.data?.total_amount,
+            currency: event.data?.currency,
+          });
+        } catch {
           return Response.json({ error: { code: "internal_error" } }, { status: 500 });
-        }
-
-        if (!isDuplicate) {
-          await admin.from("users").upsert({ id: userId, plan: "pro" }, { onConflict: "id" });
         }
 
         return Response.json({ received: true });

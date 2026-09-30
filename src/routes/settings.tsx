@@ -27,12 +27,15 @@ import {
 } from "lucide-react";
 
 interface SettingsSearch {
-  upgrade?: "pending";
+  upgrade?: "pending" | "failed";
 }
 
 export const Route = createFileRoute("/settings")({
   validateSearch: (search: Record<string, unknown>): SettingsSearch => {
-    return search["upgrade"] === "pending" ? { upgrade: "pending" } : {};
+    if (search["upgrade"] === "pending" || search["upgrade"] === "failed") {
+      return { upgrade: search["upgrade"] };
+    }
+    return {};
   },
   head: () => ({
     meta: [{ title: "Account & Settings — Shipfolio" }],
@@ -78,6 +81,7 @@ function SettingsContent() {
   const [upgrading, setUpgrading] = React.useState(false);
   const [upgradeError, setUpgradeError] = React.useState<string | null>(null);
   const [pendingUpgrade, setPendingUpgrade] = React.useState(upgrade === "pending");
+  const [upgradeFailed, setUpgradeFailed] = React.useState(upgrade === "failed");
 
   const fetchStatus = React.useCallback(async () => {
     try {
@@ -122,8 +126,13 @@ function SettingsContent() {
   const handleUpgrade = async () => {
     setUpgrading(true);
     setUpgradeError(null);
+    setUpgradeFailed(false);
     try {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ returnTo: "settings" }),
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.checkoutUrl) {
         throw new Error(json?.error?.message ?? `Could not start checkout (${res.status})`);
@@ -200,6 +209,16 @@ function SettingsContent() {
           <AlertDescription>
             Confirming your payment — this usually takes a few seconds. This will update
             automatically once it's through.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {upgradeFailed && (
+        <Alert variant="destructive">
+          <AlertTriangle className="size-4" />
+          <AlertTitle>Payment didn't go through</AlertTitle>
+          <AlertDescription>
+            Your card wasn't charged and your plan hasn't changed. You can try again below.
           </AlertDescription>
         </Alert>
       )}
