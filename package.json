@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "setup:retention": "node scripts/setup-retention-cron.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {
