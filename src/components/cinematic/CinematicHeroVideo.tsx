@@ -108,16 +108,43 @@ export default function CinematicHeroVideo({
   useEffect(() => {
     const v = videoRef.current;
     if (!shouldLoad || !v || !layerRef.current) return;
+    // Belt-and-suspenders for iOS Safari: the `muted` *attribute* React sets
+    // from the JSX prop can lose a race with autoplay's mute check on some
+    // WebKit builds — setting the DOM property directly right before play()
+    // is the documented workaround.
+    v.muted = true;
     let visible = true;
+    let retryOnGesture: (() => void) | null = null;
+    const clearRetry = () => {
+      if (!retryOnGesture) return;
+      document.removeEventListener("touchstart", retryOnGesture);
+      document.removeEventListener("click", retryOnGesture);
+      retryOnGesture = null;
+    };
     const sync = () => {
-      if (visible && !document.hidden && !userPaused) v.play().catch(() => setPaused(true));
-      else v.pause();
+      if (visible && !document.hidden && !userPaused) {
+        v.play().catch(() => {
+          setPaused(true);
+          // Some mobile browsers reject the autoplay attempt (policy,
+          // power-saving mode, etc.) with no further event — silently
+          // showing just the poster looks like a broken feature. Retry
+          // once on the visitor's next tap/scroll-adjacent gesture instead
+          // of leaving it stuck.
+          if (!retryOnGesture) {
+            retryOnGesture = () => { clearRetry(); v.muted = true; v.play().catch(() => {}); };
+            document.addEventListener("touchstart", retryOnGesture, { once: true, passive: true });
+            document.addEventListener("click", retryOnGesture, { once: true });
+          }
+        });
+      } else {
+        v.pause();
+      }
     };
     const io = new IntersectionObserver((e) => { visible = Boolean(e[0]?.isIntersecting); sync(); }, { threshold: 0.1 });
     io.observe(layerRef.current);
     document.addEventListener("visibilitychange", sync);
     sync();
-    return () => { io.disconnect(); document.removeEventListener("visibilitychange", sync); };
+    return () => { io.disconnect(); document.removeEventListener("visibilitychange", sync); clearRetry(); };
   }, [shouldLoad, userPaused]);
 
   const toggle = () => {
@@ -173,6 +200,12 @@ export default function CinematicHeroVideo({
               disableRemotePlayback
               tabIndex={-1}
               onPlaying={() => { setReady(true); setPaused(false); }}
+              // Defensive fallback: on some mobile browsers `playing` can be
+              // slow to fire (or not fire) even once frames are decoding —
+              // `timeupdate` only fires once real playback is progressing,
+              // so it's a safe second signal to reveal the video instead of
+              // leaving it stuck at opacity 0 behind the poster.
+              onTimeUpdate={() => { if (!ready) setReady(true); }}
               onPause={() => setPaused(true)}
               onError={() => setShouldLoad(false)}
             >
@@ -183,12 +216,24 @@ export default function CinematicHeroVideo({
         {scrim !== "none" && <div className={styles["scrim"]} aria-hidden="true" />}
       </div>
       {showControl && hasVideo && (
-        <button type="button" className={styles["control"]} onClick={toggle} aria-pressed={!paused} aria-label={paused ? controlLabels.play : controlLabels.pause} title={paused ? controlLabels.play : controlLabels.pause}>
+        <button
+          type="button"
+          className={[styles["control"], !shouldLoad ? styles["controlLabeled"] : ""].filter(Boolean).join(" ")}
+          onClick={toggle}
+          aria-pressed={!paused}
+          aria-label={paused ? controlLabels.play : controlLabels.pause}
+          title={paused ? controlLabels.play : controlLabels.pause}
+        >
           {paused ? (
             <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>
           ) : (
             <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor" /></svg>
           )}
+          {/* Only shown before the video has ever attempted to load — e.g.
+              Data Saver/reduced-motion opted it out, or autoplay was
+              silently blocked. Otherwise this looks like a broken/missing
+              feature rather than a deliberate, tappable choice. */}
+          {!shouldLoad && <span className={styles["controlText"]}>Play video</span>}
         </button>
       )}
     </>

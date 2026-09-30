@@ -400,7 +400,7 @@ export function HomePage() {
             <div className="grid gap-4 sm:grid-cols-3 text-xs text-muted-foreground">
               <div className="space-y-1.5 rounded-xl bg-muted/40 p-3.5 border border-border/40">
                 <div className="font-semibold text-foreground flex items-center gap-1.5">
-                  <Clock className="size-3.5 text-accent" /> 48-Hour Purge
+                  <Clock className="size-3.5 text-accent" /> Deleted in 48 Hours
                 </div>
                 <p>
                   Uploaded resumes and visual screenshots are deleted automatically 48 hours after generation.
@@ -953,7 +953,7 @@ export function HomePage() {
             </div>
             <h3 className="text-xl font-bold text-foreground">Privacy-First Architecture</h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              We never sell your data or retain uploaded documents permanently. Resumes and visual mockups are automatically purged after 48 hours. Profile photos have EXIF and GPS geolocation metadata stripped before storage.
+              We never sell your data or keep your documents longer than needed. Resumes and reference screenshots are deleted within 48 hours, and we strip hidden location and camera info from your photos before they're ever stored.
             </p>
           </Reveal>
 
