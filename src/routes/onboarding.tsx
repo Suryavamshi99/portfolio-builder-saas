@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -27,6 +28,11 @@ import {
   AlertTriangle,
   LayoutTemplate,
   Globe,
+  Github,
+  Linkedin,
+  Plus,
+  X,
+  Link2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
@@ -64,8 +70,18 @@ function OnboardingWizard() {
   const [visualReferences, setVisualReferences] = React.useState<UploadItem[]>([]);
   const [photoUpload, setPhotoUpload] = React.useState<UploadItem | null>(null);
   const [otherSpecifics, setOtherSpecifics] = React.useState("");
+  const [linkedinUrl, setLinkedinUrl] = React.useState("");
+  const [githubProfileUrl, setGithubProfileUrl] = React.useState("");
+  const [githubProjectLinks, setGithubProjectLinks] = React.useState<string[]>([]);
+  const [otherLinks, setOtherLinks] = React.useState<{ label: string; url: string }[]>([]);
+  const [designIntensity, setDesignIntensity] = React.useState<"minimal" | "bold">("minimal");
   const [selectedProvider, setSelectedProvider] = React.useState<LLMProvider>("google");
   const [hasProviderKey, setHasProviderKey] = React.useState(false);
+  // True while any upload/delete on the currently visible step is in
+  // flight — blocks Next/Skip/step-jump so a visitor can't navigate away
+  // before we actually know whether their file made it (see UploadWidget's
+  // onBusyChange).
+  const [uploadBusy, setUploadBusy] = React.useState(false);
 
   // Generation state
   const [generating, setGenerating] = React.useState(false);
@@ -135,6 +151,15 @@ function OnboardingWizard() {
           provider: selectedProvider,
           resumeUploadId: resumeUpload.id,
           otherSpecifics: otherSpecifics.trim() || undefined,
+          designIntensity,
+          links: {
+            linkedin: linkedinUrl.trim() || undefined,
+            github: githubProfileUrl.trim() || undefined,
+            githubProjects: githubProjectLinks.map((l) => l.trim()).filter(Boolean),
+            other: otherLinks
+              .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+              .filter((l) => l.label && l.url),
+          },
         }),
       });
 
@@ -254,7 +279,7 @@ function OnboardingWizard() {
               <button
                 key={s.step}
                 type="button"
-                onClick={() => !generating && setCurrentStep(s.step as StepIndex)}
+                onClick={() => !generating && !uploadBusy && setCurrentStep(s.step as StepIndex)}
                 className={`flex flex-col items-center gap-1.5 rounded-lg p-2 text-center transition-all ${
                   isCurrent
                     ? "bg-accent/15 text-accent font-semibold"
@@ -298,15 +323,20 @@ function OnboardingWizard() {
                 kind="resume"
                 onUploadSuccess={(up) => setResumeUpload(up)}
                 onDeleteSuccess={() => setResumeUpload(null)}
+                onBusyChange={setUploadBusy}
               />
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
               <span className="text-xs text-muted-foreground">
-                {resumeUpload ? "Resume ready for parsing" : "Upload a PDF or DOCX file to proceed"}
+                {uploadBusy
+                  ? "Uploading…"
+                  : resumeUpload
+                  ? "Resume ready for parsing"
+                  : "Upload a PDF or DOCX file to proceed"}
               </span>
               <Button
                 type="button"
-                disabled={!resumeUpload}
+                disabled={!resumeUpload || uploadBusy}
                 onClick={() => setCurrentStep(2)}
                 className="gap-2"
               >
@@ -326,18 +356,59 @@ function OnboardingWizard() {
                 Upload up to 3 screenshots of portfolios or layouts you admire for structural inspiration.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-5">
               <UploadWidget
                 kind="visual_reference"
                 maxFilesOverride={3}
                 onUploadSuccess={(up) => setVisualReferences((prev) => [...prev, up])}
                 onDeleteSuccess={(id) => setVisualReferences((prev) => prev.filter((r) => r.id !== id))}
+                onBusyChange={setUploadBusy}
               />
+
+              <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5">
+                <div className="text-xs font-semibold text-foreground">Design intensity</div>
+                <p className="text-[11px] text-muted-foreground">
+                  How much visual flair should the AI apply? You can change this anytime before generating.
+                </p>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setDesignIntensity("minimal")}
+                    aria-pressed={designIntensity === "minimal"}
+                    className={`rounded-lg border p-3 text-left transition-all ${
+                      designIntensity === "minimal"
+                        ? "border-accent bg-accent/10 ring-1 ring-accent"
+                        : "border-border hover:border-accent/50"
+                    }`}
+                  >
+                    <div className="text-xs font-semibold text-foreground">Minimal</div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                      Clean, restrained, editorial — whitespace and typography do the work.
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDesignIntensity("bold")}
+                    aria-pressed={designIntensity === "bold"}
+                    className={`rounded-lg border p-3 text-left transition-all ${
+                      designIntensity === "bold"
+                        ? "border-accent bg-accent/10 ring-1 ring-accent"
+                        : "border-border hover:border-accent/50"
+                    }`}
+                  >
+                    <div className="text-xs font-semibold text-foreground">Design-heavy</div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                      Bolder typography, color, and layout — more visual personality.
+                    </div>
+                  </button>
+                </div>
+              </div>
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
               <Button
                 type="button"
                 variant="outline"
+                disabled={uploadBusy}
                 onClick={() => setCurrentStep(1)}
                 className="gap-2"
               >
@@ -345,10 +416,11 @@ function OnboardingWizard() {
               </Button>
               <Button
                 type="button"
+                disabled={uploadBusy}
                 onClick={() => setCurrentStep(3)}
                 className="gap-2"
               >
-                {visualReferences.length > 0 ? "Next: Profile Photo" : "Skip / Next: Profile Photo"}
+                {uploadBusy ? "Uploading…" : visualReferences.length > 0 ? "Next: Profile Photo" : "Skip / Next: Profile Photo"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -369,12 +441,14 @@ function OnboardingWizard() {
                 kind="photo"
                 onUploadSuccess={(up) => setPhotoUpload(up)}
                 onDeleteSuccess={() => setPhotoUpload(null)}
+                onBusyChange={setUploadBusy}
               />
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
               <Button
                 type="button"
                 variant="outline"
+                disabled={uploadBusy}
                 onClick={() => setCurrentStep(2)}
                 className="gap-2"
               >
@@ -382,10 +456,11 @@ function OnboardingWizard() {
               </Button>
               <Button
                 type="button"
+                disabled={uploadBusy}
                 onClick={() => setCurrentStep(4)}
                 className="gap-2"
               >
-                {photoUpload ? "Next: Specifics" : "Skip / Next: Specifics"}
+                {uploadBusy ? "Uploading…" : photoUpload ? "Next: Specifics" : "Skip / Next: Specifics"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -396,85 +471,136 @@ function OnboardingWizard() {
         {currentStep === 4 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 4: Additional Specifics & Instructions</CardTitle>
+              <CardTitle className="text-lg">Step 4: Links & Specifics</CardTitle>
               <CardDescription>
-                Provide any custom directions for the generation prompt (e.g., target role, specific projects to emphasize, tone).
+                Add your profile links and anything else you want the AI to know.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* AI Tuning Presets */}
-              <div className="space-y-2 rounded-xl border border-accent/20 bg-accent/5 p-3.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-accent flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 text-accent" />
-                    Resume.io AI Tuning Presets
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">Click to append</span>
+            <CardContent className="space-y-5">
+              {/* Links & Profiles — exact URLs, embedded verbatim in the
+                  generated site (never fabricated, never guessed). */}
+              <div className="space-y-3 rounded-xl border border-border/80 bg-muted/20 p-3.5">
+                <div className="text-xs font-semibold text-foreground">Links & profiles (optional)</div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label htmlFor="linkedin-url" className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                      <Linkedin className="size-3.5" /> LinkedIn URL
+                    </label>
+                    <Input
+                      id="linkedin-url"
+                      type="url"
+                      placeholder="https://linkedin.com/in/yourname"
+                      value={linkedinUrl}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                      className="h-9 bg-background/60 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="github-url" className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                      <Github className="size-3.5" /> GitHub profile URL
+                    </label>
+                    <Input
+                      id="github-url"
+                      type="url"
+                      placeholder="https://github.com/yourname"
+                      value={githubProfileUrl}
+                      onChange={(e) => setGithubProfileUrl(e.target.value)}
+                      className="h-9 bg-background/60 text-xs"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2 pt-1">
-                  <div>
-                    <div className="text-[11px] font-semibold text-muted-foreground mb-1">Target Engineering Role:</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        "Full-Stack Software Engineer",
-                        "Backend & Distributed Systems",
-                        "Frontend & UI Architecture",
-                        "AI / ML & Data Systems",
-                        "Cloud & DevOps Infrastructure",
-                      ].map((rolePreset) => (
-                        <button
-                          key={rolePreset}
-                          type="button"
-                          onClick={() => {
-                            const addition = `Target Role: ${rolePreset}.`;
-                            if (!otherSpecifics.includes(addition)) {
-                              setOtherSpecifics((prev) => (prev ? `${prev.trim()}\n${addition}` : addition));
-                            }
-                          }}
-                          className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground transition-all hover:border-accent hover:text-accent active:scale-[0.98]"
-                        >
-                          + {rolePreset}
-                        </button>
-                      ))}
+                {/* GitHub project links — repeatable */}
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-medium text-muted-foreground">GitHub project links</div>
+                  {githubProjectLinks.map((link, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      <Input
+                        type="url"
+                        placeholder="https://github.com/yourname/project"
+                        value={link}
+                        onChange={(e) =>
+                          setGithubProjectLinks((prev) => prev.map((l, i) => (i === idx ? e.target.value : l)))
+                        }
+                        className="h-9 bg-background/60 text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setGithubProjectLinks((prev) => prev.filter((_, i) => i !== idx))}
+                        className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+                        aria-label="Remove project link"
+                      >
+                        <X className="size-3.5" />
+                      </Button>
                     </div>
-                  </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setGithubProjectLinks((prev) => [...prev, ""])}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                  >
+                    <Plus className="size-3.5" /> Add a project link
+                  </button>
+                </div>
 
-                  <div>
-                    <div className="text-[11px] font-semibold text-muted-foreground mb-1">Copywriting Style & Tone:</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        "Google X-Y-Z Impact Formulation (highlight metrics & scale)",
-                        "Deep Technical Architecture & Systems focus",
-                        "Product-Minded & High-Velocity Startup tone",
-                        "Clean, concise ATS-optimized phrasing",
-                      ].map((tonePreset) => (
-                        <button
-                          key={tonePreset}
-                          type="button"
-                          onClick={() => {
-                            const addition = `Style & Tone: ${tonePreset}.`;
-                            if (!otherSpecifics.includes(addition)) {
-                              setOtherSpecifics((prev) => (prev ? `${prev.trim()}\n${addition}` : addition));
-                            }
-                          }}
-                          className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground transition-all hover:border-accent hover:text-accent active:scale-[0.98]"
-                        >
-                          + {tonePreset}
-                        </button>
-                      ))}
+                {/* Any other link — Figma, Behance, personal site, etc. */}
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-medium text-muted-foreground">Other links (Figma, Behance, personal site, etc.)</div>
+                  {otherLinks.map((entry, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      <Input
+                        placeholder="Label (e.g. Figma)"
+                        value={entry.label}
+                        onChange={(e) =>
+                          setOtherLinks((prev) => prev.map((l, i) => (i === idx ? { ...l, label: e.target.value } : l)))
+                        }
+                        className="h-9 w-28 shrink-0 bg-background/60 text-xs"
+                      />
+                      <Input
+                        type="url"
+                        placeholder="https://…"
+                        value={entry.url}
+                        onChange={(e) =>
+                          setOtherLinks((prev) => prev.map((l, i) => (i === idx ? { ...l, url: e.target.value } : l)))
+                        }
+                        className="h-9 bg-background/60 text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setOtherLinks((prev) => prev.filter((_, i) => i !== idx))}
+                        className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+                        aria-label="Remove link"
+                      >
+                        <X className="size-3.5" />
+                      </Button>
                     </div>
-                  </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setOtherLinks((prev) => [...prev, { label: "", url: "" }])}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                  >
+                    <Link2 className="size-3.5" /> Add any (Figma, Dribbble, portfolio…)
+                  </button>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="other-specifics" className="text-xs font-medium text-foreground">
-                  Custom instructions for the extraction model:
+                  Anything else for the AI to know
                 </label>
+                <p className="text-[11px] text-muted-foreground">
+                  Write freely — there's no fixed format. Call out a project to emphasize, your target role, a tone you
+                  want, or any context that isn't already on your resume.
+                </p>
                 <Textarea
                   id="other-specifics"
-                  placeholder="e.g. Focus on my machine learning internships, highlight my published papers, keep project summaries concise and impact-focused."
+                  placeholder="e.g. Focus on my machine learning internships, I'm targeting backend roles at startups, keep the tone confident but not salesy."
                   value={otherSpecifics}
                   onChange={(e) => setOtherSpecifics(e.target.value)}
                   rows={4}

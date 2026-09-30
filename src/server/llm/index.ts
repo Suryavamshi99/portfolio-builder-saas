@@ -37,11 +37,47 @@ sections the resume actually supports; skip any that don't apply:
    per project — never vague marketing language.
 `;
 
+const DESIGN_INTENSITY_GUIDELINES: Record<"minimal" | "bold", string> = {
+  minimal: `DESIGN DIRECTION — MINIMAL (user-selected): favor a clean, restrained, editorial aesthetic.
+Generous whitespace, a small and disciplined color palette (near-monochrome plus one accent), a clear
+type-driven hierarchy, and minimal ornamentation. Motion, if any, should be subtle (small fades/transitions),
+never showy. Prioritize clarity and fast scanning over visual flourish — this should read as quietly
+premium, not sparse or unfinished.`,
+  bold: `DESIGN DIRECTION — DESIGN-HEAVY (user-selected): push the aesthetics hard. Use expressive
+typography (real scale contrast, a considered display/body pairing), a deliberate color palette with a
+strong accent, and layered visual interest — gradients, textures, asymmetric layout, custom section
+dividers, and tasteful hover/scroll-triggered motion via CSS. Art-direct the hero section like a design
+studio's own portfolio. Stay legible and usable — bold, not chaotic or gimmicky.`,
+};
+
+export interface ProfileLinks {
+  linkedin?: string | undefined;
+  github?: string | undefined;
+  githubProjects?: string[] | undefined;
+  other?: { label: string; url: string }[] | undefined;
+}
+
+function buildLinksBlock(links: ProfileLinks | undefined): string | null {
+  if (!links) return null;
+  const lines: string[] = [];
+  if (links.linkedin) lines.push(`- LinkedIn: ${links.linkedin}`);
+  if (links.github) lines.push(`- GitHub profile: ${links.github}`);
+  for (const project of links.githubProjects ?? []) lines.push(`- GitHub project: ${project}`);
+  for (const entry of links.other ?? []) lines.push(`- ${entry.label}: ${entry.url}`);
+  if (lines.length === 0) return null;
+
+  return `Verified links (supplied directly by the user, not extracted from the resume — use these EXACT
+URLs verbatim wherever you link to them, e.g. as icons/buttons in the hero or a contact/footer section.
+Never invent, guess, or modify a URL, and never add a link for a platform not listed here):\n${lines.join("\n")}`;
+}
+
 export function buildPortfolioHtmlUserMessage(opts: {
   resumeText: string;
   otherSpecifics?: string | undefined;
   photoUrl?: string | undefined;
   hasReferenceImages: boolean;
+  designIntensity?: "minimal" | "bold";
+  links?: ProfileLinks | undefined;
 }): string {
   const parts = [
     `Resume text:\n"""\n${opts.resumeText}\n"""`,
@@ -51,9 +87,11 @@ export function buildPortfolioHtmlUserMessage(opts: {
     opts.photoUrl
       ? `Profile photo URL (use this exact URL as the hero <img> src): ${opts.photoUrl}`
       : `No profile photo was provided — design the hero section without a photo (e.g. typographic hero, or an abstract/geometric visual), don't use a placeholder image.`,
+    buildLinksBlock(opts.links),
     opts.hasReferenceImages
       ? `${opts.hasReferenceImages ? "Reference screenshots are attached as images above" : ""} — use them as design/mood inspiration only, never as a source of facts.`
       : null,
+    DESIGN_INTENSITY_GUIDELINES[opts.designIntensity ?? "minimal"],
     RESUME_IO_COPY_GUIDELINES.trim(),
     `Respond with ONLY the raw HTML document — no markdown code fences, no commentary before or after.`,
   ];

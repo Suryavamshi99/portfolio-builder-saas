@@ -13,6 +13,7 @@ import {
   callLlmProvider,
   extractHtmlDocument,
   type LlmImageInput,
+  type ProfileLinks,
 } from "@/server/llm";
 import { recordGeneration } from "@/server/generations";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
@@ -33,6 +34,47 @@ function errorResponse(
   return Response.json({ error }, { status });
 }
 
+const MAX_LINK_LENGTH = 300;
+const MAX_LINKS = 10;
+
+function cleanString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim().slice(0, MAX_LINK_LENGTH);
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+/** Never trust the shape of client JSON — these are optional, best-effort
+ * exact-URL inputs (see ProfileLinks / DESIGN & OUTPUT RULES in the
+ * guardrail prompt), not facts subject to the resume-only content rule. */
+function parseLinks(raw: unknown): ProfileLinks {
+  if (typeof raw !== "object" || raw === null) return {};
+  const obj = raw as Record<string, unknown>;
+
+  const githubProjects = Array.isArray(obj["githubProjects"])
+    ? obj["githubProjects"].map(cleanString).filter((v): v is string => Boolean(v)).slice(0, MAX_LINKS)
+    : undefined;
+
+  const other = Array.isArray(obj["other"])
+    ? obj["other"]
+        .map((entry) => {
+          if (typeof entry !== "object" || entry === null) return undefined;
+          const e = entry as Record<string, unknown>;
+          const label = cleanString(e["label"]);
+          const url = cleanString(e["url"]);
+          return label && url ? { label, url } : undefined;
+        })
+        .filter((v): v is { label: string; url: string } => Boolean(v))
+        .slice(0, MAX_LINKS)
+    : undefined;
+
+  return {
+    linkedin: cleanString(obj["linkedin"]),
+    github: cleanString(obj["github"]),
+    githubProjects: githubProjects && githubProjects.length > 0 ? githubProjects : undefined,
+    other: other && other.length > 0 ? other : undefined,
+  };
+}
+
 export const Route = createFileRoute("/api/generate")({
   server: {
     middleware: [authMiddleware],
@@ -40,7 +82,13 @@ export const Route = createFileRoute("/api/generate")({
       POST: async ({ request, context }) => {
         const { user, supabase } = context as AuthedContext;
 
-        let body: { provider?: unknown; resumeUploadId?: unknown; otherSpecifics?: unknown };
+        let body: {
+          provider?: unknown;
+          resumeUploadId?: unknown;
+          otherSpecifics?: unknown;
+          designIntensity?: unknown;
+          links?: unknown;
+        };
         try {
           body = await request.json();
         } catch {
@@ -53,7 +101,12 @@ export const Route = createFileRoute("/api/generate")({
         if (typeof body.resumeUploadId !== "string") {
           return errorResponse(400, "invalid_request", "resumeUploadId is required");
         }
+        if (body.designIntensity !== undefined && body.designIntensity !== "minimal" && body.designIntensity !== "bold") {
+          return errorResponse(400, "invalid_request", "designIntensity must be 'minimal' or 'bold'");
+        }
         const otherSpecifics = typeof body.otherSpecifics === "string" ? body.otherSpecifics : undefined;
+        const designIntensity = body.designIntensity === "bold" ? "bold" : "minimal";
+        const links = parseLinks(body.links);
         const provider = body.provider;
         const resumeUploadId = body.resumeUploadId;
 
@@ -141,6 +194,8 @@ export const Route = createFileRoute("/api/generate")({
           otherSpecifics,
           photoUrl,
           hasReferenceImages: referenceImages.length > 0,
+          designIntensity,
+          links,
         });
 
         let responseText: string;

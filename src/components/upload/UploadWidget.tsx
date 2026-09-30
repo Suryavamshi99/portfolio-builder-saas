@@ -35,6 +35,10 @@ interface UploadWidgetProps {
   kind: UploadKind;
   onUploadSuccess?: (upload: UploadItem) => void;
   onDeleteSuccess?: (deletedId: string) => void;
+  /** Fires whenever an upload or delete is in flight — callers use this to
+   * block "Next"/navigation until the current file has actually finished,
+   * instead of only checking whether one has succeeded yet. */
+  onBusyChange?: (busy: boolean) => void;
   title?: string;
   description?: string;
   maxFilesOverride?: number;
@@ -57,7 +61,7 @@ const KIND_CONFIG: Record<
     maxSizeFormatted: "5 MB",
     allowedTypesFormatted: "PDF, DOCX",
     accept: ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    retentionNotice: "Resumes are automatically purged within 48 hours of generation for your privacy.",
+    retentionNotice: "We delete your resume within 48 hours after your portfolio is generated.",
   },
   visual_reference: {
     label: "Visual Reference Screenshot",
@@ -65,7 +69,7 @@ const KIND_CONFIG: Record<
     maxSizeFormatted: "5 MB each",
     allowedTypesFormatted: "PNG, JPG, WEBP",
     accept: "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp",
-    retentionNotice: "Design reference screenshots expire 48 hours after generation.",
+    retentionNotice: "We delete these screenshots 48 hours after your portfolio is generated.",
   },
   photo: {
     label: "Profile Headshot",
@@ -73,7 +77,7 @@ const KIND_CONFIG: Record<
     maxSizeFormatted: "5 MB",
     allowedTypesFormatted: "PNG, JPG, WEBP",
     accept: "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp",
-    retentionNotice: "EXIF/GPS metadata is stripped server-side. Draft images expire after 30 days of inactivity; published sites embed their own copy.",
+    retentionNotice: "We automatically remove hidden location and camera info from your photo. If your draft sits untouched for 30 days we delete it — but once you publish, your live site already has its own copy, so it's unaffected.",
   },
   project_image: {
     label: "Project Showcase Image",
@@ -95,6 +99,7 @@ export function UploadWidget({
   kind,
   onUploadSuccess,
   onDeleteSuccess,
+  onBusyChange,
   title,
   description,
   maxFilesOverride,
@@ -134,6 +139,10 @@ export function UploadWidget({
   React.useEffect(() => {
     void fetchUploadsAndStorage();
   }, [fetchUploadsAndStorage]);
+
+  React.useEffect(() => {
+    onBusyChange?.(uploading || deletingId !== null);
+  }, [uploading, deletingId, onBusyChange]);
 
   // Rate limit countdown effect
   React.useEffect(() => {

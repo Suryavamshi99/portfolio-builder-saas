@@ -39,6 +39,10 @@ DESIGN & OUTPUT RULES:
   from them, only visual language.
 - If a profile photo URL is given in the user message, include it in the hero section with
   that exact URL as the <img> src, styled to fit the design.
+- If verified links (LinkedIn, GitHub, project repos, or other profiles) are given in the user
+  message, surface them as real, clickable links using their exact URLs — e.g. icon buttons in
+  the hero or header, or a contact/footer section. Never fabricate a link for a platform that
+  wasn't explicitly given a URL.
 - The page must be responsive (usable from ~375px mobile width up) and semantically
   structured (real heading hierarchy, <nav>, <section>, alt text on images).
 - Include working in-page anchor navigation between sections.
