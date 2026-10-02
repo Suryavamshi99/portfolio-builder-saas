@@ -20,8 +20,16 @@ interface EditorProps {
   onRegenerated: (html: string) => void;
 }
 
+/**
+ * Temporary: Download HTML is free for everyone for now, by explicit
+ * request — flip back to false to re-gate it behind hasPaidAccess (publish
+ * itself is untouched and stays payment-gated either way).
+ */
+const DOWNLOAD_FREE_FOR_NOW = true;
+
 export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const { hasPaidAccess } = useAuth();
+  const downloadUnlocked = hasPaidAccess || DOWNLOAD_FREE_FOR_NOW;
   const [html, setHtml] = useState(initialHtml);
   const [instructions, setInstructions] = useState("");
   const [resumeUploadId, setResumeUploadId] = useState<string | null>(null);
@@ -86,11 +94,12 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     URL.revokeObjectURL(url);
   }
 
-  // Downloading the source HTML is as much "taking the deliverable" as
-  // deploying it is — gated the same way /api/publish gates deploys, so a
+  // Downloading the source HTML is normally as much "taking the deliverable"
+  // as deploying it is — gated the same way /api/publish gates deploys, so a
   // free user can't sidestep payment by downloading instead of publishing.
+  // DOWNLOAD_FREE_FOR_NOW currently overrides that (see its own comment).
   async function handleDownloadClick() {
-    if (hasPaidAccess) {
+    if (downloadUnlocked) {
       download();
       return;
     }
@@ -125,16 +134,16 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
             onClick={() => void handleDownloadClick()}
             disabled={checkingOut}
             className="gap-1.5 text-xs"
-            title={hasPaidAccess ? undefined : "Pay now to deploy and download your HTML"}
+            title={downloadUnlocked ? undefined : "Pay now to deploy and download your HTML"}
           >
             {checkingOut ? (
               <Loader2 className="size-3.5 animate-spin" />
-            ) : hasPaidAccess ? (
+            ) : downloadUnlocked ? (
               <Download className="size-3.5" />
             ) : (
               <Lock className="size-3.5" />
             )}
-            {hasPaidAccess ? "Download HTML" : "Unlock Download"}
+            {downloadUnlocked ? "Download HTML" : "Unlock Download"}
           </Button>
         </div>
 

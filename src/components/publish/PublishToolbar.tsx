@@ -399,9 +399,9 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       {paymentRequired && hasPaidAccess ? (
         <Alert className="border-accent/40 bg-accent/5 py-2.5">
           <Sparkles className="size-4 text-accent" />
-          <AlertTitle className="text-xs font-semibold">Pay now to deploy and download</AlertTitle>
+          <AlertTitle className="text-xs font-semibold">Pay now to deploy</AlertTitle>
           <AlertDescription className="text-xs flex items-center justify-between gap-2">
-            <span>Your portfolio is ready — deploying it live and downloading the HTML both need the one-time Pro unlock.</span>
+            <span>Your portfolio is ready — deploying it live needs the one-time Pro unlock. (Downloading the HTML is free for now.)</span>
             <Button
               type="button"
               size="sm"
