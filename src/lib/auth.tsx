@@ -13,7 +13,7 @@ interface AuthContextType {
   refreshPortfolioStatus: () => Promise<boolean>;
   /** From users.is_admin (see supabase/migrations/0006_admin_flag.sql) — granted only via the /admin panel. */
   isAdmin: boolean;
-  /** isAdmin || plan === "pro" — mirrors hasPaidAccess() in src/server/users.ts. Gates client-side UI (e.g. Studio's download button); the server enforces its own copy of this check independently. */
+  /** Sourced directly from /api/me's hasPaidAccess field (server-computed by src/server/users.ts, which also honors the PAYMENTS_ENABLED env kill switch) — never recomputed client-side, so there's one source of truth. Gates client-side UI (e.g. Studio's download button); the server enforces its own copy of this check independently on every gated route. */
   hasPaidAccess: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
@@ -112,10 +112,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const res = await fetch("/api/me");
         if (!res.ok) return;
-        const json = (await res.json()) as { isAdmin?: boolean; plan?: string };
-        const admin = json.isAdmin === true;
-        setIsAdmin(admin);
-        setHasPaidAccess(admin || json.plan === "pro");
+        const json = (await res.json()) as { isAdmin?: boolean; hasPaidAccess?: boolean };
+        setIsAdmin(json.isAdmin === true);
+        setHasPaidAccess(json.hasPaidAccess === true);
       } catch {
         // fail closed, not open.
       }

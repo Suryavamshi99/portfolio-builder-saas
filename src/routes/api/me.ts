@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
-import { getOrCreateAppUser } from "@/server/users";
+import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { PLAN_STORAGE_QUOTA_BYTES } from "@/config/plans";
 
 export const Route = createFileRoute("/api/me")({
@@ -35,6 +35,7 @@ export const Route = createFileRoute("/api/me")({
           email: user.email,
           plan: appUser.plan,
           isAdmin: appUser.isAdmin,
+          hasPaidAccess: hasPaidAccess(appUser),
           createdAt: appUser.createdAt,
           storage: { usedBytes, quotaBytes: PLAN_STORAGE_QUOTA_BYTES[appUser.plan] },
           vercel: { connected: vercelConnection != null },

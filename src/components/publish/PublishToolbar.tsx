@@ -64,8 +64,8 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       const [meRes, vercelRes] = await Promise.all([fetch("/api/me"), fetch("/api/vercel/status")]);
 
       if (meRes.ok) {
-        const meJson = (await meRes.json()) as { plan?: string; isAdmin?: boolean };
-        setHasPaidAccess(meJson.isAdmin === true || meJson.plan === "pro");
+        const meJson = (await meRes.json()) as { hasPaidAccess?: boolean };
+        setHasPaidAccess(meJson.hasPaidAccess === true);
       }
       if (vercelRes.ok) {
         const json = (await vercelRes.json()) as VercelStatus;
@@ -134,8 +134,8 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       const poll = async () => {
         attempts += 1;
         const res = await fetch("/api/me").catch(() => null);
-        const json = res?.ok ? ((await res.json()) as { plan?: string; isAdmin?: boolean }) : null;
-        const paid = json ? json.isAdmin === true || json.plan === "pro" : false;
+        const json = res?.ok ? ((await res.json()) as { hasPaidAccess?: boolean }) : null;
+        const paid = json?.hasPaidAccess === true;
         if (paid) {
           setConfirmingPayment(false);
           setHasPaidAccess(true);
@@ -399,9 +399,9 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       {paymentRequired && hasPaidAccess ? (
         <Alert className="border-accent/40 bg-accent/5 py-2.5">
           <Sparkles className="size-4 text-accent" />
-          <AlertTitle className="text-xs font-semibold">Pay now to deploy</AlertTitle>
+          <AlertTitle className="text-xs font-semibold">Pay now to deploy and download</AlertTitle>
           <AlertDescription className="text-xs flex items-center justify-between gap-2">
-            <span>Your portfolio is ready — deploying it live needs the one-time Pro unlock. (Downloading the HTML is free for now.)</span>
+            <span>Your portfolio is ready — deploying it live and downloading the HTML both need the one-time Pro unlock.</span>
             <Button
               type="button"
               size="sm"

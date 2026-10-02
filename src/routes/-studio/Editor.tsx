@@ -20,16 +20,11 @@ interface EditorProps {
   onRegenerated: (html: string) => void;
 }
 
-/**
- * Temporary: Download HTML is free for everyone for now, by explicit
- * request — flip back to false to re-gate it behind hasPaidAccess (publish
- * itself is untouched and stays payment-gated either way).
- */
-const DOWNLOAD_FREE_FOR_NOW = true;
-
 export function Editor({ initialHtml, onRegenerated }: EditorProps) {
-  const { hasPaidAccess } = useAuth();
-  const downloadUnlocked = hasPaidAccess || DOWNLOAD_FREE_FOR_NOW;
+  // hasPaidAccess already honors PAYMENTS_ENABLED (see src/config/payments.ts)
+  // server-side, via /api/me — so setting PAYMENTS_ENABLED=false makes
+  // download (and publish) free for everyone with no separate flag here.
+  const { hasPaidAccess: downloadUnlocked } = useAuth();
   const [html, setHtml] = useState(initialHtml);
   const [instructions, setInstructions] = useState("");
   const [resumeUploadId, setResumeUploadId] = useState<string | null>(null);
