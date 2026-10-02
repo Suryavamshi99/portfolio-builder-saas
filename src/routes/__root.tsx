@@ -37,13 +37,14 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error }: { error: Error }) {
+function ErrorComponent({ error }: { error: unknown }) {
   console.error(error);
+  const message = error instanceof Error ? error.message : "Something went wrong.";
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center space-y-3">
         <h1 className="text-xl font-bold text-destructive">An unexpected error occurred</h1>
-        <p className="text-sm text-muted-foreground">{error?.message || "Something went wrong."}</p>
+        <p className="text-sm text-muted-foreground">{message}</p>
         <div className="pt-2">
           <Link
             to="/"
