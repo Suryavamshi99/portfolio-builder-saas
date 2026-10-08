@@ -11,8 +11,6 @@ import {
   LogOut,
   LogIn,
   KeyRound,
-  Sun,
-  Moon,
   FolderUp,
   Lock,
   Menu,
@@ -25,7 +23,6 @@ export function Navbar() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
-  const [darkMode, setDarkMode] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
@@ -47,33 +44,6 @@ export function Navbar() {
   }, []);
 
   const overHero = currentPath === "/" && !loading && !user && !scrolled;
-
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isDark =
-        localStorage.getItem("theme") === "dark" ||
-        (!localStorage.getItem("theme") &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
-      setDarkMode(isDark);
-      if (isDark) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const nextDark = !darkMode;
-    setDarkMode(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
 
   return (
     <header
@@ -186,18 +156,6 @@ export function Navbar() {
         )}
 
         <div className="flex items-center gap-2 sm:gap-3 justify-self-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label={darkMode ? "Switch to light theme" : "Switch to dark theme"}
-            className={`size-8 transition-colors duration-300 ${
-              overHero ? "text-white/80 hover:bg-white/10 hover:text-white" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </Button>
-
           {!loading && (
             <>
               {user ? (

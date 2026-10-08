@@ -84,7 +84,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    // Dark-only: there's no light theme toggle anymore, so the class is set
+    // on the server-rendered <html> itself (no client effect, no flash).
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
