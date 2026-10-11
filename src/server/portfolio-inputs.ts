@@ -74,7 +74,10 @@ export async function loadPortfolioInputs(
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (error || !data) {
+  // A failed read must not look like "no saved inputs": savePortfolioInputs
+  // merges onto this result and would overwrite the real row with defaults.
+  if (error) throw new Error(error.message);
+  if (!data) {
     return {
       links: {},
       specifics: null,

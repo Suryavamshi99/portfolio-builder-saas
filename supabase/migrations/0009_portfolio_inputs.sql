@@ -22,6 +22,12 @@ create policy "users can insert their own portfolio inputs"
   on public.portfolio_inputs for insert
   with check (auth.uid() = user_id);
 
+-- Needed so POST /api/reset (which runs as the user) can clear the row;
+-- without it the delete silently affects 0 rows. Inputs aren't sensitive.
+create policy "users can delete their own portfolio inputs"
+  on public.portfolio_inputs for delete
+  using (auth.uid() = user_id);
+
 create policy "users can update their own portfolio inputs"
   on public.portfolio_inputs for update
   using (auth.uid() = user_id)

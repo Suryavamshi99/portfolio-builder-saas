@@ -9,8 +9,14 @@ export const Route = createFileRoute("/api/portfolio/inputs")({
     handlers: {
       GET: async ({ context }) => {
         const { user, supabase } = context as AuthedContext;
-        const inputs = await loadPortfolioInputs(supabase, user.id);
-        return Response.json(inputs);
+        try {
+          return Response.json(await loadPortfolioInputs(supabase, user.id));
+        } catch {
+          return Response.json(
+            { error: { code: "internal_error", message: "Could not load portfolio inputs" } },
+            { status: 500 },
+          );
+        }
       },
       PUT: async ({ request, context }) => {
         const { user, supabase } = context as AuthedContext;

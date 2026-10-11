@@ -17,18 +17,8 @@ import {
 import { recordGeneration } from "@/server/generations";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
-import {
-  cleanString,
-  loadPortfolioInputs,
-  parseLinks,
-  savePortfolioInputs,
-  MAX_LINK_LENGTH,
-  MAX_LINKS,
-} from "@/server/portfolio-inputs";
+import { loadPortfolioInputs, savePortfolioInputs } from "@/server/portfolio-inputs";
 import { addWatermark } from "@/server/watermark";
-
-// Re-export shared limits and parsing helpers for any callers expecting them here
-export { cleanString, parseLinks, MAX_LINK_LENGTH, MAX_LINKS };
 
 const UPLOADS_BUCKET = "uploads";
 /** Long enough to comfortably outlast the gap between generating and publishing. */
@@ -94,7 +84,12 @@ export const Route = createFileRoute("/api/generate")({
           }
         }
 
-        const savedInputs = await loadPortfolioInputs(supabase, user.id);
+        let savedInputs: Awaited<ReturnType<typeof loadPortfolioInputs>>;
+        try {
+          savedInputs = await loadPortfolioInputs(supabase, user.id);
+        } catch {
+          return errorResponse(500, "internal_error", "Could not load portfolio inputs");
+        }
         const links = savedInputs.links;
         const otherSpecifics = savedInputs.specifics ?? undefined;
         const designIntensity = savedInputs.designIntensity;
