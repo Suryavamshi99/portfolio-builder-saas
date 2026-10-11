@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { embedStorageImagesInHtml } from "@/server/template/images";
 import { createVercelDeployment, VercelDeployError } from "@/server/vercel/deploy";
@@ -42,7 +43,8 @@ export const Route = createFileRoute("/api/publish")({
           return errorResponse(402, "payment_required", "Upgrade to Pro to publish your portfolio");
         }
 
-        const { data: portfolio } = await supabase
+        const admin = createSupabaseAdminClient();
+        const { data: portfolio } = await admin
           .from("portfolios")
           .select("generated_html")
           .eq("user_id", user.id)

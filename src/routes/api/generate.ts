@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isByokEnabledProvider } from "@/config/llm";
 import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
@@ -225,7 +226,8 @@ export const Route = createFileRoute("/api/generate")({
         }
 
         const updatedAt = new Date().toISOString();
-        const { error: saveError } = await supabase
+        const admin = createSupabaseAdminClient();
+        const { error: saveError } = await admin
           .from("portfolios")
           .upsert({ user_id: user.id, generated_html: html, updated_at: updatedAt }, { onConflict: "user_id" });
 
