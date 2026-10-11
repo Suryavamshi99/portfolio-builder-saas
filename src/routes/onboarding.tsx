@@ -117,6 +117,85 @@ function OnboardingWizard() {
       .catch(() => {});
   }, [selectedProvider]);
 
+  const hasLoadedInputsRef = React.useRef(false);
+  const isDirtyRef = React.useRef(false);
+
+  // Pre-fill inputs on mount from saved portfolio_inputs
+  React.useEffect(() => {
+    let isMounted = true;
+    void fetch("/api/portfolio/inputs")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: {
+        links?: {
+          linkedin?: string;
+          github?: string;
+          githubProjects?: string[];
+          other?: { label: string; url: string }[];
+        };
+        specifics?: string | null;
+        designIntensity?: "minimal" | "bold";
+      } | null) => {
+        if (!isMounted || !data) return;
+        if (!isDirtyRef.current) {
+          if (data.specifics) setOtherSpecifics((prev) => (prev ? prev : data.specifics!));
+          if (data.links?.linkedin) setLinkedinUrl((prev) => (prev ? prev : data.links!.linkedin!));
+          if (data.links?.github) setGithubProfileUrl((prev) => (prev ? prev : data.links!.github!));
+          if (data.links?.githubProjects && data.links.githubProjects.length > 0) {
+            setGithubProjectLinks((prev) => (prev.length > 0 ? prev : data.links!.githubProjects!));
+          }
+          if (data.links?.other && data.links.other.length > 0) {
+            setOtherLinks((prev) => (prev.length > 0 ? prev : data.links!.other!));
+          }
+          if (data.designIntensity) {
+            setDesignIntensity(data.designIntensity);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to load portfolio inputs:", err);
+      })
+      .finally(() => {
+        if (isMounted) {
+          hasLoadedInputsRef.current = true;
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Debounced auto-save of inputs to /api/portfolio/inputs
+  React.useEffect(() => {
+    if (!hasLoadedInputsRef.current) return;
+    isDirtyRef.current = true;
+
+    const timer = setTimeout(() => {
+      const payload = {
+        links: {
+          linkedin: linkedinUrl.trim() || undefined,
+          github: githubProfileUrl.trim() || undefined,
+          githubProjects: githubProjectLinks.map((l) => l.trim()).filter(Boolean),
+          other: otherLinks
+            .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+            .filter((l) => l.label && l.url),
+        },
+        specifics: otherSpecifics.trim() || null,
+        designIntensity,
+      };
+
+      void fetch("/api/portfolio/inputs", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch((err) => {
+        console.warn("Failed to save portfolio inputs:", err);
+      });
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [otherSpecifics, linkedinUrl, githubProfileUrl, githubProjectLinks, otherLinks, designIntensity]);
+
   const handleGenerate = async () => {
     if (!resumeUpload) {
       setErrorDetails({

@@ -57,7 +57,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
         body: JSON.stringify({
           provider: "google",
           resumeUploadId,
-          otherSpecifics: instructions.trim() || undefined,
+          instructions: instructions.trim() || undefined,
         }),
       });
 

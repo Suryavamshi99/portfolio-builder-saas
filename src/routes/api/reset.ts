@@ -47,6 +47,14 @@ export const Route = createFileRoute("/api/reset")({
           );
         }
 
+        const { error: inputsError } = await supabase.from("portfolio_inputs").delete().eq("user_id", user.id);
+        if (inputsError) {
+          return Response.json(
+            { error: { code: "internal_error", message: "Could not reset portfolio inputs" } },
+            { status: 500 },
+          );
+        }
+
         const updatedAt = new Date().toISOString();
         const { error: contentError } = await supabase
           .from("portfolios")

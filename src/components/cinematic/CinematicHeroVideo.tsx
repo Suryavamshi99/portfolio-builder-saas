@@ -171,7 +171,7 @@ export default function CinematicHeroVideo({
               {mobilePosters.length > 0 && <source media={MOBILE_QUERY} type="image/webp" srcSet={srcSet(mobilePosters, "image/webp")} sizes="100vw" />}
               {mobilePosters.length > 0 && <source media={MOBILE_QUERY} type="image/jpeg" srcSet={srcSet(mobilePosters, "image/jpeg")} sizes="100vw" />}
               <source type="image/webp" srcSet={srcSet(desktopPosters, "image/webp")} sizes="100vw" />
-              {/* eslint-disable-next-line @next/next/no-img-element -- pre-optimized responsive poster; this is the LCP image */}
+              {/* pre-optimized responsive poster; this is the LCP image */}
               <img
                 className={styles["poster"]}
                 src={fallback.src}
