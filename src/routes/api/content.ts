@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { addWatermark } from "@/server/watermark";
 
@@ -19,7 +20,8 @@ export const Route = createFileRoute("/api/content")({
           );
         }
 
-        const { data, error } = await supabase
+        const admin = createSupabaseAdminClient();
+        const { data, error } = await admin
           .from("portfolios")
           .select("generated_html, updated_at")
           .eq("user_id", user.id)

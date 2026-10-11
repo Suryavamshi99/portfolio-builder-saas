@@ -86,3 +86,83 @@ The new code works **both before and after** the migration, because the service 
 ## When finished
 - Commit on this branch (one commit per task is fine). **Don't push, open a PR or merge.**
 - Append a **"Handoff report"** section to this file covering: files changed, each changed `portfolios` call quoted, anything you did differently and why, and anything you weren't sure about.
+
+---
+
+## Handoff report
+
+### 1. Files changed
+- **`supabase/migrations/0010_lock_down_privileges.sql`** (new): Added migration matching Task A word for word. Revokes table-wide `insert, update` on `public.users` from `anon, authenticated`, grants `insert (id), update (id)` to `authenticated`, and revokes all on `public.portfolios` from `anon, authenticated`. Not applied to Supabase.
+- **`src/lib/supabase/admin.ts`**: Updated module doc comment to document that the service-role client is used for all reads/writes to `public.portfolios` (/api/content, /api/generate, /api/publish, /api/reset), and stated the rule that user-facing calls must always be explicitly scoped to `user.id` from `AuthedContext`.
+- **`src/routes/api/content.ts`**: Changed the `portfolios` read to use `createSupabaseAdminClient()`, scoped to `user.id` from `AuthedContext`.
+- **`src/routes/api/generate.ts`**: Changed the post-generation `portfolios` upsert to use `createSupabaseAdminClient()`, scoped to `user.id` from `AuthedContext`.
+- **`src/routes/api/publish.ts`**: Changed the `portfolios` read to use `createSupabaseAdminClient()`, scoped to `user.id` from `AuthedContext`.
+- **`src/routes/api/reset.ts`**: Changed the `portfolios` upsert reset to use `createSupabaseAdminClient()`, scoped to `user.id` from `AuthedContext`.
+
+### 2. Changed `portfolios` calls (quoted)
+
+#### `src/routes/api/content.ts`
+```ts
+        const admin = createSupabaseAdminClient();
+        const { data, error } = await admin
+          .from("portfolios")
+          .select("generated_html, updated_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+```
+
+#### `src/routes/api/generate.ts`
+```ts
+        const updatedAt = new Date().toISOString();
+        const admin = createSupabaseAdminClient();
+        const { error: saveError } = await admin
+          .from("portfolios")
+          .upsert({ user_id: user.id, generated_html: html, updated_at: updatedAt }, { onConflict: "user_id" });
+```
+
+#### `src/routes/api/publish.ts`
+```ts
+        const admin = createSupabaseAdminClient();
+        const { data: portfolio } = await admin
+          .from("portfolios")
+          .select("generated_html")
+          .eq("user_id", user.id)
+          .maybeSingle();
+```
+
+#### `src/routes/api/reset.ts`
+```ts
+        const updatedAt = new Date().toISOString();
+        const admin = createSupabaseAdminClient();
+        const { error: contentError } = await admin
+          .from("portfolios")
+          .upsert({ user_id: user.id, generated_html: null, updated_at: updatedAt }, { onConflict: "user_id" });
+```
+
+In all four cases, `user` is obtained directly from `const { user, supabase } = context as AuthedContext;` established by `authMiddleware`. No request body or query parameter is used for the user id.
+
+### 3. Verification & Acceptance checks
+1. **Compilation, Lint, and Build**:
+   - `npx tsc --noEmit -p .`: Passed with exit code 0.
+   - `npm run lint`: Passed with exit code 0 (0 errors).
+   - `npm run build`: Passed with exit code 0 (client and server bundles built cleanly).
+2. **`grep -rn 'from("portfolios")' src`**:
+   Shows only service-role client uses:
+   - `src/server/admin-users.ts:28`: admin service-role client
+   - `src/routes/api/admin/users.$id.ts:24`: admin service-role client
+   - `src/routes/api/admin/users.$id.ts:77`: admin service-role client
+   - `src/routes/api/publish.ts:48`: `admin.from("portfolios")`
+   - `src/routes/api/content.ts:25`: `admin.from("portfolios")`
+   - `src/routes/api/reset.ts:62`: `admin.from("portfolios")`
+   - `src/routes/api/generate.ts:231`: `admin.from("portfolios")`
+3. **`users` writes audit (Task C)**:
+   - Confirmed via `grep -rn 'from("users")' src` that `getOrCreateAppUser` in `src/server/users.ts` is the only non-admin code touching `users`, and it upserts `{ id: userId }` only.
+4. **Migration content**:
+   - `supabase/migrations/0010_lock_down_privileges.sql` matches the exact SQL specified in Task A word for word.
+
+### 4. Anything done differently and why
+- Nothing was done differently from the specification.
+
+### 5. Items noted / open questions
+- Untracked files (`brag-output/`, `showreel/`, `LAUNCH_VIDEO.md`, `.agents/`, `.claude/skills/brag-slim`, `skills-lock.json`) were left untouched.
+- Migration was not applied to remote Supabase, awaiting deployment and application by Claude Code.

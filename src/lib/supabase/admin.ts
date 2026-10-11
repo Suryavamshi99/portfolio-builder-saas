@@ -3,12 +3,19 @@ import { createClient } from "@supabase/supabase-js";
 import { getSupabaseEnv, getSupabaseServiceRoleKey } from "./env";
 
 /**
- * Service-role client — bypasses RLS entirely. Use only for operations
- * that must cross the per-user boundary by design (none in milestone 1/2;
- * this exists for later work like Storage cleanup callbacks and the
- * retention cron's webhook target). Never expose this client or its key
- * to a request handler that echoes data back to the caller without an
- * explicit ownership check first.
+ * Service-role client — bypasses RLS and table privileges entirely.
+ *
+ * Used for:
+ * 1. Operations that cross the per-user boundary by design (Dodo webhook,
+ *    admin panel /api/admin/*, retention cleanup).
+ * 2. All reads and writes to `public.portfolios` (/api/content, /api/generate,
+ *    /api/publish, /api/reset), because all direct access to portfolios is
+ *    revoked from authenticated users to protect generated HTML.
+ *
+ * CRITICAL RULE: When used in user-facing routes (e.g. portfolios), it must
+ * ONLY be used with an explicit `user.id` scope taken directly from the
+ * authenticated session (`AuthedContext.user.id`) — NEVER from request
+ * parameters, body, or query strings.
  */
 export function createSupabaseAdminClient() {
   const { url } = getSupabaseEnv();
