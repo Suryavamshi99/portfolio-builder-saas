@@ -91,6 +91,7 @@ An earlier draft of the proposal went back to "structured JSON → templates". T
 
 | Date | Decision | Notes |
 |---|---|---|
+| 2026-10-11 | **Path B (MCP): accept that the HTML is visible in the user's own chat (Option 2).** | No MCP rule can hide it: the user's model writes the HTML in their chat before the owner's server receives it, tool-call inputs can usually be expanded, and the user can simply ask their model to print it. Rejected Option 1 (user's model writes a content + design brief, owner's server turns it into HTML with the free-model chain): it would protect the file but weaken design quality for the users most likely to pay, and use free-model capacity. **Reasoning:** anyone with Claude/ChatGPT can already get a portfolio HTML for free without Shipfolio; what's sold is the guardrails + fact check, bundled images, one-click hosting, custom domain + HTTPS, updates, versions and GitHub push. **Light deterrents only:** tool descriptions tell the model not to show the HTML and to give the Studio link instead; watermark, hosting, bundling and updates stay paid. |
 | 2026-10-11 | **Dodo Payments is the only payment provider, worldwide.** | No Stripe, PayPal, Razorpay or Lemon Squeezy, and no per-region providers. Every paid product (the Pro unlock and any future add-on such as a custom-domain add-on) goes through Dodo. Dodo acts as merchant of record and handles global tax. The existing dev-only dummy checkout (`PAYMENT_TEST_MODE=dummy`, blocked in production) is a test tool, not a provider, and stays. |
 | 2026-10-11 | **The copy-paste prompt option (Path C) is removed entirely.** | Don't build `/api/generations/prompt` or `/api/generations/import`, the "Copy prompt" card, the paste box, or the fix-up prompt. The wizard shows **three** generation cards, not four. Users without a Gemini key or a Claude/ChatGPT plan use the free models (A). |
 | 2026-10-11 | **Paid users get everything.** | Download HTML, zip export, push to GitHub, deploy to their own Vercel, hosting on the owner's subdomain, custom domain. The owner explicitly reversed the earlier "users can't download" idea: "If they are paying, they are free to do whatever." |
@@ -311,7 +312,10 @@ There is no theme picker. Design comes from the model, guided by Minimal/Bold, t
   - `get_portfolio_html()`: the current version, so the model can revise it ("make the hero bolder", "shorten the summary") and save a new version the same way.
 - **Enforcement:** the guardrail rules in the brief and tool descriptions (guidance) → `finalizeHtml()` checks (**the real guarantee**).
 - The user's subscription pays for the tokens; the owner pays $0.
-- ⚠️ **Known trade-off:** in this path the HTML is written inside the user's own chat, so a free user could copy it from there without paying. This was accepted as part of "always generate full HTML". What paid users get on top: hosting, custom domain, the cleaned and bundled zip (with images), GitHub push, and later updates.
+- **Decided trade-off (Option 2, 2026-10-11):** the HTML is written inside the user's own chat, so a free user could copy it from there without paying. **Accepted on purpose; don't try to block it.** No MCP rule can: the HTML exists in their chat before the server sees it, and the user controls their own model.
+  - **Light deterrents:** server instructions and tool descriptions tell the model not to paste the HTML into the chat, and to reply with the Studio link instead ("✅ Your portfolio is ready → Open in Studio").
+  - **What stays paid:** clean (unwatermarked) HTML from the owner's server, the zip with bundled images, publishing and hosting, custom domain + HTTPS, updates, version history, GitHub push.
+  - **Rejected alternative (Option 1):** the user's model sends only a content + design brief and the owner's server writes the HTML with the free-model chain. It protects the file, but gives weaker design to the users most likely to pay and uses free-model capacity.
 
 ### 6.5 Path D: Gemini key (kept)
 - Same encrypted key storage, prompt and error handling as today, now running as a background job and passing through `finalizeHtml()`. 🆕 The key is tested when saved (one tiny request).
@@ -322,7 +326,7 @@ There is no theme picker. Design comes from the model, guided by Minimal/Bold, t
 - **After the resume is deleted (48 h)** (fixes #3): "Improve with AI" still works in **revise mode**. The current HTML is the starting point, and its facts were already checked when it was first generated. The fact check compares against the previous version's text instead of the resume, so no new facts can be added. Only a **full regenerate from scratch** needs the resume uploaded again, and the UI says so.
 - 🆕 **Version history:** "Restore version 3" (from `portfolio_versions`).
 - Publish, Download and GitHub buttons. For free users they lead to Upgrade (Dodo).
-- `GET /api/content` → `{ html, version, updatedAt }`. **Free users receive the watermarked HTML; the clean HTML only goes to paid publish and export** (fixes #5, except for the Path B trade-off above).
+- `GET /api/content` → `{ html, version, updatedAt }`. **Free users receive the watermarked HTML; the clean HTML only goes to paid publish and export** (fixes #5; the Path B chat copy is an accepted exception, see 6.4).
 
 ### 6.7 Payment (Dodo only)
 - **Dodo Payments is the only provider worldwide** for every paid product.
