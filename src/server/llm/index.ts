@@ -78,11 +78,15 @@ export function buildPortfolioHtmlUserMessage(opts: {
   hasReferenceImages: boolean;
   designIntensity?: "minimal" | "bold";
   links?: ProfileLinks | undefined;
+  revisionInstructions?: string | undefined;
 }): string {
   const parts = [
     `Resume text:\n"""\n${opts.resumeText}\n"""`,
     opts.otherSpecifics?.trim()
       ? `User specifics and desired emphasis/target role:\n"""\n${opts.otherSpecifics.trim()}\n"""`
+      : null,
+    opts.revisionInstructions?.trim()
+      ? `Changes the user asked for in this regeneration:\n"""\n${opts.revisionInstructions.trim()}\n"""`
       : null,
     opts.photoUrl
       ? `Profile photo URL (use this exact URL as the hero <img> src): ${opts.photoUrl}`

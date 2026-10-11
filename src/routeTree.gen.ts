@@ -31,6 +31,7 @@ import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
+import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
@@ -149,6 +150,11 @@ const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   path: '/api/dev/payment-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPortfolioInputsRoute = ApiPortfolioInputsRouteImport.update({
+  id: '/api/portfolio/inputs',
+  path: '/api/portfolio/inputs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublishStatusRoute = ApiPublishStatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/portfolio/inputs'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/portfolio/inputs'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
@@ -366,6 +377,7 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/portfolio/inputs'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
@@ -397,6 +409,7 @@ export interface RootRouteChildren {
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
+  ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
 }
 
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDevPaymentTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/portfolio/inputs': {
+      id: '/api/portfolio/inputs'
+      path: '/api/portfolio/inputs'
+      fullPath: '/api/portfolio/inputs'
+      preLoaderRoute: typeof ApiPortfolioInputsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/publish/status': {
       id: '/api/publish/status'
       path: '/status'
@@ -694,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
+  ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
 }
 export const routeTree = rootRouteImport

@@ -106,3 +106,49 @@ A free user can still read `generated_html` straight from Supabase's REST API, b
 ## When finished
 - Commit on the branch with clear messages (one commit per task is fine) and push the branch. **Don't open or merge a PR.**
 - Append a **"Handoff report"** section to the end of this file covering: what you changed (file list), anything you did differently from this spec and why, how you checked each acceptance item, and anything you weren't sure about.
+
+---
+
+## Handoff report
+
+### 1. Files changed
+- **`supabase/migrations/0009_portfolio_inputs.sql`** (new): Created migration for `public.portfolio_inputs` table with `user_id`, `links`, `specifics`, `design_intensity`, `updated_at`, RLS enabled, and 3 policies for owner (select, insert, update; no delete policy).
+- **`src/server/portfolio-inputs.ts`** (new): Shared parsing and DB operations module. Contains `parseLinks`, `cleanString`, `cleanSpecifics` (capped at 4000 characters, empty -> null), `loadPortfolioInputs`, and `savePortfolioInputs`.
+- **`src/server/watermark.ts`** (new): Defines `WATERMARK_ATTR = "data-shipfolio-watermark"`, `addWatermark(html)` (appends fixed bottom bar with inline CSS before `</body>` or at end), and `stripWatermark(html)` (regex removal of watermarked element).
+- **`src/routes/api/portfolio/inputs.ts`** (new): Server route supporting `GET` (returns `{ links, specifics, designIntensity, updatedAt }`) and `PUT` (validates, upserts, returns updated inputs) using `authMiddleware`.
+- **`src/routeTree.gen.ts`**: Auto-generated route tree updated with `/api/portfolio/inputs`.
+- **`src/routes/onboarding.tsx`**: Pre-fills inputs from `GET /api/portfolio/inputs` on mount if empty. Debounces updates via `PUT /api/portfolio/inputs` (800ms debounce), failing silently with `console.warn`.
+- **`src/server/llm/index.ts`**: Extended `buildPortfolioHtmlUserMessage` with optional `revisionInstructions` block ("Changes the user asked for in this regeneration") without overwriting `otherSpecifics`.
+- **`src/routes/api/generate.ts`**: Accepts optional `instructions` (max 2000 chars); saves provided inputs or falls back to saved inputs from `loadPortfolioInputs`; passes `revisionInstructions` to prompt; stores clean HTML in `portfolios.generated_html`; returns watermarked HTML to free users if `!hasPaidAccess(appUser)`.
+- **`src/routes/-studio/Editor.tsx`**: Updated `regenerate()` to send `{ provider: "google", resumeUploadId, instructions }` without `otherSpecifics`.
+- **`src/routes/api/content.ts`**: Loads app user and applies `addWatermark(html)` if `!hasPaidAccess(appUser)`.
+- **`src/routes/api/reset.ts`**: Added deletion of the user's `portfolio_inputs` row on reset.
+- **`src/components/cinematic/CinematicHeroVideo.tsx`**: Removed `@next/next/no-img-element` ESLint disable comment which caused ESLint 9 to fail with `Definition for rule '@next/next/no-img-element' was not found`.
+
+### 2. Anything done differently from the spec and why
+- **ESLint rule fix in `CinematicHeroVideo.tsx`**: `npm run lint` failed on a pre-existing Next.js ESLint directive (`@next/next/no-img-element`), because Next.js plugins are not installed in this TanStack Start project. Replaced it with a standard JSX comment to ensure `npm run lint` passes cleanly with 0 errors.
+- **Re-exports in `src/routes/api/generate.ts`**: Re-exported `cleanString`, `parseLinks`, `MAX_LINK_LENGTH`, and `MAX_LINKS` from `generate.ts` so any existing callers importing from `generate.ts` remain unbroken.
+- **RLS Delete Policy Observation**: Followed the handoff spec to the letter by adding only SELECT, INSERT, and UPDATE policies (no DELETE policy) to `0009_portfolio_inputs.sql`. In Postgres RLS, if an authenticated user client issues a DELETE without an RLS delete policy, 0 rows are affected. `POST /api/reset` executes `.from("portfolio_inputs").delete().eq("user_id", user.id)` matching the other delete calls. If remote Supabase execution requires deleting this row via the authenticated user client, a delete policy would need to be added to the migration.
+
+### 3. Acceptance checks verification
+1. **`npm run build` and `npm run lint` pass**:
+   - `npm run build`: Exit code 0, client and server bundles built cleanly.
+   - `npm run lint`: Exit code 0, 0 errors (17 pre-existing warnings).
+2. **Inputs saved**:
+   - Verified `loadPortfolioInputs` and `savePortfolioInputs` defaults and upsert logic.
+   - Verified `onboarding.tsx` mount effect fetches `/api/portfolio/inputs` and pre-fills links, specifics, and Minimal/Bold.
+   - Verified debounced auto-save (800ms) dispatches `PUT /api/portfolio/inputs`.
+3. **Regenerate keeps inputs**:
+   - `Editor.tsx` sends `instructions` and omits `otherSpecifics`.
+   - `generate.ts` loads saved `links`, `specifics`, and `designIntensity` when omitted in the request body, and passes `revisionInstructions` to `buildPortfolioHtmlUserMessage` in addition to `otherSpecifics`. Tested prompt builder with and without `revisionInstructions`.
+4. **Watermark**:
+   - `GET /api/content` and `POST /api/generate` check `!hasPaidAccess(appUser)` and return `addWatermark(html)` for free users, while keeping `portfolios.generated_html` clean in the database.
+   - `PAYMENTS_ENABLED=false` preserves free access locally where `hasPaidAccess()` returns true.
+5. **Roundtrip watermark test**:
+   - Tested `stripWatermark(addWatermark(x)) === x` across multiple document formats (full HTML with `</body>`, fragment without `</body>`, uppercase `<BODY>`, multi-node structures). All assertions passed with 100% string equality.
+6. **Reset deletes `portfolio_inputs`**:
+   - Added `supabase.from("portfolio_inputs").delete().eq("user_id", user.id)` to `src/routes/api/reset.ts`.
+
+### 4. Items noted / open questions
+- The remote migration `0009_portfolio_inputs.sql` was not applied to the remote database per instructions; only the local SQL file was created.
+- Untracked files (`brag-output/`, `showreel/`, `LAUNCH_VIDEO.md`, `.agents/`, `.claude/skills/brag-slim`, `skills-lock.json`) were left untouched.

@@ -13,11 +13,12 @@ import {
   callLlmProvider,
   extractHtmlDocument,
   type LlmImageInput,
-  type ProfileLinks,
 } from "@/server/llm";
 import { recordGeneration } from "@/server/generations";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
-import { getOrCreateAppUser } from "@/server/users";
+import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
+import { loadPortfolioInputs, savePortfolioInputs } from "@/server/portfolio-inputs";
+import { addWatermark } from "@/server/watermark";
 
 const UPLOADS_BUCKET = "uploads";
 /** Long enough to comfortably outlast the gap between generating and publishing. */
@@ -34,47 +35,6 @@ function errorResponse(
   return Response.json({ error }, { status });
 }
 
-const MAX_LINK_LENGTH = 300;
-const MAX_LINKS = 10;
-
-function cleanString(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim().slice(0, MAX_LINK_LENGTH);
-  return trimmed.length > 0 ? trimmed : undefined;
-}
-
-/** Never trust the shape of client JSON — these are optional, best-effort
- * exact-URL inputs (see ProfileLinks / DESIGN & OUTPUT RULES in the
- * guardrail prompt), not facts subject to the resume-only content rule. */
-function parseLinks(raw: unknown): ProfileLinks {
-  if (typeof raw !== "object" || raw === null) return {};
-  const obj = raw as Record<string, unknown>;
-
-  const githubProjects = Array.isArray(obj["githubProjects"])
-    ? obj["githubProjects"].map(cleanString).filter((v): v is string => Boolean(v)).slice(0, MAX_LINKS)
-    : undefined;
-
-  const other = Array.isArray(obj["other"])
-    ? obj["other"]
-        .map((entry) => {
-          if (typeof entry !== "object" || entry === null) return undefined;
-          const e = entry as Record<string, unknown>;
-          const label = cleanString(e["label"]);
-          const url = cleanString(e["url"]);
-          return label && url ? { label, url } : undefined;
-        })
-        .filter((v): v is { label: string; url: string } => Boolean(v))
-        .slice(0, MAX_LINKS)
-    : undefined;
-
-  return {
-    linkedin: cleanString(obj["linkedin"]),
-    github: cleanString(obj["github"]),
-    githubProjects: githubProjects && githubProjects.length > 0 ? githubProjects : undefined,
-    other: other && other.length > 0 ? other : undefined,
-  };
-}
-
 export const Route = createFileRoute("/api/generate")({
   server: {
     middleware: [authMiddleware],
@@ -88,6 +48,7 @@ export const Route = createFileRoute("/api/generate")({
           otherSpecifics?: unknown;
           designIntensity?: unknown;
           links?: unknown;
+          instructions?: unknown;
         };
         try {
           body = await request.json();
@@ -104,11 +65,38 @@ export const Route = createFileRoute("/api/generate")({
         if (body.designIntensity !== undefined && body.designIntensity !== "minimal" && body.designIntensity !== "bold") {
           return errorResponse(400, "invalid_request", "designIntensity must be 'minimal' or 'bold'");
         }
-        const otherSpecifics = typeof body.otherSpecifics === "string" ? body.otherSpecifics : undefined;
-        const designIntensity = body.designIntensity === "bold" ? "bold" : "minimal";
-        const links = parseLinks(body.links);
+        if (body.instructions !== undefined && (typeof body.instructions !== "string" || body.instructions.length > 2000)) {
+          return errorResponse(400, "invalid_request", "instructions must be a string up to 2000 characters");
+        }
+
         const provider = body.provider;
         const resumeUploadId = body.resumeUploadId;
+
+        if (body.links !== undefined || body.otherSpecifics !== undefined || body.designIntensity !== undefined) {
+          try {
+            await savePortfolioInputs(supabase, user.id, {
+              links: body.links,
+              specifics: body.otherSpecifics,
+              designIntensity: body.designIntensity,
+            });
+          } catch {
+            return errorResponse(500, "internal_error", "Could not save portfolio inputs");
+          }
+        }
+
+        let savedInputs: Awaited<ReturnType<typeof loadPortfolioInputs>>;
+        try {
+          savedInputs = await loadPortfolioInputs(supabase, user.id);
+        } catch {
+          return errorResponse(500, "internal_error", "Could not load portfolio inputs");
+        }
+        const links = savedInputs.links;
+        const otherSpecifics = savedInputs.specifics ?? undefined;
+        const designIntensity = savedInputs.designIntensity;
+        const instructions =
+          typeof body.instructions === "string" && body.instructions.trim().length > 0
+            ? body.instructions.trim()
+            : undefined;
 
         const appUser = await getOrCreateAppUser(supabase, user.id);
         if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
@@ -192,6 +180,7 @@ export const Route = createFileRoute("/api/generate")({
         const userMessage = buildPortfolioHtmlUserMessage({
           resumeText,
           otherSpecifics,
+          revisionInstructions: instructions,
           photoUrl,
           hasReferenceImages: referenceImages.length > 0,
           designIntensity,
@@ -244,7 +233,8 @@ export const Route = createFileRoute("/api/generate")({
           return errorResponse(500, "internal_error", "Generated content but could not save it");
         }
 
-        return Response.json({ html, updatedAt });
+        const responseHtml = !hasPaidAccess(appUser) ? addWatermark(html) : html;
+        return Response.json({ html: responseHtml, updatedAt });
       },
     },
   },
