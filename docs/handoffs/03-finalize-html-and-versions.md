@@ -244,6 +244,175 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
 - Commit on this branch (one commit per task is fine). **Don't push, open a PR or merge.**
 - Append a **"Handoff report"** section to this file: files changed; the full list of tests; anything you did differently and why; anything you weren't sure about.
 
+## Handoff report
+
+### Status & Verification Summary
+- **Tests**: 50/50 tests passing across 3 test suites (`npm test` via vitest).
+- **TypeScript**: `npx tsc --noEmit -p .` passed with 0 errors.
+- **Build**: `npm run build` completed successfully.
+- **Lint**: `npm run lint` passed with 0 errors (no new warnings introduced).
+- **Security Scoping**: `grep -rn 'from("portfolio_versions")' src` confirms all database queries to `portfolio_versions` use the service-role admin client and are strictly scoped by `.eq("user_id", userId)`.
+- **Migration**: `supabase/migrations/0011_portfolio_versions.sql` created exactly as specified and **not applied** to live database.
+
 ---
 
-## Handoff report
+### Files Changed & Created
+
+1. **`package.json` & `package-lock.json`**
+   - Added runtime dependency: `cheerio` (^1.1.0).
+   - Added dev dependency: `vitest` (^3.0.0).
+   - Added test script: `"test": "vitest run"`.
+
+2. **`vitest.config.ts`** (Created)
+   - Configured Vitest runner with tsconfig paths resolution (`resolve: { tsconfigPaths: true }`).
+
+3. **`supabase/migrations/0011_portfolio_versions.sql`** (Created)
+   - Created table `public.portfolio_versions` (`id`, `user_id`, `version`, `html`, `source`, `model`, `warnings`, `created_at`).
+   - Added indexes on `(user_id, version desc)` and `(user_id, created_at desc)`.
+   - Enabled RLS with no user policies.
+   - Revoked all privileges from `anon` and `authenticated`.
+   - Added immutable `prevent_portfolio_versions_mutation` trigger blocking `UPDATE` and `DELETE` on direct roles.
+
+4. **`src/server/finalize-html.ts`** (Created)
+   - Implemented `ownStoragePath` (Task B3a): strictly validates paths starting with `${userId}/`, rejects traversal (`..`, `%2E%2E`, double slash, non-ASCII/control characters).
+   - Implemented `STORAGE_MARKER_PREFIX = "shipfolio-storage://uploads/"`.
+   - Implemented `signedUrlsToMarkers`: replaces valid user signed storage URLs with storage markers in HTML and CSS, emptying foreign signed URLs/markers.
+   - Implemented `finalizeHtml`:
+     - **B1 & B2**: Extracts HTML document from code blocks or doctype/`<html>` tags. Hard errors on non-HTML or unclosed `</html>`. Missing doctype/head/body/style treated as warnings per amended 2026-10-12 spec.
+     - **B3**: Rewrites valid signed URLs and markers; strips unowned media elements, clears foreign CSS urls/markers; strips SVG xlink/href references unless in-page `#` or `data:image/`; removes `<source>` elements and `srcset` attributes.
+     - **B4**: Strict link verification against normalized `referenceText` (with scheme normalization and host matching). Retains in-page anchors (`#...`), verified `mailto:` and `tel:`. Adds `rel="noopener noreferrer"` to external links.
+     - **B5**: Strips scripts with `src`/`href`, removes dangerous embeds (`<embed>`, `<object>`, `<applet>`, `<base>`, `<meta http-equiv>`), strips external stylesheets except Google Fonts, sanitizes `@import` rules, removes form submission targets and `ping` attributes.
+     - **B6**: Injects mobile viewport tag if missing (with warning), repairs missing doctype/head/body, strips watermark tags without warning, generates semantic warnings (missing `<nav>`, `<section>`, in-page navigation, image alt text, inline styles).
+   - Implemented `sanitizeHtmlForServing`: Re-runs B4 and B5 safety checks for published sites.
+
+5. **`src/server/portfolio-versions.ts`** (Created)
+   - Implemented `savePortfolioVersion`:
+     - Queries latest version for user using service-role `admin` client.
+     - Increments sequentially starting from 1.
+     - Updates `portfolios` table for backwards compatibility.
+     - Inserts row into `portfolio_versions`.
+     - Enforces `MAX_VERSIONS_PER_USER = 20`, pruning oldest versions beyond the cap.
+
+6. **`src/server/storage-markers.ts`** (Created)
+   - Defined TTL constants: `PHOTO_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7` (7 days), `PROMPT_SIGNED_URL_TTL_SECONDS = 3600` (1 hour).
+   - Implemented `signStorageMarkers`: Finds storage markers, validates ownership using `ownStoragePath`, calls `supabase.storage.from("uploads").createSignedUrls`, and replaces markers with signed URLs.
+
+7. **`src/server/template/images.ts`**
+   - Updated `embedStorageImagesInHtml` to accept `userId`.
+   - Validates image paths using `ownStoragePath`.
+   - Supports both `shipfolio-storage://uploads/...` markers and legacy signed URLs, bundling images into `images/<filename>`.
+
+8. **`src/server/vercel/deploy.ts`**
+   - Exported `PUBLISHED_SITE_CSP` constant for published site Content-Security-Policy headers.
+
+9. **`src/routes/api/generate.ts`**
+   - Shortened model photo prompt TTL to `PROMPT_SIGNED_URL_TTL_SECONDS` (1 hour).
+   - Swapped `extractHtmlDocument` for `finalizeHtml`.
+   - Wired `savePortfolioVersion` using admin client.
+   - Re-signed storage markers for live client preview using `PHOTO_SIGNED_URL_TTL_SECONDS`.
+   - Extended error response on 422 to include `details: string[]` on `generation_invalid_output`.
+
+10. **`src/routes/api/content.ts`**
+    - Converts legacy saved signed URLs to markers using `signedUrlsToMarkers`.
+    - Re-signs markers on every read via `signStorageMarkers` using `PHOTO_SIGNED_URL_TTL_SECONDS`.
+
+11. **`src/routes/api/publish.ts`**
+    - Passes `user.id` to `embedStorageImagesInHtml`.
+    - Applies `sanitizeHtmlForServing` on bundled output.
+    - Adds `vercel.json` with `PUBLISHED_SITE_CSP` header next to `index.html`.
+
+12. **`src/routes/api/reset.ts`**
+    - Deletes user's `portfolio_versions` rows using admin client scoped to `.eq("user_id", user.id)` prior to resetting `portfolios`.
+
+13. **`src/server/finalize-html.test.ts`** (Created, 43 tests)
+    - Full test suite covering all cases from Task B8 + `signedUrlsToMarkers`.
+
+14. **`src/server/storage-markers.test.ts`** (Created, 4 tests)
+    - Tests marker signing, multi-marker replacement, foreign marker safety, and TTL handling.
+
+15. **`src/server/portfolio-versions.test.ts`** (Created, 3 tests)
+    - Tests sequential version incrementation, retention limit pruning (keeping 20), and error handling.
+
+---
+
+### Full List of Tests (50 Total)
+
+#### `src/server/portfolio-versions.test.ts` (3 tests)
+- `savePortfolioVersion > increments version sequentially starting at 1`
+- `savePortfolioVersion > caps history at MAX_VERSIONS_PER_USER (20) and prunes oldest`
+- `savePortfolioVersion > propagates database errors`
+
+#### `src/server/storage-markers.test.ts` (4 tests)
+- `signStorageMarkers > replaces markers with signed URLs using user supabase client`
+- `signStorageMarkers > replaces multiple markers in html and css`
+- `signStorageMarkers > leaves foreign markers untouched when signing`
+- `signStorageMarkers > passes custom ttlSeconds to createSignedUrls`
+
+#### `src/server/finalize-html.test.ts` (43 tests)
+- **`ownStoragePath - B3a`**
+  - `accepts valid storage path starting with userId/`
+  - `rejects path for another user`
+  - `rejects path with .. and %2E%2E`
+  - `rejects user-123/..%2Fother/x.png after decoding`
+  - `rejects malformed user-123/%E0%A4%A.png without throwing`
+  - `rejects paths with backslashes, percent signs, or control characters`
+  - `rejects paths with empty or single dot segments`
+- **`finalizeHtml - B2: Extract & hard errors`**
+  - `returns error if rawText does not contain a web page`
+  - `returns error if HTML is cut off before </html>`
+- **`finalizeHtml - B3: Images and media sources`**
+  - `rewrites valid signed storage URL to storage marker`
+  - `removes <img> with signed URL for another user's path`
+  - `removes <img> with signed URL from another origin with the right path`
+  - `rejects path with .. and %2E%2E`
+  - `preserves already valid markers and removes invalid markers`
+  - `preserves data:image/... sources on img, input, and poster`
+  - `removes video src and removes video poster if not own upload`
+  - `removes srcset attributes and <source> elements everywhere`
+  - `removes svg image and use hrefs unless # or data:image/`
+  - `empties foreign marker in style attribute and warns`
+  - `rewrites signed URLs in CSS and empties foreign signed URLs with no token remaining`
+- **`finalizeHtml - B4: Links`**
+  - `keeps in-page anchors`
+  - `handles mailto links based on referenceText`
+  - `keeps mailto when it appears in links.other via referenceText`
+  - `handles tel links based on digits in referenceText`
+  - `matches normalized verified links and rejects unverified links`
+  - `removes javascript: and data: links`
+  - `removes javascript:// and ftp:// even if targeting verified domain`
+  - `removes links inside svg (including xlink:href)`
+  - `adds rel='noopener noreferrer' to kept target='_blank' links and removes target on stripped links`
+- **`finalizeHtml - B5: Safety clean-up / sanitizeHtmlForServing`**
+  - `removes script with src or href but keeps inline scripts without src/href`
+  - `removes dangerous embed elements, meta http-equiv, and disallows bad links`
+  - `removes Font Awesome stylesheet with outside-stylesheet warning`
+  - `strips form actions, submission attributes, and ping`
+  - `cleans @import in style elements unless from fonts.googleapis.com`
+  - `is idempotent on a messy fixture`
+- **`finalizeHtml - B6: Viewport, semantic warnings, repair, and watermark removal`**
+  - `repairs missing doctype with warning and prepends doctype`
+  - `repairs missing head/body with warning`
+  - `warns when page has no inline styles`
+  - `inserts viewport tag when missing and warns`
+  - `warns when nav, section, in-page navigation, or alt text are missing`
+  - `removes watermark without adding a warning`
+- **`signedUrlsToMarkers`**
+  - `converts own signed URLs into storage markers`
+  - `empties foreign user signed URLs and increments foreign count`
+
+---
+
+### Implementation Decisions & Spec Alignment
+- **Amended Spec (2026-10-12)**: Followed the updated rules documented in the task header and sections:
+  - Missing doctype, `<head>`, `<body>`, and `<style>` generate warnings and are repaired, not hard errors.
+  - Foreign signed URLs or markers inside inline style attributes or `<style>` blocks are emptied (`""`), leaving no sensitive tokens or cross-user references behind.
+  - `ownStoragePath` validates against decoded traversal, single dot segments, empty segments, and control characters before confirming path ownership.
+  - SVG `<use>` and `<image>` attributes were handled for both standard `href` and `xlink:href` (cheerio/parse5 normalizes xlink attributes to standard attributes on `attribs`).
+  - Mobile viewport tag injection prepends cleanly into `<head>` when absent and reports a warning.
+  - `PUBLISHED_SITE_CSP` deployed in `vercel.json` alongside `index.html`.
+
+---
+
+### Open Questions / Notes for Claude Code
+- None. All requirements, constraints, and security invariants implemented as written without workarounds.
+- Note for deployment: Migration `0011_portfolio_versions.sql` must be applied to the remote Supabase instance before running live generations with the new code.

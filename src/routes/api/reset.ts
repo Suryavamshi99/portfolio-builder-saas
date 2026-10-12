@@ -58,6 +58,19 @@ export const Route = createFileRoute("/api/reset")({
 
         const updatedAt = new Date().toISOString();
         const admin = createSupabaseAdminClient();
+
+        const { error: versionsError } = await admin
+          .from("portfolio_versions")
+          .delete()
+          .eq("user_id", user.id);
+
+        if (versionsError) {
+          return Response.json(
+            { error: { code: "internal_error", message: "Uploads cleared, but could not reset portfolio versions" } },
+            { status: 500 },
+          );
+        }
+
         const { error: contentError } = await admin
           .from("portfolios")
           .upsert({ user_id: user.id, generated_html: null, updated_at: updatedAt }, { onConflict: "user_id" });

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isByokEnabledProvider } from "@/config/llm";
+import { isByokEnabledProvider, LLM_MODELS } from "@/config/llm";
 import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { extractResumeText } from "@/server/resume-text";
@@ -12,7 +12,6 @@ import {
   LlmRateLimitError,
   buildPortfolioHtmlUserMessage,
   callLlmProvider,
-  extractHtmlDocument,
   type LlmImageInput,
 } from "@/server/llm";
 import { recordGeneration } from "@/server/generations";
@@ -20,19 +19,26 @@ import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { loadPortfolioInputs, savePortfolioInputs } from "@/server/portfolio-inputs";
 import { addWatermark } from "@/server/watermark";
+import { finalizeHtml } from "@/server/finalize-html";
+import { savePortfolioVersion } from "@/server/portfolio-versions";
+import {
+  PHOTO_SIGNED_URL_TTL_SECONDS,
+  PROMPT_SIGNED_URL_TTL_SECONDS,
+  signStorageMarkers,
+} from "@/server/storage-markers";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 const UPLOADS_BUCKET = "uploads";
-/** Long enough to comfortably outlast the gap between generating and publishing. */
-const PHOTO_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 function errorResponse(
   status: number,
   code: string,
   message: string,
-  extra?: { retryAfterSeconds?: number },
+  extra?: { retryAfterSeconds?: number; details?: string[] },
 ) {
   const error: Record<string, unknown> = { code, message };
   if (extra?.retryAfterSeconds !== undefined) error["retryAfterSeconds"] = extra.retryAfterSeconds;
+  if (extra?.details !== undefined) error["details"] = extra.details;
   return Response.json({ error }, { status });
 }
 
@@ -165,7 +171,7 @@ export const Route = createFileRoute("/api/generate")({
         if (photoRow) {
           const signed = await supabase.storage
             .from(UPLOADS_BUCKET)
-            .createSignedUrl(photoRow.storage_path, PHOTO_SIGNED_URL_TTL_SECONDS);
+            .createSignedUrl(photoRow.storage_path, PROMPT_SIGNED_URL_TTL_SECONDS);
           photoUrl = signed.data?.signedUrl;
         }
 
@@ -218,25 +224,60 @@ export const Route = createFileRoute("/api/generate")({
         // even if what follows fails our own sanity check.
         await recordGeneration(supabase, user.id, resumeRow.id, "succeeded");
 
-        let html: string;
-        try {
-          html = extractHtmlDocument(responseText);
-        } catch {
-          return errorResponse(422, "generation_invalid_output", "Model output wasn't a valid HTML document");
+        const finalResult = finalizeHtml({
+          rawText: responseText,
+          userId: user.id,
+          supabaseUrl: getSupabaseEnv().url,
+          links,
+          referenceText: [
+            resumeText,
+            otherSpecifics ?? "",
+            links.linkedin,
+            links.github,
+            ...(links.githubProjects ?? []),
+            ...(links.other ?? []).map((o) => o.url),
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        });
+
+        if (!finalResult.ok) {
+          return errorResponse(
+            422,
+            "generation_invalid_output",
+            "The AI's page didn't pass our checks. Please try again.",
+            { details: finalResult.errors },
+          );
         }
 
-        const updatedAt = new Date().toISOString();
         const admin = createSupabaseAdminClient();
-        const { error: saveError } = await admin
-          .from("portfolios")
-          .upsert({ user_id: user.id, generated_html: html, updated_at: updatedAt }, { onConflict: "user_id" });
-
-        if (saveError) {
+        let savedVersion: { versionId: string; updatedAt: string };
+        try {
+          savedVersion = await savePortfolioVersion(admin, user.id, {
+            html: finalResult.html,
+            source: "gemini",
+            model: LLM_MODELS.google,
+            warnings: finalResult.warnings,
+          });
+        } catch {
           return errorResponse(500, "internal_error", "Generated content but could not save it");
         }
 
-        const responseHtml = !hasPaidAccess(appUser) ? addWatermark(html) : html;
-        return Response.json({ html: responseHtml, updatedAt });
+        let responseHtml = await signStorageMarkers(
+          finalResult.html,
+          supabase,
+          user.id,
+          PHOTO_SIGNED_URL_TTL_SECONDS,
+        );
+        if (!hasPaidAccess(appUser)) {
+          responseHtml = addWatermark(responseHtml);
+        }
+
+        return Response.json({
+          html: responseHtml,
+          updatedAt: savedVersion.updatedAt,
+          warnings: finalResult.warnings,
+        });
       },
     },
   },

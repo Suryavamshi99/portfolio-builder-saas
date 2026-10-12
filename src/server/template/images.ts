@@ -1,48 +1,56 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ownStoragePath } from "@/server/finalize-html";
 
-/**
- * The LLM is told to embed the profile photo (and, indirectly, any other
- * Storage-backed image it references) using a signed URL from our own
- * `uploads` bucket, valid for 7 days (see PHOTO_SIGNED_URL_TTL_SECONDS in
- * api/generate.ts) — plenty of time between generating and publishing, but
- * still a token that expires. This scans the generated HTML for that
- * specific signed-URL shape, downloads the underlying bytes once per
- * distinct path, and rewrites every occurrence to a relative path bundled
- * into the deploy — so the live site never depends on a token expiring or
- * on our Storage staying populated at all.
- */
 const SIGNED_URL_PATTERN = /https?:\/\/[^"'\s)]+\/storage\/v1\/object\/sign\/uploads\/([^?"'\s]+)\?[^"'\s)]*/g;
+const MARKER_PATTERN = /(?:shipfolio-storage:\/\/uploads\/)((?:(?!&quot;)[^"')\s<])+)/g;
 
 export async function embedStorageImagesInHtml(
   html: string,
   supabase: SupabaseClient,
+  userId: string,
 ): Promise<{ html: string; files: Record<string, Buffer>; embeddedStoragePaths: string[] }> {
   const files: Record<string, Buffer> = {};
-  const bundlePathByFullUrl = new Map<string, string>();
+  const bundlePathByTarget = new Map<string, string>();
   const storagePaths = new Set<string>();
 
-  const matches = [...html.matchAll(SIGNED_URL_PATTERN)];
-  for (const match of matches) {
-    const fullUrl = match[0];
-    const storagePath = decodeURIComponent(match[1]!);
-    if (bundlePathByFullUrl.has(fullUrl)) continue;
+  const processMatch = async (target: string, rawStoragePath: string) => {
+    if (bundlePathByTarget.has(target)) return;
 
-    const download = await supabase.storage.from("uploads").download(storagePath);
-    // A stale/deleted reference shouldn't fail the whole publish — leave the
-    // (broken, soon-to-expire) URL as-is rather than blocking on one image.
-    if (download.error || !download.data) continue;
+    const storagePath = ownStoragePath(rawStoragePath, userId);
+    if (!storagePath) return;
 
-    const buffer = Buffer.from(await download.data.arrayBuffer());
     const basename = storagePath.split("/").pop() ?? "image";
     const bundlePath = `images/${basename}`;
-    files[bundlePath] = buffer;
-    bundlePathByFullUrl.set(fullUrl, bundlePath);
-    storagePaths.add(storagePath);
+
+    if (!storagePaths.has(storagePath)) {
+      const download = await supabase.storage.from("uploads").download(storagePath);
+      if (download.error || !download.data) return;
+
+      const buffer = Buffer.from(await download.data.arrayBuffer());
+      files[bundlePath] = buffer;
+      storagePaths.add(storagePath);
+    }
+
+    bundlePathByTarget.set(target, bundlePath);
+  };
+
+  const signedMatches = [...html.matchAll(SIGNED_URL_PATTERN)];
+  for (const match of signedMatches) {
+    if (match[0] && match[1]) {
+      await processMatch(match[0], match[1]);
+    }
+  }
+
+  const markerMatches = [...html.matchAll(MARKER_PATTERN)];
+  for (const match of markerMatches) {
+    if (match[0] && match[1]) {
+      await processMatch(match[0], match[1]);
+    }
   }
 
   let nextHtml = html;
-  for (const [fullUrl, bundlePath] of bundlePathByFullUrl) {
-    nextHtml = nextHtml.split(fullUrl).join(bundlePath);
+  for (const [target, bundlePath] of bundlePathByTarget) {
+    nextHtml = nextHtml.split(target).join(bundlePath);
   }
 
   return { html: nextHtml, files, embeddedStoragePaths: [...storagePaths] };
