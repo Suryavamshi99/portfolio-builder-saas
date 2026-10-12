@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ownStoragePath } from "@/server/finalize-html";
+import { ownStoragePath, storageMarkerPattern } from "@/server/finalize-html";
 
 /** 7 days, for HTML handed back to the browser */
 export const PHOTO_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -7,8 +7,6 @@ export const PHOTO_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
 /** 1 hour, for the photo URL sent in the prompt to the model */
 export const PROMPT_SIGNED_URL_TTL_SECONDS = 60 * 60;
 
-// Terminators: ", ', ), whitespace, < or &quot;
-const MARKER_PATTERN = /(?:shipfolio-storage:\/\/uploads\/)((?:(?!&quot;)[^"')\s<])+)/g;
 
 export async function signStorageMarkers(
   html: string,
@@ -16,7 +14,7 @@ export async function signStorageMarkers(
   userId: string,
   ttlSeconds: number,
 ): Promise<string> {
-  const matches = [...html.matchAll(MARKER_PATTERN)];
+  const matches = [...html.matchAll(storageMarkerPattern())];
   if (matches.length === 0) return html;
 
   const distinctPaths = new Set<string>();
@@ -38,7 +36,7 @@ export async function signStorageMarkers(
     }
   }
 
-  return html.replace(MARKER_PATTERN, (fullMarker, path) => {
+  return html.replace(storageMarkerPattern(), (fullMarker, path) => {
     const own = ownStoragePath(path, userId);
     if (own && signedUrlByPath.has(own)) {
       return signedUrlByPath.get(own)!;

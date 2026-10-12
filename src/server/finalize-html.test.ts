@@ -668,3 +668,39 @@ describe("review fixes: parser differentials and SVG", () => {
     expect(res.html).toContain('attributeName="opacity"');
   });
 });
+
+describe("hardening after live checks (2026-10-12)", () => {
+  const signed = (path: string) => `https://project.supabase.co/storage/v1/object/sign/uploads/${path}?token=abc`;
+
+  it("stops a URL at a backtick, so inline-script template literals survive", () => {
+    const js = "<script>const u = `" + signed("user-123/photo/a.png") + "`;</script>";
+    const out = signedUrlsToMarkers(js, "user-123", "https://project.supabase.co");
+    expect(out.html).toBe("<script>const u = `" + STORAGE_MARKER_PREFIX + "user-123/photo/a.png`;</script>");
+  });
+
+  it("stops a URL at '>' (unquoted attribute in an old row)", () => {
+    const out = signedUrlsToMarkers(`<img src=${signed("user-123/photo/a.png")}><p>hi</p>`, "user-123", "https://project.supabase.co");
+    expect(out.html).toBe(`<img src=${STORAGE_MARKER_PREFIX}user-123/photo/a.png><p>hi</p>`);
+  });
+
+  it("rejects storage paths with characters uploads can never have", () => {
+    for (const bad of ['user-123/photo/a"b.png', "user-123/photo/a<b.png", "user-123/photo/a b.png", "user-123/photo/a?b.png", "user-123/photo/é.png"]) {
+      expect(ownStoragePath(bad, "user-123")).toBeNull();
+    }
+    expect(ownStoragePath("user-123/visual_reference/0f8c-a_b.c-1.png", "user-123")).toBe("user-123/visual_reference/0f8c-a_b.c-1.png");
+  });
+
+  it("keeps subject/body on a kept mailto but drops cc, bcc and to", () => {
+    const res = finalizeHtml({
+      ...BASE_INPUT,
+      rawText: BASE_INPUT.rawText.replace(
+        "<h1>Jane Doe</h1>",
+        `<h1>Jane Doe</h1><a href="mailto:jane@example.com?subject=Hi%20there&bcc=attacker@evil.com&cc=x@evil.com">Mail</a>`,
+      ),
+    });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.html).toContain('href="mailto:jane@example.com?subject=Hi%20there"');
+    expect(res.html).not.toContain("evil.com");
+  });
+});

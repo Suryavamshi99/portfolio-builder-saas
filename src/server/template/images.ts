@@ -1,8 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ownStoragePath } from "@/server/finalize-html";
+import { ownStoragePath, storageMarkerPattern } from "@/server/finalize-html";
 
 const SIGNED_URL_PATTERN = /https?:\/\/[^"'\s)]+\/storage\/v1\/object\/sign\/uploads\/([^?"'\s]+)\?[^"'\s)]*/g;
-const MARKER_PATTERN = /(?:shipfolio-storage:\/\/uploads\/)((?:(?!&quot;)[^"')\s<])+)/g;
 
 export async function embedStorageImagesInHtml(
   html: string,
@@ -41,7 +40,7 @@ export async function embedStorageImagesInHtml(
     }
   }
 
-  const markerMatches = [...html.matchAll(MARKER_PATTERN)];
+  const markerMatches = [...html.matchAll(storageMarkerPattern())];
   for (const match of markerMatches) {
     if (match[0] && match[1]) {
       await processMatch(match[0], match[1]);

@@ -3,6 +3,20 @@ import { extractHtmlDocument, type ProfileLinks } from "@/server/llm";
 
 export const STORAGE_MARKER_PREFIX = "shipfolio-storage://uploads/";
 
+// Where a URL or marker ends inside serialised HTML/CSS/JS: a quote, backtick,
+// bracket, whitespace, angle bracket or an encoded quote. Shared by every
+// scanner (finalize-html, storage-markers, template/images) so they agree.
+const URL_BODY = "(?:(?!&quot;)[^\"'`)\\s<>])+";
+
+/** Fresh global regex for markers; group 1 is the raw storage path. */
+export function storageMarkerPattern(): RegExp {
+  return new RegExp(String.raw`shipfolio-storage://uploads/(${URL_BODY})`, "g");
+}
+
+// Upload paths are `${userId}/${kind}/${uuid}-${sanitizeFilename(name)}`, so
+// every segment fits this; anything else is rejected outright.
+const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
+
 export interface FinalizeHtmlInput {
   rawText: string; // the model's whole reply
   userId: string; // the session user's id; only their own Storage paths are allowed
@@ -40,7 +54,7 @@ export function ownStoragePath(rawPath: string, userId: string): string | null {
   }
 
   const segments = decoded.split("/");
-  if (segments.some((seg) => seg === "" || seg === "." || seg === "..")) {
+  if (segments.some((seg) => seg === "" || seg === "." || seg === ".." || !SAFE_SEGMENT.test(seg))) {
     return null;
   }
 
@@ -73,11 +87,11 @@ export function signedUrlsToMarkers(
   let foreign = 0;
 
   // Terminators: ", ', ), whitespace, < or &quot;
-  const CANDIDATE_REGEX = /(?:https?:\/\/|shipfolio-storage:\/\/uploads\/)(?:(?!&quot;)[^"')\s<])+/g;
+  const CANDIDATE_REGEX = new RegExp(String.raw`(?:https?://|shipfolio-storage://uploads/)${URL_BODY}`, "gi");
 
   const nextHtml = html.replace(CANDIDATE_REGEX, (candidate) => {
     // 1. Marker candidate
-    if (candidate.startsWith(STORAGE_MARKER_PREFIX)) {
+    if (candidate.toLowerCase().startsWith(STORAGE_MARKER_PREFIX)) {
       const rest = candidate.slice(STORAGE_MARKER_PREFIX.length);
       const own = ownStoragePath(rest, userId);
       if (own) {
@@ -440,6 +454,15 @@ function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[])
     if (lowerHref.startsWith("mailto:")) {
       const address = (href.slice("mailto:".length).split("?")[0] ?? "").trim();
       if (address.length > 0 && refLower.includes(address.toLowerCase())) {
+        // Drop cc/bcc/to: they would copy the visitor's mail to someone else.
+        const query = new URLSearchParams(href.split("?")[1] ?? "");
+        const kept = new URLSearchParams();
+        for (const key of ["subject", "body"]) {
+          const value = query.get(key);
+          if (value !== null) kept.set(key, value);
+        }
+        const keptQuery = kept.toString().replace(/\+/g, "%20");
+        $el.attr("href", `mailto:${address}${keptQuery ? `?${keptQuery}` : ""}`);
         return;
       }
       $el.removeAttr("href");

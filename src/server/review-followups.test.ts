@@ -186,11 +186,10 @@ describe("Task D: Missing tests", () => {
     const pass2 = signedUrlsToMarkers(pass1.html, "user-123", "https://project.supabase.co");
     expect(pass2.html).toBe(pass1.html);
 
-    // C: an uppercase HTTPS:// signed URL is left as is (documents today's behavior)
+    // C: an uppercase HTTPS:// signed URL is converted too (hardening, 2026-10-12)
     const upperSignedUrl = `HTTPS://project.supabase.co/storage/v1/object/sign/uploads/user-123/photo.jpg?token=abc`;
-    const upperHtml = `<img src="${upperSignedUrl}">`;
-    const upperPass = signedUrlsToMarkers(upperHtml, "user-123", "https://project.supabase.co");
-    expect(upperPass.html).toBe(upperHtml);
+    const upperPass = signedUrlsToMarkers(`<img src="${upperSignedUrl}">`, "user-123", "https://project.supabase.co");
+    expect(upperPass.html).toBe(`<img src="${expectedMarker}">`);
   });
 
   // 8. embedStorageImagesInHtml (from @/server/template/images) with a fake supabase whose storage.from().download records calls:
