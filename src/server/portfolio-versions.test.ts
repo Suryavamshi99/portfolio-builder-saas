@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { savePortfolioVersion, MAX_VERSIONS_PER_USER } from "./portfolio-versions";
+import {
+  savePortfolioVersion,
+  listPortfolioVersions,
+  restorePortfolioVersion,
+  MAX_VERSIONS_PER_USER,
+} from "./portfolio-versions";
 
 type Call = { table: string; op: string; args: unknown[] };
 type Result = { data?: unknown; error: { message: string } | null };
@@ -19,7 +24,7 @@ function fakeAdmin(results: Partial<Record<string, Result>>) {
         calls.push({ table, op: name, args });
         return builder;
       };
-    for (const name of ["insert", "upsert", "select", "delete", "eq", "lt", "order", "limit", "single"]) {
+    for (const name of ["insert", "upsert", "select", "delete", "eq", "lt", "order", "limit", "single", "maybeSingle"]) {
       builder[name] = chain(name);
     }
     builder["then"] = (resolve: (r: Result) => unknown) =>
@@ -110,3 +115,61 @@ describe("savePortfolioVersion", () => {
     warn.mockRestore();
   });
 });
+
+describe("listPortfolioVersions", () => {
+  it("lists versions for the user ordered by created_at desc", async () => {
+    const mockRows = [
+      { id: "v1", source: "gemini", model: "gemini-3.5-flash", warnings: [], created_at: "2026-10-12T10:00:00Z" },
+      { id: "v2", source: "gemini", model: "gemini-3.5-flash", warnings: ["w1"], created_at: "2026-10-12T09:00:00Z" },
+    ];
+    const { admin, calls } = fakeAdmin({
+      "portfolio_versions.select": { data: mockRows, error: null },
+    });
+
+    const res = await listPortfolioVersions(admin, "user-abc");
+    expect(res).toEqual([
+      { id: "v1", source: "gemini", model: "gemini-3.5-flash", warnings: [], createdAt: "2026-10-12T10:00:00Z" },
+      { id: "v2", source: "gemini", model: "gemini-3.5-flash", warnings: ["w1"], createdAt: "2026-10-12T09:00:00Z" },
+    ]);
+    expect(calls).toContainEqual({ table: "portfolio_versions", op: "eq", args: ["user_id", "user-abc"] });
+    expect(calls).toContainEqual({ table: "portfolio_versions", op: "order", args: ["created_at", { ascending: false }] });
+  });
+
+  it("throws when select fails", async () => {
+    const { admin } = fakeAdmin({
+      "portfolio_versions.select": { data: null, error: { message: "db error" } },
+    });
+    await expect(listPortfolioVersions(admin, "user-abc")).rejects.toThrow("Failed to list portfolio versions: db error");
+  });
+});
+
+describe("restorePortfolioVersion", () => {
+  it("fetches the requested version and upserts into portfolios", async () => {
+    const { admin, calls } = fakeAdmin({
+      "portfolio_versions.select": { data: { html: "<h1>Restored</h1>" }, error: null },
+      "portfolios.upsert": { data: null, error: null },
+    });
+
+    const res = await restorePortfolioVersion(admin, "user-abc", "ver-123");
+    expect(res.html).toBe("<h1>Restored</h1>");
+    expect(calls).toContainEqual({ table: "portfolio_versions", op: "eq", args: ["user_id", "user-abc"] });
+    expect(calls).toContainEqual({ table: "portfolio_versions", op: "eq", args: ["id", "ver-123"] });
+    expect(calls).toContainEqual(
+      expect.objectContaining({
+        table: "portfolios",
+        op: "upsert",
+        args: [expect.objectContaining({ user_id: "user-abc", generated_html: "<h1>Restored</h1>" }), { onConflict: "user_id" }],
+      }),
+    );
+  });
+
+  it("throws when version is not found", async () => {
+    const { admin } = fakeAdmin({
+      "portfolio_versions.select": { data: null, error: null },
+    });
+    await expect(restorePortfolioVersion(admin, "user-abc", "nonexistent")).rejects.toThrow(
+      "Portfolio version not found",
+    );
+  });
+});
+

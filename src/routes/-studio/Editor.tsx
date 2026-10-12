@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { LivePreview } from "@/components/preview/LivePreview";
 import { PublishToolbar } from "@/components/publish/PublishToolbar";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import {
   Dialog,
@@ -13,11 +14,29 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Download, Lock, Loader2, Sparkles, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  Download,
+  Lock,
+  Loader2,
+  Sparkles,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  History,
+  RotateCcw,
+} from "lucide-react";
 
 interface EditorProps {
   initialHtml: string;
   onRegenerated: (html: string) => void;
+}
+
+interface VersionItem {
+  id: string;
+  source: string;
+  model: string | null;
+  warnings: string[];
+  createdAt: string;
 }
 
 export function Editor({ initialHtml, onRegenerated }: EditorProps) {
@@ -31,7 +50,14 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const [regenerating, setRegenerating] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [downloadingZip, setDownloadingZip] = useState(false);
   const [status, setStatus] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
+
+  // Version history state
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  const [versions, setVersions] = useState<VersionItem[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
 
   useEffect(() => {
     void fetch("/api/uploads?kind=resume")
@@ -41,6 +67,48 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       })
       .catch(() => {});
   }, []);
+
+  async function loadVersions() {
+    setLoadingVersions(true);
+    try {
+      const res = await fetch("/api/portfolio/versions");
+      if (res.ok) {
+        const data = (await res.json()) as { versions?: VersionItem[] };
+        setVersions(data.versions ?? []);
+      }
+    } catch {
+      // Non-critical background failure
+    } finally {
+      setLoadingVersions(false);
+    }
+  }
+
+  function handleOpenVersions() {
+    setVersionsOpen(true);
+    void loadVersions();
+  }
+
+  async function restoreVersion(versionId: string) {
+    setRestoringId(versionId);
+    setStatus(null);
+    try {
+      const res = await fetch(`/api/portfolio/versions/${encodeURIComponent(versionId)}/restore`, {
+        method: "POST",
+      });
+      const data = (await res.json().catch(() => ({}))) as { html?: string; error?: { message?: string } };
+      if (!res.ok || !data.html) {
+        throw new Error(data.error?.message ?? "Failed to restore version");
+      }
+      setHtml(data.html);
+      onRegenerated(data.html);
+      setVersionsOpen(false);
+      setStatus({ kind: "ok", msg: "Restored selected version as current draft." });
+    } catch (e: unknown) {
+      setStatus({ kind: "err", msg: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setRestoringId(null);
+    }
+  }
 
   async function regenerate() {
     if (!resumeUploadId) {
@@ -81,25 +149,33 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
   }
 
-  function download() {
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "portfolio.html";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+  async function downloadZip() {
+    setDownloadingZip(true);
+    try {
+      const res = await fetch("/api/export/zip");
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        throw new Error(data.error?.message ?? `Download failed (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "portfolio.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      setStatus({ kind: "err", msg: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setDownloadingZip(false);
+    }
   }
 
-  // Downloading the source HTML is normally as much "taking the deliverable"
-  // as deploying it is — gated the same way /api/publish gates deploys, so a
-  // free user can't sidestep payment by downloading instead of publishing.
-  // DOWNLOAD_FREE_FOR_NOW currently overrides that (see its own comment).
   async function handleDownloadClick() {
     if (downloadUnlocked) {
-      download();
+      await downloadZip();
       return;
     }
     setCheckingOut(true);
@@ -127,23 +203,37 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               A fully custom, AI-generated site — regenerate with new instructions, or publish as-is.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void handleDownloadClick()}
-            disabled={checkingOut}
-            className="gap-1.5 text-xs"
-            title={downloadUnlocked ? undefined : "Pay now to deploy and download your HTML"}
-          >
-            {checkingOut ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : downloadUnlocked ? (
-              <Download className="size-3.5" />
-            ) : (
-              <Lock className="size-3.5" />
-            )}
-            {downloadUnlocked ? "Download HTML" : "Unlock Download"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenVersions}
+              className="gap-1.5 text-xs"
+              title="View and restore saved portfolio versions"
+            >
+              <History className="size-3.5" />
+              Version History
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void handleDownloadClick()}
+              disabled={checkingOut || downloadingZip}
+              className="gap-1.5 text-xs"
+              title={downloadUnlocked ? "Download standalone website zip with bundled assets" : "Pay now to deploy and download your HTML"}
+            >
+              {checkingOut || downloadingZip ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : downloadUnlocked ? (
+                <Download className="size-3.5" />
+              ) : (
+                <Lock className="size-3.5" />
+              )}
+              {downloadUnlocked ? (downloadingZip ? "Packaging…" : "Download Zip") : "Unlock Download"}
+            </Button>
+          </div>
         </div>
 
         <PublishToolbar onPublishStarted={() => {}} />
@@ -228,6 +318,96 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
             >
               <Sparkles className="size-4" />
               Yes, regenerate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Version History Modal */}
+      <Dialog open={versionsOpen} onOpenChange={setVersionsOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="size-5 text-accent" />
+              Version History
+            </DialogTitle>
+            <DialogDescription>
+              Shipfolio preserves up to 20 past versions of your portfolio. You can restore any past version to replace your current draft.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-[380px] overflow-y-auto space-y-2.5 pr-1 py-1">
+            {loadingVersions ? (
+              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground gap-2">
+                <Loader2 className="size-4 animate-spin" />
+                Loading versions…
+              </div>
+            ) : versions.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No saved versions found.
+              </div>
+            ) : (
+              versions.map((ver, idx) => {
+                const date = new Date(ver.createdAt);
+                const formattedDate = date.toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                const isRestoring = restoringId === ver.id;
+
+                return (
+                  <div
+                    key={ver.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border bg-card/60 hover:bg-card transition-colors text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground">
+                          {idx === 0 ? "Latest Version" : `Version ${versions.length - idx}`}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 uppercase font-medium">
+                          {ver.source}
+                        </Badge>
+                        {ver.model && (
+                          <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                            {ver.model}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">{formattedDate}</p>
+                      {ver.warnings && ver.warnings.length > 0 && (
+                        <p className="text-[10px] text-warning truncate max-w-[280px]">
+                          {ver.warnings.length} warning{ver.warnings.length > 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={isRestoring || restoringId !== null}
+                      onClick={() => void restoreVersion(ver.id)}
+                      className="gap-1 text-xs shrink-0"
+                    >
+                      {isRestoring ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        <RotateCcw className="size-3" />
+                      )}
+                      Restore
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVersionsOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

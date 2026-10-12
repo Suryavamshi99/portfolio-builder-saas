@@ -31,7 +31,9 @@ import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
+import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
+import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
@@ -39,6 +41,7 @@ import { Route as ApiWebhooksDodoRouteImport } from './routes/api/webhooks/dodo'
 import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
+import { Route as ApiPortfolioVersionsIdRestoreRouteImport } from './routes/api/portfolio/versions.$id.restore'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -150,9 +153,19 @@ const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   path: '/api/dev/payment-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportZipRoute = ApiExportZipRouteImport.update({
+  id: '/api/export/zip',
+  path: '/api/export/zip',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPortfolioInputsRoute = ApiPortfolioInputsRouteImport.update({
   id: '/api/portfolio/inputs',
   path: '/api/portfolio/inputs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPortfolioVersionsRoute = ApiPortfolioVersionsRouteImport.update({
+  id: '/api/portfolio/versions',
+  path: '/api/portfolio/versions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublishStatusRoute = ApiPublishStatusRouteImport.update({
@@ -190,6 +203,12 @@ const ApiVercelOauthStartRoute = ApiVercelOauthStartRouteImport.update({
   path: '/oauth/start',
   getParentRoute: () => ApiVercelRoute,
 } as any)
+const ApiPortfolioVersionsIdRestoreRoute =
+  ApiPortfolioVersionsIdRestoreRouteImport.update({
+    id: '/$id/restore',
+    path: '/$id/restore',
+    getParentRoute: () => ApiPortfolioVersionsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -214,7 +233,9 @@ export interface FileRoutesByFullPath {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/zip': typeof ApiExportZipRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
+  '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
@@ -222,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -246,7 +268,9 @@ export interface FileRoutesByTo {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/zip': typeof ApiExportZipRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
+  '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
@@ -254,6 +278,7 @@ export interface FileRoutesByTo {
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -279,7 +304,9 @@ export interface FileRoutesById {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/zip': typeof ApiExportZipRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
+  '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
@@ -287,6 +314,7 @@ export interface FileRoutesById {
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -313,7 +341,9 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/zip'
     | '/api/portfolio/inputs'
+    | '/api/portfolio/versions'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
@@ -321,6 +351,7 @@ export interface FileRouteTypes {
     | '/api/admin/users/$id'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/portfolio/versions/$id/restore'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -345,7 +376,9 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/zip'
     | '/api/portfolio/inputs'
+    | '/api/portfolio/versions'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
@@ -353,6 +386,7 @@ export interface FileRouteTypes {
     | '/api/admin/users/$id'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/portfolio/versions/$id/restore'
   id:
     | '__root__'
     | '/'
@@ -377,7 +411,9 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/zip'
     | '/api/portfolio/inputs'
+    | '/api/portfolio/versions'
     | '/api/publish/status'
     | '/api/uploads/$id'
     | '/api/vercel/status'
@@ -385,6 +421,7 @@ export interface FileRouteTypes {
     | '/api/admin/users/$id'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/portfolio/versions/$id/restore'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -409,7 +446,9 @@ export interface RootRouteChildren {
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
+  ApiExportZipRoute: typeof ApiExportZipRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
+  ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
 }
 
@@ -569,11 +608,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDevPaymentTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/export/zip': {
+      id: '/api/export/zip'
+      path: '/api/export/zip'
+      fullPath: '/api/export/zip'
+      preLoaderRoute: typeof ApiExportZipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/portfolio/inputs': {
       id: '/api/portfolio/inputs'
       path: '/api/portfolio/inputs'
       fullPath: '/api/portfolio/inputs'
       preLoaderRoute: typeof ApiPortfolioInputsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/portfolio/versions': {
+      id: '/api/portfolio/versions'
+      path: '/api/portfolio/versions'
+      fullPath: '/api/portfolio/versions'
+      preLoaderRoute: typeof ApiPortfolioVersionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/publish/status': {
@@ -624,6 +677,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/vercel/oauth/start'
       preLoaderRoute: typeof ApiVercelOauthStartRouteImport
       parentRoute: typeof ApiVercelRoute
+    }
+    '/api/portfolio/versions/$id/restore': {
+      id: '/api/portfolio/versions/$id/restore'
+      path: '/$id/restore'
+      fullPath: '/api/portfolio/versions/$id/restore'
+      preLoaderRoute: typeof ApiPortfolioVersionsIdRestoreRouteImport
+      parentRoute: typeof ApiPortfolioVersionsRoute
     }
   }
 }
@@ -692,6 +752,17 @@ const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
   ApiAdminUsersRouteChildren,
 )
 
+interface ApiPortfolioVersionsRouteChildren {
+  ApiPortfolioVersionsIdRestoreRoute: typeof ApiPortfolioVersionsIdRestoreRoute
+}
+
+const ApiPortfolioVersionsRouteChildren: ApiPortfolioVersionsRouteChildren = {
+  ApiPortfolioVersionsIdRestoreRoute: ApiPortfolioVersionsIdRestoreRoute,
+}
+
+const ApiPortfolioVersionsRouteWithChildren =
+  ApiPortfolioVersionsRoute._addFileChildren(ApiPortfolioVersionsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -714,7 +785,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
+  ApiExportZipRoute: ApiExportZipRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
+  ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
 }
 export const routeTree = rootRouteImport
