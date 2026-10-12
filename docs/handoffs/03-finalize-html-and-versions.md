@@ -4,6 +4,8 @@
 **Plan reference:** `version2memory.md` section 6.1 ("`finalizeHtml()`", steps 1, 2, 3, 5 and 6), 6.12 and 6.14 build step 2. Fixes known problem **#7** (generated HTML isn't sanitised) and the "expiring link stored in the database" half of **#4**.
 **Reviewer:** Claude Code reviews this branch **line by line** and applies the migration itself. **Part of this is security work (Task B). Follow the spec exactly and do not improvise.** If something in the spec looks wrong, stop and write it under "open questions" in your report instead of working around it.
 
+> **Amended 2026-10-12 after a spec review** (sections B2, B3, B4, B5, B6, B7, B8, Task A, Task E, Task F, Deploy order). If you started before this, re-read those sections and bring your code in line; where this file and your code disagree, this file wins.
+
 ---
 
 ## Read first
@@ -24,7 +26,8 @@ So: **no fact check, no repair round, no jobs, no UI changes** in this handoff.
 
 ## Task A: Dependencies
 - Add **`cheerio`** (runtime dependency, latest 1.x) for parsing and editing HTML. **Never edit HTML with regular expressions in Task B**, except where this spec says so explicitly. Parse with `cheerio.load(html)` (the default parse5 document mode, which keeps the doctype).
-- Add **`vitest`** (dev dependency) and a `"test": "vitest run"` script in `package.json`. No config file unless it's needed for the `@/` path alias (if so, a minimal `vitest.config.ts` using `vite-tsconfig-paths`, which is already installed).
+- Add **`vitest`** (dev dependency) and a `"test": "vitest run"` script in `package.json`.
+- Add and commit a minimal **`vitest.config.ts`**: `import { defineConfig } from "vitest/config"; export default defineConfig({ resolve: { tsconfigPaths: true } });`. It's required: without it vitest loads `vite.config.ts`, whose `nitro()`/`tanstackStart()` plugins keep two Vite servers alive and the run hangs on exit. Use Vite 8's native `resolve.tsconfigPaths`, not the `vite-tsconfig-paths` plugin.
 
 ## Task B: `src/server/finalize-html.ts` (security-critical, pure, no database or network)
 
@@ -35,9 +38,9 @@ export const STORAGE_MARKER_PREFIX = "shipfolio-storage://uploads/";
 export interface FinalizeHtmlInput {
   rawText: string;               // the model's whole reply
   userId: string;                // the session user's id; only their own Storage paths are allowed
-  supabaseUrl: string;           // process.env.SUPABASE_URL; only signed URLs from this origin are recognised
+  supabaseUrl: string;           // getSupabaseEnv().url from src/lib/supabase/env.ts; only signed URLs from this origin are recognised
   links: ProfileLinks;           // the verified links from portfolio_inputs
-  referenceText: string;         // resume text + "\n" + specifics (used only for mailto:/tel: in B4)
+  referenceText: string;         // resume text + specifics + every verified link value (used only for mailto:/tel: in B4)
 }
 
 export type FinalizeHtmlResult =
@@ -48,39 +51,54 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult;
 
 /** Safety clean-up only (B5). Publish runs this again on whatever it serves. */
 export function sanitizeHtmlForServing(html: string): string;
+
+/** B3a. The one ownership check for Storage paths. Used here and by storage-markers.ts / images.ts. */
+export function ownStoragePath(rawPath: string, userId: string): string | null;
+
+/** B3d. Turns this user's signed Storage URLs anywhere in the text into markers (used by finalizeHtml and by /api/content for rows saved before this change). */
+export function signedUrlsToMarkers(html: string, userId: string, supabaseUrl: string): { html: string; foreign: number };
 ```
 `errors` and `warnings` are **plain-language sentences for the user** (e.g. "The page was cut off before it finished."), not codes. Keep each one short. De-duplicate warnings (e.g. one "Removed 3 links that weren't in your verified links", not three lines).
 
 ### B2. Step 1: extract (hard errors)
 1. `extractHtmlDocument(rawText)` (existing). If it throws → error `"The AI reply didn't contain a web page."`
 2. If the extracted text doesn't end with `</html>` (case-insensitive, after trimming) → error `"The page was cut off before it finished."`
-3. Check the **raw extracted string** (before parsing, because the parser invents missing tags) with case-insensitive regexes: it must contain `<!doctype html`, `<head`, `<body`, and a `<style` element with non-whitespace content. Each one missing → its own error, e.g. `"The page has no <head> section."`
-4. Any error → return `{ ok: false, errors }` immediately. Don't continue.
+3. Any error → return `{ ok: false, errors }` immediately. Don't continue.
+
+These two are the **only** hard errors in this handoff. There's no repair round yet (handoff 04), and a rejected page has already used one of the user's hourly generations, so anything that can be repaired is repaired with a warning instead (B6).
 
 ### B3. Step 2a: images
-For every `<img>`, decide on its `src`:
-- **Signed Storage URL** → allowed only if **all** of these hold, then rewrite it to `STORAGE_MARKER_PREFIX + <storage path>` (path decoded once with `decodeURIComponent`, no query string):
-  - parse it with `new URL()`; its `origin` equals `new URL(supabaseUrl).origin`;
-  - its pathname starts with `/storage/v1/object/sign/uploads/`;
-  - the storage path (the rest of the pathname) starts with `${userId}/` and contains no `..` segment.
-- **Already a marker** (`src` starts with `STORAGE_MARKER_PREFIX`) → allowed only if the path after the prefix starts with `${userId}/` and has no `..` segment.
-- **`data:image/...`** → allowed as is.
-- **Anything else** (other hosts, stock photos, `http:`, relative paths, a signed URL for another user's path or from another origin) → remove the `<img>` element. Warning: `"Removed N images that weren't your own uploads."`
+**B3a. `ownStoragePath(rawPath, userId)`**, in this exact order:
+1. `decodeURIComponent(rawPath)` **once**, inside `try`; if it throws (malformed `%`), return `null`.
+2. On the **decoded** string: return `null` if it contains `\`, `%`, or any character below U+0020 or U+007F; if it doesn't start with `${userId}/`; or if any `/`-separated segment is empty, `.` or `..`.
+3. Otherwise return the decoded path.
+
+**B3b. Signed Storage URL** = parse with `new URL()` (throw = not one); `origin` equals `new URL(supabaseUrl).origin`; pathname starts with `/storage/v1/object/sign/uploads/`. Its raw path is the rest of the pathname (no query). It's **own** if `ownStoragePath(rawPath, userId)` returns a path, and then it is rewritten to `STORAGE_MARKER_PREFIX + <that path>`.
+
+**B3c. Media sources.** For `src` on `<img>`, `<video>`, `<audio>`, `<track>` and `<input type="image">`, and `poster` on `<video>`:
+- an **own** signed Storage URL → rewrite to the marker;
+- a **marker** (starts with `STORAGE_MARKER_PREFIX`) → keep only if `ownStoragePath(rest, userId)` returns a path;
+- **`data:image/...`** → keep (on `<img>`, `<input type="image">` and `poster` only);
+- **anything else** (other hosts, stock photos, `http:`, relative paths, another user's path, another origin) → `<img>`/`<input type="image">`: remove the element; `<video>`/`<audio>`/`<track>`: remove the element; `poster`: remove the attribute. Warning: `"Removed N images or media files that weren't your own uploads."`
 
 Also, everywhere in the document:
 - Remove every `srcset` attribute and every `<source>` element (they can load outside images and we can't check them cheaply).
 - In `<svg>`, on `<image>` and `<use>`: remove `href` / `xlink:href` unless it starts with `#` or `data:image/`.
+  - **cheerio gotcha (verified with cheerio 1.2.0):** in the default parse5 mode a namespaced `xlink:href` is stored under the plain attribute key `href` (the prefix is kept separately and re-added on serialise). So `attr('xlink:href')`, `removeAttr('xlink:href')` and the selector `[xlink\:href]` silently do nothing. Always use `attr('href')` / `removeAttr('href')`, and never put the string `xlink:href` in a cheerio call. Tests for this must assert on the **serialised HTML** (e.g. `expect(out).not.toContain("https://evil")`), not on `attr(...)`.
 
-The rewrite also covers the signed URL appearing anywhere else (for example a CSS `background-image` in a `style` attribute or the `<style>` block): after the `<img>` pass, do one regex replace over the serialised HTML for signed URLs that pass the same three checks, and turn them into markers. Signed URLs that fail the checks there are left as is (they're harmless text the CSP blocks; the publish step only bundles valid ones), but add a warning `"The page referenced an image that isn't yours; it won't load."`
+**B3d. `signedUrlsToMarkers` (text pass).** Signed URLs and markers can also appear outside those attributes (a CSS `background-image` in a `style` attribute or the `<style>` block). After serialising, run one regex over the whole text:
+- A **signed URL candidate** starts at `http://` or `https://` and runs up to (not including) the first `"`, `'`, `)`, whitespace, `<` or `&quot;` — so the `?token=...` query is **inside** the match. Only candidates that are B3b signed Storage URLs are touched: own → replaced by the marker; **not own → replaced by an empty string** (no signed URL may stay in saved HTML).
+- A **marker candidate** starts at `STORAGE_MARKER_PREFIX` and ends at the same terminators. If `ownStoragePath` rejects its path → replaced by an empty string.
+- `foreign` = how many were emptied; if > 0, warning `"The page referenced an image that isn't yours; it won't load."`
 
 ### B4. Step 2b: links
-For every element with an `href` (`<a>`, `<area>`), keep the `href` only if it is:
+For every `<a>` and `<area>` element, **including `<a>` inside `<svg>`** (where `xlink:href` shows up as `href` in cheerio, see B3), keep the `href` only if it is:
 - an in-page anchor (`#...`), or
-- `mailto:<address>` where `<address>` (without any `?query`) appears in `referenceText` (case-insensitive), or
+- `mailto:<address>` where `<address>` (without any `?query`) appears in `referenceText` (case-insensitive; `referenceText` includes the verified link values, so an email the user typed as a verified link counts), or
 - `tel:<number>` where the digits of the number appear, as a run of digits, in the digits-only version of `referenceText`, or
 - an `http(s)` URL that **matches a verified link** from `links` (`linkedin`, `github`, every `githubProjects` entry, every `other[].url`).
 
-**Matching rule:** normalise both sides and compare for equality. Normalise = parse with `new URL()` (if it throws, it's not a match); lowercase the host; drop a leading `www.`; ignore the scheme (`http` = `https`); drop the hash; drop one trailing `/` from the pathname; keep the query string as is. A verified link entry without a scheme (`github.com/jane`) is parsed as `https://` + entry.
+**Matching rule:** first parse the page's `href` with `new URL()`; if it throws, or its `protocol` is not exactly `http:` or `https:`, it is **not** a match (this stops `javascript://linkedin.com/in/jane#%0aalert(1)`, which otherwise parses with host `linkedin.com`). Only then normalise both sides and compare for equality. Normalise = lowercase the host; drop a leading `www.`; ignore the scheme (`http` = `https`); drop the hash; drop one trailing `/` from the pathname; keep the query string as is. A verified link entry without a scheme (`github.com/jane`) is parsed as `https://` + entry.
 
 Otherwise **remove the `href` attribute and keep the element and its text.** Warning: `"Removed N links that weren't in your verified links."`
 
@@ -88,7 +106,7 @@ Also remove `target` on any element whose `href` was removed, and add `rel="noop
 
 ### B5. Step 3: safety clean-up (`sanitizeHtmlForServing`, also called inside `finalizeHtml`)
 Remove these **elements, with their contents**:
-- `<script>` **with a `src` attribute** (inline `<script>` without `src` stays: the rules allow small inline effects)
+- `<script>` that has a `src` **or** `href` attribute (an SVG script is written `<script href>` / `<script xlink:href>`, which cheerio exposes as `href`). Inline `<script>` with neither stays: the rules allow small inline effects.
 - `<iframe>`, `<frame>`, `<frameset>`, `<object>`, `<embed>`, `<applet>`, `<portal>`, `<base>`
 - every `<meta>` with an `http-equiv` attribute
 - every `<link>` **except** `rel="stylesheet"` or `rel="preconnect"` whose `href` host is exactly `fonts.googleapis.com` or `fonts.gstatic.com` (https only)
@@ -99,23 +117,41 @@ Remove these **attributes**:
 
 In every `<style>` element's text, remove each `@import` rule whose URL isn't `https://fonts.googleapis.com/...` (one regex over the CSS text is fine here; match `@import` up to the next `;`).
 
+Return-value note: `finalizeHtml` counts `<link>` and `<script>` elements before and after this step; if any were removed it adds the warning `"Removed outside style sheets or scripts; anything they provided (such as icon fonts) won't show."` (`sanitizeHtmlForServing` itself returns only the string.)
+
 `sanitizeHtmlForServing` must be **idempotent**: running it twice gives the same output as running it once. It must not do anything from B3/B4 (publish has no `links`/`userId` context), and it must not touch the watermark.
 
 ### B6. Step 2c: warnings and small fixes (never errors)
-- No `<meta name="viewport">` → insert `<meta name="viewport" content="width=device-width, initial-scale=1">` at the start of `<head>`. Warning: `"Added a mobile viewport tag."`
+Check these on the **raw extracted string** (before parsing, because the parser invents missing tags), case-insensitive:
+- No `<!doctype html` → the serialised output starts with `<!DOCTYPE html>`. Warning: `"Added a missing doctype."`
+- No `<head` or no `<body` → warning `"The page was missing its <head> or <body> section; it was repaired."` (the parser already adds them).
+- No `<style` element with non-whitespace content → warning `"The page has no inline styles, so it may look unstyled."`
+
+Then on the parsed document:
+- No `<meta name="viewport">` → insert `<meta name="viewport" content="width=device-width, initial-scale=1">` at the start of `<head>`. Warning: `"Added a mobile viewport tag."` (Deliberate change from plan 6.1 step 2, which lists the viewport tag as a rule: it's repaired, not rejected, for the same no-repair-round reason as B2.)
 - No `<nav>` → warning. No `<section>` → warning. No `<a href="#...">` left after B4 → warning `"The page has no in-page navigation."` Any `<img>` without a non-empty `alt` → one warning.
 - Remove the watermark: every element with the `data-shipfolio-watermark` attribute **and** every `<shipfolio-watermark>` element (see `src/server/watermark.ts`). No warning.
 
 ### B7. Order inside `finalizeHtml`
-B2 → parse once → watermark removal (B6) → B5 → B3 → B4 → viewport + warnings (B6) → serialise → the B3 regex pass over the serialised text → return `{ ok: true, html, warnings }`.
+B2 → raw-string checks (B6) → parse once → watermark removal (B6) → B5 (+ its removal warning) → B3c → B4 → viewport + structure warnings (B6) → serialise (prepend the doctype if B6 said so) → `signedUrlsToMarkers` (B3d) → return `{ ok: true, html, warnings }`.
 
 ### B8. Tests `src/server/finalize-html.test.ts`
 At least one test per bullet in B2–B6, plus:
 - a signed URL for **another user's** path (`otherUserId/photo/x.png`) is **not** turned into a marker, and the `<img>` is removed;
 - a signed URL from **another origin** with the right path is not turned into a marker;
 - a path with `..` (`${userId}/../other/x.png`, also URL-encoded `%2E%2E`) is rejected;
+- `${userId}/..%2Fother/x.png` is rejected (checked **after** decoding), and a malformed `${userId}/%E0%A4%A.png` is rejected **without throwing**;
+- a **foreign marker** inside a `style` attribute (`background-image:url(shipfolio-storage://uploads/otherUserId/photo/x.png)`) is emptied, with the warning;
+- a foreign **signed URL** in the `<style>` block is emptied (the output contains no `token=`), and an own one becomes a marker with no `?token` left;
+- `<video src="https://x/clip.mp4">` is removed; `<video poster="https://x/p.png">` loses `poster`;
+- a missing doctype, `<head>`, `<body>` or `<style>` gives `ok: true` with the matching warning (doctype prepended); a page without `</html>` gives `ok: false`;
+- `<svg><script href="https://x/y.js"></script></svg>` is removed; `<svg><a xlink:href="https://evil.com">x</a></svg>` loses the link (assert on the serialised output);
+- a Font Awesome `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/...">` is removed **with** the outside-stylesheet warning;
+- `mailto:jane@x.com` is kept when it appears only in `links.other` (through `referenceText`);
 - `https://www.LinkedIn.com/in/jane/` matches a verified `linkedin.com/in/jane`; `https://linkedin.com/in/jane-evil` does not;
 - `javascript:alert(1)` and `data:text/html,...` hrefs are removed;
+- `javascript://linkedin.com/in/jane#%0aalert(1)` and `ftp://linkedin.com/in/jane` have their href removed even though `linkedin.com/in/jane` is verified;
+- an external `xlink:href` on an SVG `<use>` is gone from the serialised output;
 - an inline `<script>` without `src` is kept; `<script src="https://x">` is removed;
 - `sanitizeHtmlForServing(sanitizeHtmlForServing(x)) === sanitizeHtmlForServing(x)` on a messy fixture;
 - a watermarked page (`addWatermark(page)`) comes back with no watermark.
@@ -156,23 +192,30 @@ export async function savePortfolioVersion(
 It: inserts the `portfolio_versions` row → upserts `portfolios` (`generated_html = html`, `updated_at`) exactly like `generate.ts` does today → deletes this user's versions older than the newest `MAX_VERSIONS_PER_USER` (select the ids to keep, ordered by `created_at desc`, then delete the rest for this `user_id`). Throws on any database error. Every query is filtered by `userId`.
 
 ## Task E: Storage markers on the way out: `src/server/storage-markers.ts`
-- Move `PHOTO_SIGNED_URL_TTL_SECONDS` out of `generate.ts` into this file and import it back.
-- `signStorageMarkers(html, supabase, ttlSeconds): Promise<string>`: finds every `STORAGE_MARKER_PREFIX + path` occurrence (regex on the text is fine; the path ends at the first `"`, `'`, `)`, whitespace or `<`), signs each **distinct** path once with `supabase.storage.from("uploads").createSignedUrl`, and replaces every occurrence. If signing fails, leave the marker (the image just won't show).
-- Change `embedStorageImagesInHtml` (`src/server/template/images.ts`) to also bundle **markers** the same way it bundles signed URLs today (download the path, put it in `images/<basename>`, rewrite to the relative path). Keep the existing signed-URL handling: rows saved before this change still contain signed URLs.
+- Move `PHOTO_SIGNED_URL_TTL_SECONDS` (7 days, for HTML handed back to the browser) out of `generate.ts` into this file and import it back. Add `PROMPT_SIGNED_URL_TTL_SECONDS = 60 * 60` and use it in `generate.ts` for the photo URL sent to the model (plan 6.1 step 5: prompts get a ~1 hour link; `finalizeHtml` turns it into a marker anyway).
+- `signStorageMarkers(html, supabase, userId, ttlSeconds): Promise<string>`: finds every marker (same terminators as B3d), and for each **distinct** path that `ownStoragePath(path, userId)` accepts, signs it once with `supabase.storage.from("uploads").createSignedUrl` and replaces every occurrence. A path that fails the check, or fails to sign, is left as the marker (the image just won't show).
+- Change `embedStorageImagesInHtml` (`src/server/template/images.ts`) to take `userId` and to also bundle **markers** the same way it bundles signed URLs today (download the path, put it in `images/<basename>`, rewrite to the relative path). **Every** path it downloads, marker or signed URL, must pass `ownStoragePath(path, userId)` first; otherwise skip it. Keep the existing signed-URL handling: rows saved before this change still contain signed URLs.
+- **Both functions must be called with the session user's (row-level-security scoped) `supabase` client, never the admin client.** The `ownStoragePath` check is the rule; Storage RLS is the second line.
 
 ## Task F: Wire it in
 ### `src/routes/api/generate.ts`
-- Replace `extractHtmlDocument(responseText)` + the `portfolios` upsert with: `finalizeHtml({ rawText: responseText, userId: user.id, supabaseUrl: process.env.SUPABASE_URL, links, referenceText: resumeText + "\n" + (otherSpecifics ?? "") })`.
+- Replace `extractHtmlDocument(responseText)` + the `portfolios` upsert with: `finalizeHtml({ rawText: responseText, userId: user.id, supabaseUrl: getSupabaseEnv().url, links, referenceText: [resumeText, otherSpecifics ?? "", links.linkedin, links.github, ...(links.githubProjects ?? []), ...(links.other ?? []).map((o) => o.url)].filter(Boolean).join("\n") })`. Import `getSupabaseEnv` from `@/lib/supabase/env` (don't use `process.env.SUPABASE_URL`: it fails `tsc` under this repo's `noPropertyAccessFromIndexSignature`).
   - `ok: false` → `422`, code `generation_invalid_output`, message `"The AI's page didn't pass our checks. Please try again."`, plus an extra `details: string[]` field in the error object with the errors. Extend `errorResponse` for that the same way `retryAfterSeconds` is handled.
   - `ok: true` → `savePortfolioVersion(admin, user.id, { html, source: "gemini", model: LLM_MODELS.google, warnings })`. On throw → the same 500 as today.
-- The response becomes `{ html, updatedAt, warnings }`, where `html` is the saved HTML with markers signed (`signStorageMarkers` with the user's `supabase` client and `PHOTO_SIGNED_URL_TTL_SECONDS`), then watermarked for free users exactly as today.
-- Leave everything else (rate limit, key handling, photo, reference images, `recordGeneration`, error codes) unchanged. The photo URL sent to the model stays a signed URL; `finalizeHtml` turns it into a marker.
+- The response becomes `{ html, updatedAt, warnings }`, where `html` is the saved HTML with markers signed (`signStorageMarkers(html, supabase, user.id, PHOTO_SIGNED_URL_TTL_SECONDS)` with the user's `supabase` client), then watermarked for free users exactly as today.
+- Leave everything else (rate limit, key handling, photo, reference images, `recordGeneration`, error codes) unchanged. The photo URL sent to the model stays a signed URL, now with `PROMPT_SIGNED_URL_TTL_SECONDS` (Task E); `finalizeHtml` turns it into a marker.
 
 ### `src/routes/api/content.ts`
-- Before the watermark step, run `signStorageMarkers(html, supabase, PHOTO_SIGNED_URL_TTL_SECONDS)`. Nothing else changes.
+- Before the watermark step, run `signedUrlsToMarkers(html, user.id, getSupabaseEnv().url).html` and then `signStorageMarkers(html, supabase, user.id, PHOTO_SIGNED_URL_TTL_SECONDS)`. The first call converts rows saved before this change, so their 7-day photo link is re-signed on every read instead of expiring. Nothing else changes (don't write the converted HTML back).
 
 ### `src/routes/api/publish.ts`
-- After `embedStorageImagesInHtml`, run `sanitizeHtmlForServing(html)` on the result and deploy that. Nothing else changes.
+- Pass `user.id` to `embedStorageImagesInHtml`. After it, run `sanitizeHtmlForServing(html)` on the result and deploy that.
+- **Add a Content-Security-Policy** (owner decision 2026-10-12): deploy one more file, `vercel.json`, next to `index.html`:
+  ```json
+  { "headers": [ { "source": "/(.*)", "headers": [ { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'none'; form-action 'none'; frame-src 'none'; base-uri 'none'" } ] } ] }
+  ```
+  This is the same policy as plan 6.8 (plus `media-src 'self'` for bundled media). It's what actually stops inline scripts from loading outside code or sending data anywhere; B5 is extra protection. Build it with `JSON.stringify` from a constant `PUBLISHED_SITE_CSP` in `src/server/vercel/deploy.ts`, so the future sites project can reuse it.
+- Nothing else changes.
 
 ### `src/routes/api/reset.ts`
 - Also delete the user's `portfolio_versions` rows, **with the admin client** (users have no access to that table), scoped `.eq("user_id", user.id)`, right before the `portfolios` reset. Same error style as the other steps.
@@ -188,12 +231,14 @@ It: inserts the `portfolio_versions` row → upserts `portfolios` (`generated_ht
 ## Deploy order
 The code needs the `portfolio_versions` table, so: Claude Code applies `0011` → then merges and deploys. Generation fails with a 500 if the code ships first.
 
+**Rollback:** after this ships, newly saved HTML holds `shipfolio-storage://` markers that only the new `/api/content`, `/api/publish` and `images.ts` can read. **Never roll back past this change.** If generation itself has to be backed out, revert only the `finalizeHtml`/`savePortfolioVersion` call in `generate.ts` and keep the marker handling in `content.ts`, `publish.ts`, `storage-markers.ts` and `images.ts`.
+
 ## Done when (acceptance checks)
 1. `npx tsc --noEmit -p .`, `npm run lint`, `npm test` and `npm run build` all pass.
 2. Every case listed in B8 has a test, and all tests pass.
 3. `grep -rn 'from("portfolio_versions")' src` shows only the admin (service-role) client, always filtered by the session user's id.
 4. The migration file matches Task C exactly.
-5. Claude Code will then: apply `0011`, generate a real portfolio as a free test user and check the saved HTML holds a marker (not a signed URL), the preview shows the photo, the watermark is shown, and a `portfolio_versions` row exists; then confirm a direct REST read of `portfolio_versions` fails for that user.
+5. Claude Code will then: apply `0011`, generate a real portfolio as a free test user and check the saved HTML holds a marker (not a signed URL), the preview shows the photo, the watermark is shown, and a `portfolio_versions` row exists; publish to their own Vercel as a paid test user and check the CSP header is served and the photo shows; then confirm a direct REST read of `portfolio_versions` fails for that user.
 
 ## When finished
 - Commit on this branch (one commit per task is fine). **Don't push, open a PR or merge.**
