@@ -20,7 +20,7 @@ import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { loadPortfolioInputs, savePortfolioInputs } from "@/server/portfolio-inputs";
 import { addWatermark } from "@/server/watermark";
-import { finalizeWithFactCheck } from "@/server/checked-generation";
+import { finalizeWithFactCheck, type CheckedGenerationResult } from "@/server/checked-generation";
 import { savePortfolioVersion } from "@/server/portfolio-versions";
 import {
   PHOTO_SIGNED_URL_TTL_SECONDS,
@@ -158,7 +158,7 @@ export const Route = createFileRoute("/api/generate")({
           return errorResponse(400, "resume_not_found", "Resume upload not found");
         }
 
-        // Text saved at upload (handoff 04a); resumes uploaded before that, or
+        // Text is saved at upload; resumes uploaded before that existed, or
         // whose save failed, are extracted from the file and saved now.
         const admin = createSupabaseAdminClient();
         let resumeText = await loadResumeText(admin, user.id, resumeRow.id).catch(() => null);
@@ -240,7 +240,7 @@ export const Route = createFileRoute("/api/generate")({
 
         // The repair round is part of this one request: it counts once
         // against the hourly limit and once as a generation.
-        let finalResult: Awaited<ReturnType<typeof finalizeWithFactCheck>>;
+        let finalResult: CheckedGenerationResult;
         try {
           finalResult = await finalizeWithFactCheck({
             firstReply: responseText,
@@ -275,16 +275,17 @@ export const Route = createFileRoute("/api/generate")({
         }
 
         if (!finalResult.ok) {
-          return finalResult.reason === "unsupported_claims"
-            ? errorResponse(
-                422,
-                "generation_unsupported_claims",
-                "The AI's page included facts that aren't in your resume, even after one correction. Please try again or add those details in your specifics.",
-                { details: finalResult.details },
-              )
-            : errorResponse(422, "generation_invalid_output", "The AI's page didn't pass our checks. Please try again.", {
-                details: finalResult.details,
-              });
+          if (finalResult.reason === "unsupported_claims") {
+            return errorResponse(
+              422,
+              "generation_unsupported_claims",
+              "The AI's page included facts that aren't in your resume, even after one correction. Please try again or add those details in your specifics.",
+              { details: finalResult.details },
+            );
+          }
+          return errorResponse(422, "generation_invalid_output", "The AI's page didn't pass our checks. Please try again.", {
+            details: finalResult.details,
+          });
         }
 
         let savedVersion: { versionId: string; updatedAt: string };

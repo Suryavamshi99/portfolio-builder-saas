@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { WATERMARK_ATTR } from "@/server/watermark";
 
 /**
  * Fact check (plan 6.1 step 4), first version: numeric claims only. Numbers,
@@ -26,7 +27,7 @@ const MAX_REPORTED_CLAIMS = 20;
 /** The text a visitor can read: body text, image alt text, the title and meta description. */
 export function visibleText(html: string): string {
   const $ = cheerio.load(html);
-  $("script, style, noscript, template, shipfolio-watermark, [data-shipfolio-watermark]").remove();
+  $(`script, style, noscript, template, shipfolio-watermark, [${WATERMARK_ATTR}]`).remove();
 
   const parts: string[] = [$("title").text(), $('meta[name="description" i]').attr("content") ?? ""];
   const walk = (nodes: AnyNode[]) => {
@@ -75,7 +76,7 @@ function numberTokens(text: string): NumberToken[] {
   return tokens;
 }
 
-const key = (n: number) => n.toFixed(6);
+const valueKey = (n: number) => n.toFixed(6);
 const digitsOnly = (s: string) => s.replace(/\D/g, "");
 
 export function findUnsupportedClaims(
@@ -86,7 +87,7 @@ export function findUnsupportedClaims(
   const currentYear = opts.currentYear ?? new Date().getFullYear();
   let text = visibleText(html);
 
-  const refValues = new Set(numberTokens(referenceText).flatMap((t) => t.values.map(key)));
+  const refValues = new Set(numberTokens(referenceText).flatMap((t) => t.values.map(valueKey)));
   const refDigits = digitsOnly(referenceText);
 
   const unsupported: string[] = [];
@@ -106,7 +107,7 @@ export function findUnsupportedClaims(
     const before = text.slice(Math.max(0, token.index - 25), token.index).toLowerCase();
     if (token.values[0] === currentYear && (before.includes("©") || before.includes("copyright"))) continue;
 
-    if (!token.values.some((v) => refValues.has(key(v)))) unsupported.push(token.text);
+    if (!token.values.some((v) => refValues.has(valueKey(v)))) unsupported.push(token.text);
   }
 
   return [...new Set(unsupported)].slice(0, MAX_REPORTED_CLAIMS).map((claim) => ({

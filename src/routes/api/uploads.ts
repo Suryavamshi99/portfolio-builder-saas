@@ -7,7 +7,6 @@ import { isUploadKind, sanitizeFilename, stripImageMetadataIfNeeded, validateUpl
 import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { UPLOAD_LIMITS, type UploadKind } from "@/config/uploads";
 import { PLAN_STORAGE_QUOTA_BYTES, PLAN_UPLOADS_PER_HOUR } from "@/config/plans";
-
 import { extractResumeText } from "@/server/resume-text";
 import { saveResumeText } from "@/server/resume-texts";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
