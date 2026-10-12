@@ -46,7 +46,7 @@ export function visibleText(html: string): string {
 // A number standing on its own: not glued to letters (S3, Python3, 3D, 5G) or
 // after a dot (v2.1). Optional currency before, and a %, k/M/B, word or "x" after.
 const NUMBER =
-  /(?<![\p{L}\p{N}_.@#])([$€£₹]\s?)?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))?(?:\s?(%|percent\b|thousand\b|million\b|billion\b|[kKmMbB](?!\p{L})|x(?!\p{L})))?(?![\p{L}\p{N}])/gu;
+  /(?<![\p{L}\p{N}_.@#])([$€£₹]\s?)?(\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})+,\d{3}|\d+)(?:\.(\d+))?(?:\s?(%|percent\b|thousand\b|million\b|billion\b|[kKmMbB](?!\p{L})|x(?!\p{L})))?(?![\p{L}\p{N}])/gu;
 
 // Ten or more digits with phone-style separators.
 const PHONE = /(?<![\p{L}\p{N}])\+?\d[\d\s().-]{8,}\d(?![\p{L}\p{N}])/gu;
@@ -56,6 +56,7 @@ const SCALE: Record<string, number> = { k: 1e3, thousand: 1e3, m: 1e6, million: 
 interface NumberToken {
   text: string;
   index: number;
+  end: number;
   raw: string;
   values: number[]; // the number as written, and scaled when it has a k/M/B suffix
 }
@@ -69,6 +70,7 @@ function numberTokens(text: string): NumberToken[] {
     tokens.push({
       text: m[0].trim(),
       index: m.index,
+      end: m.index + m[0].length,
       raw: m[2]!,
       values: scale ? [value, value * scale] : [value],
     });
@@ -92,20 +94,32 @@ export function findUnsupportedClaims(
 
   const unsupported: string[] = [];
 
-  // Phone numbers first: compare their digits, then blank them out so their
-  // parts aren't checked again as separate numbers.
+  // A phone number from the reference may be shown with or without a country
+  // code or leading 0, so compare its last 9 digits and drop it if found.
+  // Anything else that merely looks like one (separate elements joined by
+  // spaces, e.g. "2016 - 2020 3.8") stays and is checked number by number.
   text = text.replace(PHONE, (match) => {
-    if (digitsOnly(match).length < 10) return match;
-    if (!refDigits.includes(digitsOnly(match))) unsupported.push(match.trim());
-    return " ";
+    const digits = digitsOnly(match);
+    return digits.length >= 10 && refDigits.includes(digits.slice(-9)) ? " " : match;
   });
+  text = text.replace(/(?<!\p{N})24\s*\/\s*7(?!\p{N})/gu, " "); // "24/7" is an idiom, not a claim
+
+  // Years in the reference bound how long a career the page may claim ("7+ years").
+  const refYears = numberTokens(referenceText)
+    .map((t) => t.values[0]!)
+    .filter((v) => Number.isInteger(v) && v >= 1950 && v <= currentYear);
+  const maxYearsClaim = refYears.length > 0 ? currentYear - Math.min(...refYears) + 1 : 0;
 
   for (const token of numberTokens(text)) {
-    // Section labels ("01 / About") and 0/1, which are almost never claims.
-    if (/^0\d$/.test(token.raw) || token.values[0] === 0 || token.values[0] === 1) continue;
-    // "© 2026 Jane Doe": the current year in a copyright line is not a claim.
-    const before = text.slice(Math.max(0, token.index - 25), token.index).toLowerCase();
-    if (token.values[0] === currentYear && (before.includes("©") || before.includes("copyright"))) continue;
+    const value = token.values[0]!;
+    // A plain number: no currency, %, or k/M/B (so "$1M" and "1%" are still checked).
+    const bare = token.values.length === 1 && !/[$€£₹%]/.test(token.text);
+    // Section labels ("01 / About"), and a bare 0 or 1, are almost never claims.
+    if (/^0\d$/.test(token.raw) || (bare && (value === 0 || value === 1))) continue;
+    // The current year: a copyright line, or a role shown as running until now.
+    if (bare && value === currentYear) continue;
+    // "7+ years of experience" derived from the resume's own dates.
+    if (bare && value <= maxYearsClaim && /^\s*\+?\s*(?:years?|yrs?)\b/i.test(text.slice(token.end))) continue;
 
     if (!token.values.some((v) => refValues.has(valueKey(v)))) unsupported.push(token.text);
   }

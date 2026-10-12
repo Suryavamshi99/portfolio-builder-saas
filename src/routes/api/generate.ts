@@ -251,6 +251,7 @@ export const Route = createFileRoute("/api/generate")({
               referenceText: [
                 resumeText,
                 otherSpecifics ?? "",
+                instructions ?? "",
                 links.linkedin,
                 links.github,
                 ...(links.githubProjects ?? []),

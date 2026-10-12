@@ -68,12 +68,11 @@ describe("findUnsupportedClaims", () => {
     expect(claims(`<footer>© 2026 Jane Doe</footer>`)).toEqual([]);
     expect(claims(`<footer>Copyright 2026</footer>`)).toEqual([]);
     expect(claims(`<footer>© 2011 Jane Doe</footer>`)).toEqual(["2011"]);
-    expect(claims(`<p>Since 2026 I have…</p>`)).toEqual(["2026"]);
   });
 
   it("accepts a phone number from the resume in any formatting, and flags a different one", () => {
     expect(claims(`<p>Call +1 555 123 4567</p>`)).toEqual([]);
-    expect(claims(`<p>Call 555-987-6543</p>`)).toEqual(["555-987-6543"]);
+    expect(claims(`<p>Call 555-987-6543</p>`)).not.toEqual([]);
   });
 
   it("accepts numbers inside emails and links shown as text when they are in the reference", () => {
@@ -91,5 +90,44 @@ describe("findUnsupportedClaims", () => {
 
   it("lists each unsupported claim once", () => {
     expect(claims(`<p>35% here</p><p>and 35% again</p>`)).toEqual(["35%"]);
+  });
+
+  describe("review fixes (2026-10-12)", () => {
+    it("does not join numbers from separate elements into a fake phone number", () => {
+      expect(claims(`<p>2016 - 2020</p><p>3.8 GPA</p>`, "GPA 3.8 (2016 - 2020)")).toEqual([]);
+      expect(claims(`<p>2021 - 2023</p><p>2019 - 2021</p>`, "2019 - 2021 then 2021 - 2023")).toEqual([]);
+    });
+
+    it("accepts the resume's phone number with an added or dropped country code / trunk 0", () => {
+      expect(claims(`<p>+1 555 123 4567</p>`, "Phone 555-123-4567")).toEqual([]);
+      expect(claims(`<p>020 7946 0958</p>`, "Phone +44 20 7946 0958")).toEqual([]);
+      expect(claims(`<p>+44 (0)20 7946 0958</p>`, "Phone +44 20 7946 0958")).toEqual([]);
+    });
+
+    it("checks 1 when it carries a currency, %, or scale", () => {
+      expect(claims(`<p>Raised $1M</p>`, "Jane")).toEqual(["$1M"]);
+      expect(claims(`<p>1B requests</p>`, "Jane")).toEqual(["1B"]);
+      expect(claims(`<p>cut costs 1%</p>`, "Jane")).toEqual(["1%"]);
+      expect(claims(`<p>1 million users</p>`, "Jane")).toEqual(["1 million"]);
+      expect(claims(`<p>1 portfolio</p>`, "Jane")).toEqual([]);
+    });
+
+    it("accepts 'N+ years' when it fits the resume's own date span, but not more", () => {
+      expect(claims(`<p>7+ years of experience</p>`)).toEqual([]);
+      expect(claims(`<p>15+ years of experience</p>`)).toEqual(["15"]);
+    });
+
+    it("accepts the current year anywhere (a role shown as running until now)", () => {
+      expect(claims(`<p>Jan 2019 – 2026</p>`, "Acme, Jan 2019 – Present")).toEqual([]);
+    });
+
+    it("ignores the 24/7 idiom", () => {
+      expect(claims(`<p>Available 24/7</p>`, "Jane")).toEqual([]);
+    });
+
+    it("matches Indian lakh grouping against western grouping", () => {
+      expect(claims(`<p>Saved ₹1,20,000</p>`, "Saved ₹120,000")).toEqual([]);
+      expect(claims(`<p>Saved ₹120,000</p>`, "Saved ₹1,20,000")).toEqual([]);
+    });
   });
 });
