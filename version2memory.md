@@ -418,6 +418,8 @@ Reset also clears `portfolio_versions`, `portfolio_inputs` and `resume_texts`, a
 
 ## 7. Open questions and things to check before building
 
+- **Deferred live check (owner, 2026-10-12):** verify the free-plan watermark and paywall on production after the payment work (Dodo add-on + refund webhook) is built, then switch `PAYMENTS_ENABLED` on. Until then production runs with payments off and no watermark.
+
 - Update the out-of-date docs (`README.md`, the `DESIGN.md` accent colour, `API.md` after `fe465ac`) whenever the next build starts.
 
 - Price of the yearly hosting add-on, and what happens when it lapses (grace period, then the site shows a friendly "not published" page?).
