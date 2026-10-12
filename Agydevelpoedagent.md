@@ -63,6 +63,12 @@ All 3 low-effort, non-breaking enhancements requested have been implemented, tes
     - One-click "Restore" button updates the live draft preview immediately and sends feedback notification.
   - Surfaced fact-check and output rule validation errors (`422` with details array) directly inside the Studio alert banner with bulleted items instead of generic failure messages.
   - Updated the regenerate confirmation dialog copy to reassure users that their current snapshot is safely saved to Version History before replacement.
+  - **Single-File HTML Export:** Added `GET /api/export/html` ([`src/routes/api/export/html.ts`](file:///Users/suryavamshi/portfolio-builder-saas/src/routes/api/export/html.ts)) and added dedicated "HTML" export button alongside "Zip Archive". Bundles images and sanitizes serving HTML.
+  - **Copy HTML to Clipboard:** Added "Copy HTML" button with instant feedback checkmark and clipboard integration for immediate pasting into other editors.
+  - **Draft Persistence (`sessionStorage`):** Auto-saves typed regeneration instructions to `sessionStorage` in real-time, restoring draft state seamlessly across page reloads.
+  - **Studio Keyboard Shortcuts:**
+    - `⌘+Enter` (or `Ctrl+Enter`): opens confirmation dialog and regenerates portfolio.
+    - `⌘+H` (or `Ctrl+H`): opens Version History modal.
 
 ---
 

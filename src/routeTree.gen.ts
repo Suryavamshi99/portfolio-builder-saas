@@ -31,6 +31,7 @@ import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
+import { Route as ApiExportHtmlRouteImport } from './routes/api/export/html'
 import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
@@ -153,6 +154,11 @@ const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   path: '/api/dev/payment-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportHtmlRoute = ApiExportHtmlRouteImport.update({
+  id: '/api/export/html',
+  path: '/api/export/html',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiExportZipRoute = ApiExportZipRouteImport.update({
   id: '/api/export/zip',
   path: '/api/export/zip',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/html'
     | '/api/export/zip'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/html'
     | '/api/export/zip'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/html'
     | '/api/export/zip'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
@@ -446,6 +458,7 @@ export interface RootRouteChildren {
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
+  ApiExportHtmlRoute: typeof ApiExportHtmlRoute
   ApiExportZipRoute: typeof ApiExportZipRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
@@ -606,6 +619,13 @@ declare module '@tanstack/react-router' {
       path: '/api/dev/payment-test'
       fullPath: '/api/dev/payment-test'
       preLoaderRoute: typeof ApiDevPaymentTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export/html': {
+      id: '/api/export/html'
+      path: '/api/export/html'
+      fullPath: '/api/export/html'
+      preLoaderRoute: typeof ApiExportHtmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/export/zip': {
@@ -785,6 +805,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
+  ApiExportHtmlRoute: ApiExportHtmlRoute,
   ApiExportZipRoute: ApiExportZipRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,

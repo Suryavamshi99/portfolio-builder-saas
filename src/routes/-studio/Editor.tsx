@@ -24,6 +24,9 @@ import {
   CheckCircle2,
   History,
   RotateCcw,
+  Copy,
+  Check,
+  FileCode,
 } from "lucide-react";
 
 interface EditorProps {
@@ -51,6 +54,8 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [downloadingHtml, setDownloadingHtml] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<{
     kind: "ok" | "err";
     title?: string | undefined;
@@ -63,6 +68,49 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const [versions, setVersions] = useState<VersionItem[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+
+  // Auto-restore draft instructions from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("shipfolio_studio_instructions");
+      if (saved) setInstructions(saved);
+    } catch {
+      // sessionStorage unavailable
+    }
+  }, []);
+
+  // Save instructions to sessionStorage whenever changed
+  function handleInstructionsChange(val: string) {
+    setInstructions(val);
+    try {
+      if (val.trim()) {
+        sessionStorage.setItem("shipfolio_studio_instructions", val);
+      } else {
+        sessionStorage.removeItem("shipfolio_studio_instructions");
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+  }
+
+  // Keyboard shortcuts: Cmd/Ctrl+Enter to regenerate, Cmd/Ctrl+H or Cmd/Ctrl+S for history
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const isMod = e.metaKey || e.ctrlKey;
+      if (isMod && e.key === "Enter") {
+        e.preventDefault();
+        if (!regenerating && resumeUploadId) {
+          setConfirmOpen(true);
+        }
+      } else if (isMod && (e.key === "h" || e.key === "H")) {
+        e.preventDefault();
+        setVersionsOpen(true);
+        void loadVersions();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [regenerating, resumeUploadId]);
 
   useEffect(() => {
     void fetch("/api/uploads?kind=resume")
@@ -194,9 +242,39 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
   }
 
-  async function handleDownloadClick() {
+  async function downloadHtml() {
+    setDownloadingHtml(true);
+    try {
+      const res = await fetch("/api/export/html");
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        throw new Error(data.error?.message ?? `Download failed (${res.status})`);
+      }
+      const text = await res.text();
+      const blob = new Blob([text], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "portfolio.html";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      setStatus({
+        kind: "err",
+        title: "Download Failed",
+        msg: e instanceof Error ? e.message : String(e),
+      });
+    } finally {
+      setDownloadingHtml(false);
+    }
+  }
+
+  async function handleDownloadClick(format: "zip" | "html" = "zip") {
     if (downloadUnlocked) {
-      await downloadZip();
+      if (format === "zip") await downloadZip();
+      else await downloadHtml();
       return;
     }
     setCheckingOut(true);
@@ -210,6 +288,21 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       window.location.href = json.checkoutUrl;
     } finally {
       setCheckingOut(false);
+    }
+  }
+
+  async function copyHtmlToClipboard() {
+    try {
+      await navigator.clipboard.writeText(html);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      setStatus({ kind: "ok", msg: "HTML copied to clipboard!" });
+    } catch (e: unknown) {
+      setStatus({
+        kind: "err",
+        title: "Copy Failed",
+        msg: e instanceof Error ? e.message : "Failed to copy to clipboard",
+      });
     }
   }
 
@@ -240,10 +333,39 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => void handleDownloadClick()}
-              disabled={checkingOut || downloadingZip}
+              onClick={() => void copyHtmlToClipboard()}
               className="gap-1.5 text-xs"
-              title={downloadUnlocked ? "Download standalone website zip with bundled assets" : "Pay now to deploy and download your HTML"}
+              title="Copy raw HTML to clipboard"
+            >
+              {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
+              {copied ? "Copied!" : "Copy HTML"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void handleDownloadClick("html")}
+              disabled={checkingOut || downloadingHtml || downloadingZip}
+              className="gap-1.5 text-xs"
+              title={downloadUnlocked ? "Download single standalone HTML file" : "Pay now to unlock exports"}
+            >
+              {downloadingHtml ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : downloadUnlocked ? (
+                <FileCode className="size-3.5" />
+              ) : (
+                <Lock className="size-3.5" />
+              )}
+              {downloadUnlocked ? (downloadingHtml ? "Preparing…" : "HTML") : "HTML"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void handleDownloadClick("zip")}
+              disabled={checkingOut || downloadingZip || downloadingHtml}
+              className="gap-1.5 text-xs"
+              title={downloadUnlocked ? "Download standalone website zip with bundled assets" : "Pay now to deploy and download your portfolio"}
             >
               {checkingOut || downloadingZip ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -252,7 +374,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               ) : (
                 <Lock className="size-3.5" />
               )}
-              {downloadUnlocked ? (downloadingZip ? "Packaging…" : "Download Zip") : "Unlock Download"}
+              {downloadUnlocked ? (downloadingZip ? "Packaging…" : "Zip Archive") : "Unlock Exports"}
             </Button>
           </div>
         </div>
@@ -287,14 +409,13 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
             Regenerate with new instructions
           </p>
           <p className="text-xs text-muted-foreground">
-            Describe what to change — design direction, sections to emphasize, tone. This calls your
-            connected Gemini key again and overwrites the draft on the right.
+            Describe what to change — design direction, sections to emphasize, tone. Auto-saved as you type.
           </p>
           <Textarea
             value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
             rows={5}
-            placeholder="e.g. Make it more minimal and light-themed. Emphasize the machine learning projects."
+            placeholder="e.g. Make it more minimal and light-themed. Emphasize the machine learning projects. (Press ⌘+Enter to regenerate)"
             disabled={regenerating}
             className="bg-background/60"
           />
@@ -362,7 +483,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               Version History
             </DialogTitle>
             <DialogDescription>
-              Shipfolio preserves up to 20 past versions of your portfolio. You can restore any past version to replace your current draft.
+              Shipfolio preserves up to 20 past versions of your portfolio. You can restore any past version to replace your current draft. (Shortcut: ⌘+H)
             </DialogDescription>
           </DialogHeader>
 
