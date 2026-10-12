@@ -353,13 +353,7 @@ function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[])
     const isImgOrInput = tagName === "img" || tagName === "input";
     const src = $(el).attr("src");
 
-    if (!src) {
-      if (tagName !== "video") {
-        $(el).remove();
-        removedMediaCount++;
-      }
-      return;
-    }
+    if (!src) return;
 
     const signed = parseSignedStorageUrl(src, supabaseUrl);
     if (signed && ownStoragePath(signed.rawPath, userId)) {
@@ -470,9 +464,6 @@ function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[])
     // 4. http(s) URL matching verified links
     const normalized = normalizeCandidateHref(href);
     if (normalized && verifiedNormalizedLinks.has(normalized)) {
-      if (el.tagName.toLowerCase() === "a" && $el.attr("target") === "_blank") {
-        $el.attr("rel", "noopener noreferrer");
-      }
       return;
     }
 
@@ -481,6 +472,8 @@ function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[])
     $el.removeAttr("target");
     removedLinksCount++;
   });
+
+  $('a[href][target="_blank"]').attr("rel", "noopener noreferrer");
 
   if (removedLinksCount > 0) {
     warnings.push(
