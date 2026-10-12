@@ -107,3 +107,82 @@ Migration `0012` must be applied **before** this code is deployed: until then th
 ---
 
 ## Handoff report
+
+### Status & Verification Summary
+- **TypeScript**: `npx tsc --noEmit -p .` passes with 0 errors.
+- **Linter**: `npm run lint` passes with 0 errors (17 existing warnings unchanged).
+- **Test Suite**: `npx vitest run` passes 81/81 tests across 5 test files (`resume-texts.test.ts` (7 tests), `portfolio-versions.test.ts` (6 tests), `storage-markers.test.ts` (4 tests), `review-followups.test.ts` (10 tests), `finalize-html.test.ts` (54 tests)).
+- **Build**: `npm run build` succeeds cleanly.
+- **Table Scoping**: `grep -rn 'from("resume_texts")' src` shows only `src/server/resume-texts.ts` (lines 16 and 31), always filtered by `user_id`.
+- **Migration**: `supabase/migrations/0012_resume_texts.sql` created exactly as written in Task A, and **not applied**.
+- **Scope & Worktree**: Executed strictly within `/Users/suryavamshi/portfolio-builder-saas-04a` on branch `feat/04a-resume-texts`.
+
+---
+
+### Files Changed & Created
+
+1. **`supabase/migrations/0012_resume_texts.sql`** (Created)
+   - Created table `public.resume_texts`:
+     - `upload_id uuid primary key references public.uploads (id) on delete cascade`
+     - `user_id uuid not null references auth.users (id) on delete cascade`
+     - `text text not null`
+     - `created_at timestamptz not null default now()`
+   - Index: `create index resume_texts_user_idx on public.resume_texts (user_id);`
+   - RLS: `alter table public.resume_texts enable row level security;`
+   - Privileges: `revoke all on public.resume_texts from anon, authenticated;`
+   - No policies or grants created (matches Task A exactly).
+
+2. **`src/server/resume-texts.ts`** (Created)
+   - Exported `MAX_RESUME_TEXT_CHARS = 100_000`.
+   - Implemented `saveResumeText(admin: SupabaseClient, userId: string, uploadId: string, text: string): Promise<void>`:
+     - Trims `text` and slices to `MAX_RESUME_TEXT_CHARS`.
+     - Returns early without writing if empty/whitespace-only.
+     - Upserts `{ upload_id: uploadId, user_id: userId, text: trimmed }` with `{ onConflict: "upload_id" }`.
+     - Throws Error on database error.
+   - Implemented `loadResumeText(admin: SupabaseClient, userId: string, uploadId: string): Promise<string | null>`:
+     - Selects `"text"` filtered by both `.eq("upload_id", uploadId)` and `.eq("user_id", userId)`.
+     - Calls `.maybeSingle()`.
+     - Returns `(data as { text: string } | null)?.text ?? null`.
+     - Throws Error on database error.
+
+3. **`src/routes/api/uploads.ts`**
+   - Imported `extractResumeText`, `saveResumeText`, and `createSupabaseAdminClient`.
+   - Added resume text extraction and saving after the successful `uploads` insert and before the singleton replace block when `kind === "resume"`.
+   - Wrapped in single `try/catch` block logging a warning on error and continuing without failing upload.
+   - Quoted changed lines:
+   ```ts
+   // Imports:
+   import { extractResumeText } from "@/server/resume-text";
+   import { saveResumeText } from "@/server/resume-texts";
+   import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+   // POST handler:
+   if (kind === "resume") {
+     try {
+       const text = await extractResumeText(processed, validated.mime);
+       await saveResumeText(createSupabaseAdminClient(), user.id, id, text);
+     } catch (e) {
+       console.warn("Could not save resume text", e instanceof Error ? e.message : e);
+     }
+   }
+   ```
+
+4. **`src/server/resume-texts.test.ts`** (Created)
+   - Implemented 7 tests using a recording fake of the Supabase query builder covering all requirements of Task D:
+     1. `exports MAX_RESUME_TEXT_CHARS as 100,000`
+     2. `saveResumeText upserts { upload_id, user_id, text } with { onConflict: 'upload_id' } and trims the text`
+     3. `cuts text longer than MAX_RESUME_TEXT_CHARS to exactly that length`
+     4. `writes nothing when text is empty or whitespace-only`
+     5. `throws when database error occurs during upsert`
+     6. `loadResumeText filters by both upload_id and user_id, and returns the text or null`
+     7. `throws when database error occurs during select`
+
+---
+
+### Anything Done Differently & Why
+- Nothing done differently. All implementation details adhere strictly to the Task A–D requirements in the handoff document.
+
+---
+
+### Open Questions
+- None.
