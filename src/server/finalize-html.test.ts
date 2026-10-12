@@ -593,3 +593,78 @@ describe("finalizeHtml - B6: Viewport, semantic warnings, repair, and watermark 
     });
   });
 });
+
+describe("review fixes: parser differentials and SVG", () => {
+  const page = (body: string, head = "") =>
+    `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{color:#333}</style>${head}</head><body><nav><a href="#a">A</a></nav><section id="a">${body}</section></body></html>`;
+  const run = (body: string, head = "") => finalizeHtml({ ...BASE_INPUT, rawText: page(body, head) });
+
+  it("removes external xlink:href on SVG <use> and <image> (asserted on serialised output)", () => {
+    const res = run(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="https://evil.com/s.svg#i"/><image xlink:href="https://evil.com/x.png"/><use xlink:href="#local"/></svg>`,
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.html).not.toContain("https://evil.com");
+    expect(res.html).toContain('xlink:href="#local"');
+  });
+
+  it("removes SVG <script xlink:href> in sanitizeHtmlForServing", () => {
+    const out = sanitizeHtmlForServing(page(`<svg><script xlink:href="https://evil.com/x.js"></script></svg>`));
+    expect(out).not.toContain("evil.com");
+  });
+
+  it("removes <noscript> in body and head with everything inside it", () => {
+    const body = `<noscript><img src="https://evil.com/t.png"><a href="https://evil.com">x</a><iframe src="https://evil.com/f"></iframe></noscript>`;
+    const head = `<noscript><meta http-equiv="refresh" content="0;url=https://evil.com"><link rel="stylesheet" href="https://evil.com/s.css"></noscript>`;
+    const res = run(body, head);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.html).not.toContain("noscript");
+    expect(res.html).not.toContain("evil.com");
+    expect(sanitizeHtmlForServing(page(body, head))).not.toContain("evil.com");
+  });
+
+  it("blocks the noscript attribute re-entry trick", () => {
+    const res = run(`<noscript><p title="</noscript><img src=https://evil.com/x.png>"></p></noscript>`);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.html).not.toContain("evil.com");
+  });
+
+  it("cleans the nested-form mutation-XSS payload so a re-parse finds nothing", () => {
+    const payload = `<form><math><mtext></form><form><mglyph><style></math><a href="https://evil.com/mx">mx</a><iframe src="https://evil.com/if"></iframe><script src="https://evil.com/x.js"></script><meta http-equiv="refresh" content="0;url=https://evil.com"><img src="https://evil.com/i.png">`;
+    const res = run(payload);
+    if (res.ok) {
+      expect(res.html).not.toContain("evil.com");
+      // The saved HTML is a fixed point: cleaning it again changes nothing.
+      expect(sanitizeHtmlForServing(res.html)).not.toContain("evil.com");
+      const again = finalizeHtml({ ...BASE_INPUT, rawText: res.html });
+      expect(again.ok && again.html).toBe(res.html);
+    } else {
+      expect(res.errors).toContain("The page's HTML couldn't be cleaned safely.");
+    }
+    expect(sanitizeHtmlForServing(page(payload))).not.toMatch(/<iframe|<script src|http-equiv/);
+  });
+
+  it("is a fixed point on a normal page", () => {
+    const res = finalizeHtml(BASE_INPUT);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const again = finalizeHtml({ ...BASE_INPUT, rawText: res.html });
+    expect(again.ok && again.html).toBe(res.html);
+  });
+
+  it("removes SMIL animations that set href, and clears external feImage href", () => {
+    const res = run(
+      `<svg><a><animate attributeName="href" values="https://evil.com/anim"/><text>LinkedIn</text></a>` +
+        `<image><set attributeName="xlink:href" to="https://evil.com/set.png"/></image>` +
+        `<rect><animate attributeName="opacity" values="0;1"/></rect>` +
+        `<filter><feImage xlink:href="https://evil.com/fe.png"/></filter></svg>`,
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.html).not.toContain("evil.com");
+    expect(res.html).toContain('attributeName="opacity"');
+  });
+});

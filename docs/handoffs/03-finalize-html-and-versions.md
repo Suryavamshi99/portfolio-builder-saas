@@ -156,6 +156,13 @@ At least one test per bullet in B2–B6, plus:
 - `sanitizeHtmlForServing(sanitizeHtmlForServing(x)) === sanitizeHtmlForServing(x)` on a messy fixture;
 - a watermarked page (`addWatermark(page)`) comes back with no watermark.
 
+### B9. Amendments after the code review (2026-10-12, made by Claude Code)
+These change B5, B7 and Task D; where they disagree with the text above, this section wins.
+- **`<noscript>` is removed with its contents** (added to the B5 element list). cheerio parses it as raw text, so nothing inside could be checked, but browsers with scripting off (the Studio preview, visitors with JS off) render it. Parsing with `scriptingEnabled: false` was rejected: it re-opens the `<noscript><p title="</noscript><img …>">` re-entry trick.
+- **Clean until stable** (changes B7). `finalizeHtml` runs one full B5 → B3 → B4 → B6 → B3d pass per round and `sanitizeHtmlForServing` runs B5 per round, re-parsing each round's output, until the output stops changing (at most 4 rounds). Still changing → `finalizeHtml` returns the hard error "The page's HTML couldn't be cleaned safely." and `sanitizeHtmlForServing` throws `UnstableHtmlError` (publish answers 422 `publish_unsafe_html`). This closes the nested-`<form>`/`<math>` mutation-XSS shape, where text the parser saw as inert becomes live elements on re-parse.
+- **SVG animations that target `href` are removed** (B5): `<animate>`, `<set>`, `<animateMotion>`, `<animateTransform>` whose `attributeName` (trimmed, lowercased, `xlink:` dropped) is `href`. `<feImage>` joins `<image>`/`<use>` in the B3 external-`href` rule. parse5 keeps SVG camelCase tag names, which CSS selectors don't match, so these are found by walking `svg *` and comparing lowercased `tagName`.
+- **Task D failure handling:** an insert error still throws. If the `portfolios` upsert fails, the just-inserted version row is deleted before throwing. Pruning never throws (it logs; the next save prunes again) and deletes rows **older than the 20th-newest `created_at`** instead of "not in the 20 kept ids", so a version a parallel generation inserts is never deleted.
+
 ## Task C: Migration `supabase/migrations/0011_portfolio_versions.sql`
 ```sql
 create table public.portfolio_versions (

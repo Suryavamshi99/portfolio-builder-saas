@@ -159,6 +159,9 @@ function cleanDocForServing($: cheerio.CheerioAPI): void {
   // <script> with src or href attribute (SVG <script href>)
   $("script[src], script[href]").remove();
   $("iframe, frame, frameset, object, embed, applet, portal, base").remove();
+  // cheerio parses <noscript> as raw text (scripting on), so nothing inside it
+  // can be checked, yet browsers with scripting off render it as markup.
+  $("noscript").remove();
   $("meta[http-equiv]").remove();
 
   $("link").each((_, el) => {
@@ -189,6 +192,16 @@ function cleanDocForServing($: cheerio.CheerioAPI): void {
   $("[formtarget]").removeAttr("formtarget");
   $("[ping]").removeAttr("ping");
 
+  // SMIL can set an href at render time, bypassing the static href checks.
+  // parse5 keeps SVG's camelCase tag names, which CSS selectors don't match.
+  $("svg *").each((_, el) => {
+    const tag = el.tagName.toLowerCase();
+    if (tag === "animate" || tag === "set" || tag === "animatemotion" || tag === "animatetransform") {
+      const target = ($(el).attr("attributeName") ?? "").trim().toLowerCase().replace(/^xlink:/, "");
+      if (target === "href") $(el).remove();
+    }
+  });
+
   // 3. CSS @import cleaning in <style> elements
   $("style").each((_, el) => {
     const css = $(el).text();
@@ -205,13 +218,33 @@ function cleanDocForServing($: cheerio.CheerioAPI): void {
 
 /** Safety clean-up only (B5). Publish runs this again on whatever it serves. */
 export function sanitizeHtmlForServing(html: string): string {
-  const $ = cheerio.load(html);
-  cleanDocForServing($);
-  return $.html();
+  return untilStable(html, (current) => {
+    const $ = cheerio.load(current);
+    cleanDocForServing($);
+    return $.html();
+  });
+}
+
+/** Thrown when re-parsing keeps changing the cleaned HTML (a mutation-XSS shape). */
+export class UnstableHtmlError extends Error {}
+
+const MAX_CLEAN_ROUNDS = 4;
+
+// Serialising and re-parsing can turn text the parser saw as inert (e.g. inside
+// <style> after a nested-<form> trick) into live elements. Clean again until the
+// output is a fixed point, so what we store is what a browser will build.
+function untilStable(html: string, clean: (html: string) => string): string {
+  let current = clean(html);
+  for (let round = 1; round < MAX_CLEAN_ROUNDS; round++) {
+    const next = clean(current);
+    if (next === current) return current;
+    current = next;
+  }
+  throw new UnstableHtmlError("HTML did not stabilise after cleaning");
 }
 
 export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
-  const { rawText, userId, supabaseUrl, links, referenceText } = input;
+  const { rawText } = input;
 
   // B2. Step 1: extract (hard errors)
   let extracted: string;
@@ -246,8 +279,27 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
     warnings.push("The page has no inline styles, so it may look unstyled.");
   }
 
-  // Parse once (B7)
-  const $ = cheerio.load(extracted);
+  let html: string;
+  try {
+    html = untilStable(extracted, (current) => cleanOnce(current, input, warnings));
+  } catch (e) {
+    if (e instanceof UnstableHtmlError) {
+      return { ok: false, errors: ["The page's HTML couldn't be cleaned safely."] };
+    }
+    throw e;
+  }
+  if (needsDoctypePrepended && !/^\s*<!doctype\s+html/i.test(html)) {
+    html = `<!DOCTYPE html>\n${html}`;
+  }
+
+  const dedupedWarnings = Array.from(new Set(warnings));
+  return { ok: true, html, warnings: dedupedWarnings };
+}
+
+/** One full B5 → B3 → B4 → B6 → B3d pass. Warnings accumulate across rounds and are de-duplicated. */
+function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[]): string {
+  const { userId, supabaseUrl, links, referenceText } = input;
+  const $ = cheerio.load(source);
 
   // Watermark removal (B6)
   $("[data-shipfolio-watermark], shipfolio-watermark").remove();
@@ -351,7 +403,9 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
 
   // In <svg>, on <image> and <use>: remove href unless # or data:image/
   // Notice: cheerio stores namespaced xlink:href under href
-  $("svg image, svg use").each((_, el) => {
+  $("svg *").each((_, el) => {
+    const tag = el.tagName.toLowerCase();
+    if (tag !== "image" && tag !== "use" && tag !== "feimage") return;
     const h = $(el).attr("href");
     if (h && !h.startsWith("#") && !h.startsWith("data:image/")) {
       $(el).removeAttr("href");
@@ -473,19 +527,10 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
     warnings.push("One or more images are missing alt text.");
   }
 
-  // Serialise (prepend doctype if B6 said so)
-  let serialized = $.html();
-  if (needsDoctypePrepended && !/^\s*<!doctype\s+html/i.test(serialized)) {
-    serialized = `<!DOCTYPE html>\n${serialized}`;
-  }
-
   // B3d: signedUrlsToMarkers (text pass)
-  const markerPass = signedUrlsToMarkers(serialized, userId, supabaseUrl);
-  serialized = markerPass.html;
+  const markerPass = signedUrlsToMarkers($.html(), userId, supabaseUrl);
   if (markerPass.foreign > 0) {
     warnings.push("The page referenced an image that isn't yours; it won't load.");
   }
-
-  const dedupedWarnings = Array.from(new Set(warnings));
-  return { ok: true, html: serialized, warnings: dedupedWarnings };
+  return markerPass.html;
 }

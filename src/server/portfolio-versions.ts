@@ -31,33 +31,42 @@ export async function savePortfolioVersion(
     .upsert({ user_id: userId, generated_html: version.html, updated_at: updatedAt }, { onConflict: "user_id" });
 
   if (upsertError) {
+    // Don't leave a "newest" version that never became the live draft.
+    await admin.from("portfolio_versions").delete().eq("user_id", userId).eq("id", inserted.id);
     throw new Error(`Failed to update portfolio: ${upsertError.message}`);
   }
 
-  // 3. Delete versions older than the newest MAX_VERSIONS_PER_USER for this user
-  const { data: keepRows, error: selectError } = await admin
+  // 3. Prune to the newest MAX_VERSIONS_PER_USER. The page is already saved, so
+  // a failure here is logged, not thrown; the next save prunes again.
+  await pruneOldVersions(admin, userId);
+
+  return { versionId: inserted.id, updatedAt };
+}
+
+async function pruneOldVersions(admin: SupabaseClient, userId: string): Promise<void> {
+  const { data: newest, error: selectError } = await admin
     .from("portfolio_versions")
-    .select("id")
+    .select("created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(MAX_VERSIONS_PER_USER);
 
   if (selectError) {
-    throw new Error(`Failed to query portfolio versions: ${selectError.message}`);
+    console.warn(`Could not list portfolio versions to prune: ${selectError.message}`);
+    return;
   }
+  if (!newest || newest.length < MAX_VERSIONS_PER_USER) return;
 
-  const keepIds = (keepRows ?? []).map((row) => row.id);
-  if (keepIds.length >= MAX_VERSIONS_PER_USER) {
-    const { error: deleteError } = await admin
-      .from("portfolio_versions")
-      .delete()
-      .eq("user_id", userId)
-      .not("id", "in", `(${keepIds.join(",")})`);
+  // Delete by a created_at cutoff rather than "not in <ids>", so a version a
+  // parallel generation inserts after this select is never deleted.
+  const cutoff = newest[newest.length - 1]!.created_at as string;
+  const { error: deleteError } = await admin
+    .from("portfolio_versions")
+    .delete()
+    .eq("user_id", userId)
+    .lt("created_at", cutoff);
 
-    if (deleteError) {
-      throw new Error(`Failed to prune old portfolio versions: ${deleteError.message}`);
-    }
+  if (deleteError) {
+    console.warn(`Could not prune old portfolio versions: ${deleteError.message}`);
   }
-
-  return { versionId: inserted.id, updatedAt };
 }

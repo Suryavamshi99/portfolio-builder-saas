@@ -4,7 +4,7 @@ import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { embedStorageImagesInHtml } from "@/server/template/images";
-import { sanitizeHtmlForServing } from "@/server/finalize-html";
+import { sanitizeHtmlForServing, UnstableHtmlError } from "@/server/finalize-html";
 import { createVercelDeployment, VercelDeployError, PUBLISHED_SITE_CSP } from "@/server/vercel/deploy";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 
@@ -62,7 +62,13 @@ export const Route = createFileRoute("/api/publish")({
           user.id,
         );
 
-        const sanitizedHtml = sanitizeHtmlForServing(html);
+        let sanitizedHtml: string;
+        try {
+          sanitizedHtml = sanitizeHtmlForServing(html);
+        } catch (e) {
+          if (!(e instanceof UnstableHtmlError)) throw e;
+          return errorResponse(422, "publish_unsafe_html", "Your page couldn't be cleaned safely. Regenerate it, then publish again.");
+        }
 
         const accessToken = decryptSecret(
           byteaToBuffer(connection.encrypted_access_token),
