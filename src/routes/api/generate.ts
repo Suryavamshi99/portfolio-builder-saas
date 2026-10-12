@@ -19,7 +19,7 @@ import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { loadPortfolioInputs, savePortfolioInputs } from "@/server/portfolio-inputs";
 import { addWatermark } from "@/server/watermark";
-import { finalizeHtml } from "@/server/finalize-html";
+import { finalizeWithFactCheck } from "@/server/checked-generation";
 import { savePortfolioVersion } from "@/server/portfolio-versions";
 import {
   PHOTO_SIGNED_URL_TTL_SECONDS,
@@ -40,6 +40,21 @@ function errorResponse(
   if (extra?.retryAfterSeconds !== undefined) error["retryAfterSeconds"] = extra.retryAfterSeconds;
   if (extra?.details !== undefined) error["details"] = extra.details;
   return Response.json({ error }, { status });
+}
+
+function llmErrorResponse(e: unknown) {
+  if (e instanceof LlmAuthError) {
+    return errorResponse(401, "byok_key_invalid", "Your API key was rejected by the provider");
+  }
+  if (e instanceof LlmRateLimitError) {
+    return errorResponse(
+      429,
+      "provider_rate_limited",
+      "The AI model is busy handling other requests right now. Please try again shortly.",
+      { retryAfterSeconds: e.retryAfterSeconds },
+    );
+  }
+  return errorResponse(502, "llm_provider_error", e instanceof Error ? e.message : String(e));
 }
 
 export const Route = createFileRoute("/api/generate")({
@@ -205,18 +220,7 @@ export const Route = createFileRoute("/api/generate")({
           responseText = result.text;
         } catch (e) {
           await recordGeneration(supabase, user.id, resumeRow.id, "failed");
-          if (e instanceof LlmAuthError) {
-            return errorResponse(401, "byok_key_invalid", "Your API key was rejected by the provider");
-          }
-          if (e instanceof LlmRateLimitError) {
-            return errorResponse(
-              429,
-              "provider_rate_limited",
-              "The AI model is busy handling other requests right now. Please try again shortly.",
-              { retryAfterSeconds: e.retryAfterSeconds },
-            );
-          }
-          return errorResponse(502, "llm_provider_error", e instanceof Error ? e.message : String(e));
+          return llmErrorResponse(e);
         }
 
         // The resume has been consumed for an attempt either way — the LLM
@@ -224,30 +228,53 @@ export const Route = createFileRoute("/api/generate")({
         // even if what follows fails our own sanity check.
         await recordGeneration(supabase, user.id, resumeRow.id, "succeeded");
 
-        const finalResult = finalizeHtml({
-          rawText: responseText,
-          userId: user.id,
-          supabaseUrl: getSupabaseEnv().url,
-          links,
-          referenceText: [
-            resumeText,
-            otherSpecifics ?? "",
-            links.linkedin,
-            links.github,
-            ...(links.githubProjects ?? []),
-            ...(links.other ?? []).map((o) => o.url),
-          ]
-            .filter(Boolean)
-            .join("\n"),
-        });
+        // The repair round is part of this one request: it counts once
+        // against the hourly limit and once as a generation.
+        let finalResult: Awaited<ReturnType<typeof finalizeWithFactCheck>>;
+        try {
+          finalResult = await finalizeWithFactCheck({
+            firstReply: responseText,
+            finalize: {
+              userId: user.id,
+              supabaseUrl: getSupabaseEnv().url,
+              links,
+              referenceText: [
+                resumeText,
+                otherSpecifics ?? "",
+                links.linkedin,
+                links.github,
+                ...(links.githubProjects ?? []),
+                ...(links.other ?? []).map((o) => o.url),
+              ]
+                .filter(Boolean)
+                .join("\n"),
+            },
+            originalUserMessage: userMessage,
+            repair: async (repairMessage) =>
+              (
+                await callLlmProvider(provider, {
+                  apiKey,
+                  systemPrompt: GUARDRAIL_SYSTEM_PROMPT,
+                  userMessage: repairMessage,
+                  images: [],
+                })
+              ).text,
+          });
+        } catch (e) {
+          return llmErrorResponse(e);
+        }
 
         if (!finalResult.ok) {
-          return errorResponse(
-            422,
-            "generation_invalid_output",
-            "The AI's page didn't pass our checks. Please try again.",
-            { details: finalResult.errors },
-          );
+          return finalResult.reason === "unsupported_claims"
+            ? errorResponse(
+                422,
+                "generation_unsupported_claims",
+                "The AI's page included facts that aren't in your resume, even after one correction. Please try again or add those details in your specifics.",
+                { details: finalResult.details },
+              )
+            : errorResponse(422, "generation_invalid_output", "The AI's page didn't pass our checks. Please try again.", {
+                details: finalResult.details,
+              });
         }
 
         const admin = createSupabaseAdminClient();

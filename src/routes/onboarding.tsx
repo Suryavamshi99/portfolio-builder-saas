@@ -91,7 +91,7 @@ function OnboardingWizard() {
   const [errorDetails, setErrorDetails] = React.useState<{
     title: string;
     message: string;
-    issues?: Array<{ path: string; message: string }>;
+    details?: string[];
     /** Absolute timestamp (epoch ms), computed once when the error lands, so the displayed clock time doesn't drift across re-renders. */
     retryAtMs?: number | undefined;
   } | null>(null);
@@ -280,9 +280,12 @@ function OnboardingWizard() {
           }
         } else if (res.status === 422) {
           setErrorDetails({
-            title: "Schema Validation Issue",
-            message: err?.message ?? "The model returned content that did not match the required schema.",
-            issues: json?.issues,
+            title:
+              err?.code === "generation_unsupported_claims"
+                ? "Some facts aren't in your resume"
+                : "The page didn't pass our checks",
+            message: err?.message ?? "The AI's page didn't pass our checks. Please try again.",
+            details: Array.isArray(err?.details) ? err.details : undefined,
           });
         } else if (res.status === 502) {
           setErrorDetails({
@@ -832,14 +835,12 @@ function OnboardingWizard() {
                   <AlertTitle>{errorDetails.title}</AlertTitle>
                   <AlertDescription className="space-y-2">
                     <p>{errorDetails.message}</p>
-                    {errorDetails.issues && errorDetails.issues.length > 0 && (
-                      <div className="mt-2 space-y-1 rounded bg-black/10 p-2 font-mono text-[11px]">
-                        {errorDetails.issues.map((iss, idx) => (
-                          <div key={idx}>
-                            • <span className="font-semibold">{iss.path}:</span> {iss.message}
-                          </div>
+                    {errorDetails.details && errorDetails.details.length > 0 && (
+                      <ul className="mt-2 list-disc space-y-1 rounded bg-black/10 p-2 pl-6 text-xs">
+                        {errorDetails.details.map((detail, idx) => (
+                          <li key={idx}>{detail}</li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                     {errorDetails.retryAtMs && (
                       <div className="mt-2 flex items-center gap-1.5 text-xs">

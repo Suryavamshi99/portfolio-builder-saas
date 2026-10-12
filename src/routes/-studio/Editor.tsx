@@ -61,10 +61,14 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
         }),
       });
 
-      const json = (await res.json().catch(() => ({}))) as { html?: string; error?: { message?: string } };
+      const json = (await res.json().catch(() => ({}))) as {
+        html?: string;
+        error?: { message?: string; details?: string[] };
+      };
 
       if (!res.ok || !json.html) {
-        throw new Error(json.error?.message ?? `Regeneration failed (${res.status})`);
+        const details = json.error?.details?.length ? ` ${json.error.details.join(" ")}` : "";
+        throw new Error(`${json.error?.message ?? `Regeneration failed (${res.status})`}${details}`);
       }
 
       setHtml(json.html);
