@@ -301,13 +301,7 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
     const isImgOrInput = tagName === "img" || tagName === "input";
     const src = $(el).attr("src");
 
-    if (!src) {
-      if (tagName !== "video") {
-        $(el).remove();
-        removedMediaCount++;
-      }
-      return;
-    }
+    if (!src) return;
 
     const signed = parseSignedStorageUrl(src, supabaseUrl);
     if (signed && ownStoragePath(signed.rawPath, userId)) {
@@ -416,9 +410,6 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
     // 4. http(s) URL matching verified links
     const normalized = normalizeCandidateHref(href);
     if (normalized && verifiedNormalizedLinks.has(normalized)) {
-      if (el.tagName.toLowerCase() === "a" && $el.attr("target") === "_blank") {
-        $el.attr("rel", "noopener noreferrer");
-      }
       return;
     }
 
@@ -427,6 +418,8 @@ export function finalizeHtml(input: FinalizeHtmlInput): FinalizeHtmlResult {
     $el.removeAttr("target");
     removedLinksCount++;
   });
+
+  $('a[href][target="_blank"]').attr("rel", "noopener noreferrer");
 
   if (removedLinksCount > 0) {
     warnings.push(

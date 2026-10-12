@@ -247,10 +247,10 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
 ## Handoff report
 
 ### Status & Verification Summary
-- **Tests**: 50/50 tests passing across 3 test suites (`npm test` via vitest).
+- **Tests**: 50/50 tests passing across 3 test suites (`npx vitest run`).
 - **TypeScript**: `npx tsc --noEmit -p .` passed with 0 errors.
 - **Build**: `npm run build` completed successfully.
-- **Lint**: `npm run lint` passed with 0 errors (no new warnings introduced).
+- **Lint**: `npm run lint` passed with 0 errors.
 - **Security Scoping**: `grep -rn 'from("portfolio_versions")' src` confirms all database queries to `portfolio_versions` use the service-role admin client and are strictly scoped by `.eq("user_id", userId)`.
 - **Migration**: `supabase/migrations/0011_portfolio_versions.sql` created exactly as specified and **not applied** to live database.
 
@@ -259,19 +259,26 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
 ### Files Changed & Created
 
 1. **`package.json` & `package-lock.json`**
-   - Added runtime dependency: `cheerio` (^1.1.0).
-   - Added dev dependency: `vitest` (^3.0.0).
+   - Added runtime dependency: `cheerio` (^1.2.0).
+   - Added dev dependency: `vitest` (^5.0.3).
    - Added test script: `"test": "vitest run"`.
 
 2. **`vitest.config.ts`** (Created)
    - Configured Vitest runner with tsconfig paths resolution (`resolve: { tsconfigPaths: true }`).
 
 3. **`supabase/migrations/0011_portfolio_versions.sql`** (Created)
-   - Created table `public.portfolio_versions` (`id`, `user_id`, `version`, `html`, `source`, `model`, `warnings`, `created_at`).
-   - Added indexes on `(user_id, version desc)` and `(user_id, created_at desc)`.
-   - Enabled RLS with no user policies.
-   - Revoked all privileges from `anon` and `authenticated`.
-   - Added immutable `prevent_portfolio_versions_mutation` trigger blocking `UPDATE` and `DELETE` on direct roles.
+   - Created table `public.portfolio_versions` with columns:
+     - `id uuid primary key default gen_random_uuid()`
+     - `user_id uuid not null references auth.users (id) on delete cascade`
+     - `html text not null`
+     - `source text not null check (source in ('gemini', 'free', 'mcp'))`
+     - `model text`
+     - `warnings jsonb not null default '[]'::jsonb`
+     - `created_at timestamptz not null default now()`
+   - Added single index: `create index portfolio_versions_user_created_idx on public.portfolio_versions (user_id, created_at desc);`
+   - Enabled RLS (`alter table public.portfolio_versions enable row level security;`).
+   - Revoked all table-level privileges from direct user roles: `revoke all on public.portfolio_versions from anon, authenticated;`.
+   - Has no `version` column, no `(user_id, version desc)` index, and no mutation triggers (matches Task C exactly).
 
 4. **`src/server/finalize-html.ts`** (Created)
    - Implemented `ownStoragePath` (Task B3a): strictly validates paths starting with `${userId}/`, rejects traversal (`..`, `%2E%2E`, double slash, non-ASCII/control characters).
@@ -283,19 +290,17 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
      - **B4**: Strict link verification against normalized `referenceText` (with scheme normalization and host matching). Retains in-page anchors (`#...`), verified `mailto:` and `tel:`. Adds `rel="noopener noreferrer"` to external links.
      - **B5**: Strips scripts with `src`/`href`, removes dangerous embeds (`<embed>`, `<object>`, `<applet>`, `<base>`, `<meta http-equiv>`), strips external stylesheets except Google Fonts, sanitizes `@import` rules, removes form submission targets and `ping` attributes.
      - **B6**: Injects mobile viewport tag if missing (with warning), repairs missing doctype/head/body, strips watermark tags without warning, generates semantic warnings (missing `<nav>`, `<section>`, in-page navigation, image alt text, inline styles).
-   - Implemented `sanitizeHtmlForServing`: Re-runs B4 and B5 safety checks for published sites.
+   - Implemented `sanitizeHtmlForServing`: Re-runs B5 safety clean-up only (`cleanDocForServing`), not B3/B4.
 
 5. **`src/server/portfolio-versions.ts`** (Created)
    - Implemented `savePortfolioVersion`:
-     - Queries latest version for user using service-role `admin` client.
-     - Increments sequentially starting from 1.
-     - Updates `portfolios` table for backwards compatibility.
-     - Inserts row into `portfolio_versions`.
-     - Enforces `MAX_VERSIONS_PER_USER = 20`, pruning oldest versions beyond the cap.
+     - Inserts new version row into `portfolio_versions` with `{ user_id, html, source, model, warnings }` (does not increment or assign a version number).
+     - Upserts into `portfolios` table `{ user_id, generated_html, updated_at }` for backwards compatibility.
+     - Queries newest `MAX_VERSIONS_PER_USER = 20` IDs by `created_at desc` and deletes older rows for that user.
 
 6. **`src/server/storage-markers.ts`** (Created)
    - Defined TTL constants: `PHOTO_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7` (7 days), `PROMPT_SIGNED_URL_TTL_SECONDS = 3600` (1 hour).
-   - Implemented `signStorageMarkers`: Finds storage markers, validates ownership using `ownStoragePath`, calls `supabase.storage.from("uploads").createSignedUrls`, and replaces markers with signed URLs.
+   - Implemented `signStorageMarkers`: Finds storage markers, validates ownership using `ownStoragePath`, calls `supabase.storage.from("uploads").createSignedUrl(path, ttlSeconds)` once per distinct path, and replaces markers with signed URLs.
 
 7. **`src/server/template/images.ts`**
    - Updated `embedStorageImagesInHtml` to accept `userId`.
@@ -325,20 +330,20 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
     - Deletes user's `portfolio_versions` rows using admin client scoped to `.eq("user_id", user.id)` prior to resetting `portfolios`.
 
 13. **`src/server/finalize-html.test.ts`** (Created, 43 tests)
-    - Full test suite covering all cases from Task B8 + `signedUrlsToMarkers`.
+    - Full test suite covering cases from Task B8 + `signedUrlsToMarkers`.
 
 14. **`src/server/storage-markers.test.ts`** (Created, 4 tests)
     - Tests marker signing, multi-marker replacement, foreign marker safety, and TTL handling.
 
 15. **`src/server/portfolio-versions.test.ts`** (Created, 3 tests)
-    - Tests sequential version incrementation, retention limit pruning (keeping 20), and error handling.
+    - Tests inserting version and updating portfolios, retention limit pruning (keeping 20), and error handling.
 
 ---
 
 ### Full List of Tests (50 Total)
 
 #### `src/server/portfolio-versions.test.ts` (3 tests)
-- `savePortfolioVersion > increments version sequentially starting at 1`
+- `savePortfolioVersion > saves a version and updates portfolios`
 - `savePortfolioVersion > caps history at MAX_VERSIONS_PER_USER (20) and prunes oldest`
 - `savePortfolioVersion > propagates database errors`
 
@@ -416,3 +421,4 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
 ### Open Questions / Notes for Claude Code
 - None. All requirements, constraints, and security invariants implemented as written without workarounds.
 - Note for deployment: Migration `0011_portfolio_versions.sql` must be applied to the remote Supabase instance before running live generations with the new code.
+

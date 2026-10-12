@@ -68,3 +68,66 @@ Each test asserts on the **serialised HTML** (`res.html` or the returned string)
 ---
 
 ## Handoff report
+
+### Status & Verification Summary
+- **TypeScript**: `npx tsc --noEmit -p .` passes with 0 errors.
+- **Linter**: `npm run lint` passes with 0 errors (17 existing warnings unchanged).
+- **Test Suite**: `npx vitest run` passes 60/60 tests across 4 test files (`review-followups.test.ts` (10 tests), `finalize-html.test.ts` (43 tests), `storage-markers.test.ts` (4 tests), `portfolio-versions.test.ts` (3 tests)).
+- **Build**: `npm run build` succeeds cleanly.
+- **Scope & Worktree**: Executed strictly within `/Users/suryavamshi/portfolio-builder-saas-03b` on branch `feat/03b-review-followups`.
+
+---
+
+### Files Changed & Created
+
+1. **`docs/handoffs/03-finalize-html-and-versions.md`** (Task A)
+   - Rewrote exclusively the `## Handoff report` section at the end of the file.
+   - Updated all statements to accurately reflect the real codebase:
+     - Migration `0011` schema quoted with exact columns (`id`, `user_id`, `html`, `source`, `model`, `warnings`, `created_at`), single index `portfolio_versions_user_created_idx`, RLS enabled, and `revoke all ... from anon, authenticated` (no `version` column, no version index, and no mutation trigger).
+     - Clarified `savePortfolioVersion` does not increment a version number (inserts version, upserts `portfolios`, prunes oldest beyond 20).
+     - Clarified `signStorageMarkers` calls `createSignedUrl` once per distinct path.
+     - Clarified `sanitizeHtmlForServing` runs B5 safety clean-up only (`cleanDocForServing`), not B3/B4.
+     - Corrected dependency versions to `cheerio ^1.2.0` and `vitest ^5.0.3`.
+     - Updated test suite details and count to match real test files.
+
+2. **`src/server/finalize-html.ts`** (Tasks B and C)
+   - **Task B**: Removed per-branch block adding `rel="noopener noreferrer"` inside verified link check in `$("a, area").each(...)` loop. Added `$('a[href][target="_blank"]').attr("rel", "noopener noreferrer");` immediately after the loop ends.
+   - **Task C**: In media elements loop `$("img, video, audio, track, input[type='image']").each(...)`, replaced the `if (!src) { if (tagName !== "video") ... }` block with `if (!src) return;` so media elements lacking `src` are preserved unchanged and uncounted.
+
+3. **`src/server/review-followups.test.ts`** (Created, Task D)
+   - Created single new test file containing 10 tests across Tasks B, C, and D, asserting on serialized HTML strings:
+     - `Task B`: Verifies kept mailto, tel, #anchor, and verified-http links with `target="_blank"` receive `rel="noopener noreferrer"`, while stripped links lose target and get no rel.
+     - `Task C`: Verifies `<img data-src="x.png" alt="a">` and `<audio controls></audio>` are kept unchanged and do not trigger media removal warnings.
+     - `Task D1`: Verifies `sanitizeHtmlForServing(addWatermark(page))` preserves `<shipfolio-watermark`.
+     - `Task D2`: Verifies `sanitizeHtmlForServing` does not run B3/B4, leaving external `<a>` and `<img>` untouched.
+     - `Task D3`: Verifies `sanitizeHtmlForServing` strips `http://fonts.googleapis.com` stylesheets while keeping `https://fonts.googleapis.com`.
+     - `Task D4`: Verifies `sanitizeHtmlForServing` strips SVG script with `xlink:href` (no `evil.com`).
+     - `Task D5`: Verifies `finalizeHtml` strips external audio, video track, and input[type="image"] with "Removed 3 images or media files..." warning.
+     - `Task D6`: Verifies `finalizeHtml` on a page with no `<style>` element returns `ok: true` with "The page has no inline styles..." warning.
+     - `Task D7`: Verifies `signedUrlsToMarkers` preserves `&quot;`, is idempotent, and preserves uppercase `HTTPS://` (documents today's behavior).
+     - `Task D8`: Verifies `embedStorageImagesInHtml` never downloads invalid/traversal signed URLs or foreign markers, and downloads valid own markers once rewriting to `images/<basename>`.
+
+---
+
+### List of New Tests (10 tests in `src/server/review-followups.test.ts`)
+1. `Task B: rel='noopener noreferrer' on every kept target='_blank' link > adds rel='noopener noreferrer' to kept mailto, tel, #anchor, and verified-http with target='_blank'`
+2. `Task C: Media elements without src kept unchanged and not counted > keeps <img data-src='x.png' alt='a'> and <audio controls></audio> unchanged with no removed warning`
+3. `Task D: Missing tests > 1. sanitizeHtmlForServing(addWatermark(page)) still contains the watermark`
+4. `Task D: Missing tests > 2. sanitizeHtmlForServing leaves outside <a> and <img> in place without doing B3/B4`
+5. `Task D: Missing tests > 3. sanitizeHtmlForServing removes http font stylesheet link and keeps https one`
+6. `Task D: Missing tests > 4. sanitizeHtmlForServing removes svg script with xlink:href`
+7. `Task D: Missing tests > 5. finalizeHtml removes audio, video track, and input[type='image'] with external src and warns`
+8. `Task D: Missing tests > 6. finalizeHtml on a page with no <style> element at all gives ok: true with warning`
+9. `Task D: Missing tests > 7. signedUrlsToMarkers handles &quot;, idempotency, and uppercase HTTPS://`
+10. `Task D: Missing tests > 8. embedStorageImagesInHtml downloads only own valid storage images and rewrites them`
+
+---
+
+### Implementation Decisions & Anything Done Differently
+- Serialized HTML assertion for `<audio controls></audio>`: Depending on the serializer, HTML boolean attributes may be emitted as `controls` or `controls=""`. Used regex `/<audio controls(="")?><\/audio>/` on the serialized HTML string to ensure robust matching on serialised HTML.
+- In Task B, verified that links whose `href` is removed by safety checks (e.g., unverified URLs) have their `target` removed in the loop, so the trailing `$('a[href][target="_blank"]')` selector correctly skips them.
+
+---
+
+### Open Questions
+- None. All requirements, constraints, and test specifications matched the codebase and passed cleanly.
