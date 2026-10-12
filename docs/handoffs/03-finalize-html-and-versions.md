@@ -254,7 +254,7 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
 ## Handoff report
 
 ### Status & Verification Summary
-- **Tests**: 50/50 tests passing across 3 test suites (`npx vitest run`).
+- **Tests**: 50/50 tests passing across 3 test suites (`npx vitest run`) at the time of this report. *After the review fixes (B9) and handoff 03b: 70/70 across 4 files.*
 - **TypeScript**: `npx tsc --noEmit -p .` passed with 0 errors.
 - **Build**: `npm run build` completed successfully.
 - **Lint**: `npm run lint` passed with 0 errors.
@@ -304,6 +304,7 @@ The code needs the `portfolio_versions` table, so: Claude Code applies `0011` â†
      - Inserts new version row into `portfolio_versions` with `{ user_id, html, source, model, warnings }` (does not increment or assign a version number).
      - Upserts into `portfolios` table `{ user_id, generated_html, updated_at }` for backwards compatibility.
      - Queries newest `MAX_VERSIONS_PER_USER = 20` IDs by `created_at desc` and deletes older rows for that user.
+     - *Changed after review (see B9):* deletes the just-inserted version if the upsert fails; pruning deletes rows older than the 20th-newest `created_at` and only logs on failure.
 
 6. **`src/server/storage-markers.ts`** (Created)
    - Defined TTL constants: `PHOTO_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7` (7 days), `PROMPT_SIGNED_URL_TTL_SECONDS = 3600` (1 hour).
