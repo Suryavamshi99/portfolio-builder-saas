@@ -4,7 +4,8 @@ import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { embedStorageImagesInHtml } from "@/server/template/images";
-import { createVercelDeployment, VercelDeployError } from "@/server/vercel/deploy";
+import { sanitizeHtmlForServing, UnstableHtmlError } from "@/server/finalize-html";
+import { createVercelDeployment, VercelDeployError, PUBLISHED_SITE_CSP } from "@/server/vercel/deploy";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 
 function errorResponse(status: number, code: string, message: string) {
@@ -58,19 +59,43 @@ export const Route = createFileRoute("/api/publish")({
         const { html, files: imageFiles, embeddedStoragePaths } = await embedStorageImagesInHtml(
           generatedHtml,
           supabase,
+          user.id,
         );
+
+        let sanitizedHtml: string;
+        try {
+          sanitizedHtml = sanitizeHtmlForServing(html);
+        } catch (e) {
+          if (!(e instanceof UnstableHtmlError)) throw e;
+          return errorResponse(422, "publish_unsafe_html", "Your page couldn't be cleaned safely. Regenerate it, then publish again.");
+        }
 
         const accessToken = decryptSecret(
           byteaToBuffer(connection.encrypted_access_token),
           byteaToBuffer(connection.nonce),
         );
 
-        const projectName = slugifyProjectName(extractTitle(html) ?? user.email ?? user.id);
+        const projectName = slugifyProjectName(extractTitle(sanitizedHtml) ?? user.email ?? user.id);
+
+        const vercelConfig = JSON.stringify({
+          headers: [
+            {
+              source: "/(.*)",
+              headers: [
+                {
+                  key: "Content-Security-Policy",
+                  value: PUBLISHED_SITE_CSP,
+                },
+              ],
+            },
+          ],
+        });
 
         let deployment: { deploymentId: string; url: string };
         try {
           deployment = await createVercelDeployment(accessToken, connection.team_id, projectName, {
-            "index.html": html,
+            "index.html": sanitizedHtml,
+            "vercel.json": vercelConfig,
             ...imageFiles,
           });
         } catch (e) {
