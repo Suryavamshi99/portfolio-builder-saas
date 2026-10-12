@@ -6,6 +6,7 @@ import { isByokEnabledProvider, LLM_MODELS } from "@/config/llm";
 import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { byteaToBuffer, decryptSecret } from "@/lib/crypto";
 import { extractResumeText } from "@/server/resume-text";
+import { loadResumeText, saveResumeText } from "@/server/resume-texts";
 import {
   GUARDRAIL_SYSTEM_PROMPT,
   LlmAuthError,
@@ -157,12 +158,21 @@ export const Route = createFileRoute("/api/generate")({
           return errorResponse(400, "resume_not_found", "Resume upload not found");
         }
 
-        const resumeDownload = await supabase.storage.from(UPLOADS_BUCKET).download(resumeRow.storage_path);
-        if (resumeDownload.error || !resumeDownload.data) {
-          return errorResponse(500, "internal_error", "Could not read resume");
+        // Text saved at upload (handoff 04a); resumes uploaded before that, or
+        // whose save failed, are extracted from the file and saved now.
+        const admin = createSupabaseAdminClient();
+        let resumeText = await loadResumeText(admin, user.id, resumeRow.id).catch(() => null);
+        if (resumeText === null) {
+          const resumeDownload = await supabase.storage.from(UPLOADS_BUCKET).download(resumeRow.storage_path);
+          if (resumeDownload.error || !resumeDownload.data) {
+            return errorResponse(500, "internal_error", "Could not read resume");
+          }
+          const resumeBuffer = Buffer.from(await resumeDownload.data.arrayBuffer());
+          resumeText = await extractResumeText(resumeBuffer, resumeRow.mime_type);
+          await saveResumeText(admin, user.id, resumeRow.id, resumeText).catch((e: unknown) => {
+            console.warn("Could not save resume text", e instanceof Error ? e.message : e);
+          });
         }
-        const resumeBuffer = Buffer.from(await resumeDownload.data.arrayBuffer());
-        const resumeText = await extractResumeText(resumeBuffer, resumeRow.mime_type);
 
         // Design inputs: the profile photo (embedded by exact URL in the
         // generated HTML) and up to 3 visual-reference screenshots (sent as
@@ -277,7 +287,6 @@ export const Route = createFileRoute("/api/generate")({
               });
         }
 
-        const admin = createSupabaseAdminClient();
         let savedVersion: { versionId: string; updatedAt: string };
         try {
           savedVersion = await savePortfolioVersion(admin, user.id, {
