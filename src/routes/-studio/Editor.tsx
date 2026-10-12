@@ -51,7 +51,12 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [downloadingZip, setDownloadingZip] = useState(false);
-  const [status, setStatus] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
+  const [status, setStatus] = useState<{
+    kind: "ok" | "err";
+    title?: string | undefined;
+    msg: string;
+    details?: string[] | undefined;
+  } | null>(null);
 
   // Version history state
   const [versionsOpen, setVersionsOpen] = useState(false);
@@ -131,12 +136,24 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
 
       const json = (await res.json().catch(() => ({}))) as {
         html?: string;
-        error?: { message?: string; details?: string[] };
+        error?: { code?: string; message?: string; details?: string[] };
       };
 
       if (!res.ok || !json.html) {
-        const details = json.error?.details?.length ? ` ${json.error.details.join(" ")}` : "";
-        throw new Error(`${json.error?.message ?? `Regeneration failed (${res.status})`}${details}`);
+        const errorTitle =
+          json.error?.code === "generation_unsupported_claims"
+            ? "Some facts aren't in your resume"
+            : json.error?.code === "generation_invalid_output"
+            ? "The page didn't pass our checks"
+            : undefined;
+
+        setStatus({
+          kind: "err",
+          title: errorTitle,
+          msg: json.error?.message ?? `Regeneration failed (${res.status})`,
+          details: Array.isArray(json.error?.details) ? json.error.details : undefined,
+        });
+        return;
       }
 
       setHtml(json.html);
@@ -167,7 +184,11 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (e: unknown) {
-      setStatus({ kind: "err", msg: e instanceof Error ? e.message : String(e) });
+      setStatus({
+        kind: "err",
+        title: "Download Failed",
+        msg: e instanceof Error ? e.message : String(e),
+      });
     } finally {
       setDownloadingZip(false);
     }
@@ -243,9 +264,18 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
         <Alert variant={status.kind === "ok" ? "success" : "destructive"}>
           {status.kind === "ok" ? <CheckCircle2 className="size-4" /> : <AlertCircle className="size-4" />}
           <AlertTitle className="text-xs font-semibold">
-            {status.kind === "ok" ? "Regenerated" : "Regeneration Error"}
+            {status.title ?? (status.kind === "ok" ? "Regenerated" : "Regeneration Error")}
           </AlertTitle>
-          <AlertDescription className="text-xs">{status.msg}</AlertDescription>
+          <AlertDescription className="text-xs space-y-1">
+            <p>{status.msg}</p>
+            {status.details && status.details.length > 0 && (
+              <ul className="list-disc list-inside mt-1 space-y-0.5 text-[11px] opacity-90">
+                {status.details.map((d, i) => (
+                  <li key={i}>{d}</li>
+                ))}
+              </ul>
+            )}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -302,7 +332,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
             </DialogTitle>
             <DialogDescription>
               This calls your connected Gemini API key again and uses more of your available quota. Your
-              current draft will be replaced by the new result — this can't be undone.
+              current draft will be updated, but your past snapshot is automatically saved to Version History so you can restore it anytime.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -378,8 +408,11 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
                       </div>
                       <p className="text-[11px] text-muted-foreground">{formattedDate}</p>
                       {ver.warnings && ver.warnings.length > 0 && (
-                        <p className="text-[10px] text-warning truncate max-w-[280px]">
-                          {ver.warnings.length} warning{ver.warnings.length > 1 ? "s" : ""}
+                        <p
+                          className="text-[10px] text-amber-500/90 truncate max-w-[280px] cursor-help"
+                          title={ver.warnings.join("\n")}
+                        >
+                          ⚠ {ver.warnings.length} rule warning{ver.warnings.length > 1 ? "s" : ""} (hover to view)
                         </p>
                       )}
                     </div>

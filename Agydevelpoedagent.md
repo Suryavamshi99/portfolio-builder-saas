@@ -59,8 +59,10 @@ All 3 low-effort, non-breaking enhancements requested have been implemented, tes
 - **Studio Editor Controls:** [`src/routes/-studio/Editor.tsx`](file:///Users/suryavamshi/portfolio-builder-saas/src/routes/-studio/Editor.tsx)
   - Added "Download Zip" button in the editor toolbar. If user is unpaid, it prompts checkout modal; if paid, triggers browser download directly.
   - Added "History" button with a Version History modal:
-    - Lists recent snapshots with relative timestamps (`X mins ago`), author tags, and warnings badges.
+    - Lists recent snapshots with relative timestamps (`X mins ago`), author tags, and warnings badges. Hovering warnings displays rule validation messages.
     - One-click "Restore" button updates the live draft preview immediately and sends feedback notification.
+  - Surfaced fact-check and output rule validation errors (`422` with details array) directly inside the Studio alert banner with bulleted items instead of generic failure messages.
+  - Updated the regenerate confirmation dialog copy to reassure users that their current snapshot is safely saved to Version History before replacement.
 
 ---
 
