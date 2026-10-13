@@ -63,3 +63,196 @@ A tiny standalone Vercel project (own `package.json` with `@supabase/supabase-js
 Custom domains (later handoff, migration 0017), the UI (handoff 06c), entitlements/expiry (payments), `src/routes/api/publish.ts` (the "deploy to my own Vercel" flow stays as is), any other migration.
 
 ## Handoff report
+
+### Status & Verification Summary
+- **TypeScript**: `npx tsc --noEmit -p .` passes with 0 errors.
+- **Linter**: `npm run lint` passes with 0 errors (17 existing warnings unchanged).
+- **Test Suite**: `npx vitest run` passes 141/141 tests across 8 test files (`sites.test.ts` (30 tests), `portfolio-versions.test.ts` (10 tests), `resume-texts.test.ts` (7 tests), `fact-check.test.ts` (20 tests), `storage-markers.test.ts` (4 tests), `review-followups.test.ts` (10 tests), `checked-generation.test.ts` (6 tests), `finalize-html.test.ts` (54 tests)).
+- **Build**: `npm run build` succeeds cleanly.
+- **Migration**: `supabase/migrations/0015_sites.sql` written exactly as specified in Task A and **not applied**.
+- **Scope & Worktree**: Executed strictly in `/Users/suryavamshi/portfolio-builder-saas-06d` on branch `feat/06d-sites-hosting`.
+
+---
+
+### Files Changed & Created
+
+1. **`supabase/migrations/0015_sites.sql`** (Created)
+   - Created bucket and table strictly per Task A:
+   ```sql
+   insert into storage.buckets (id, name, public) values ('sites', 'sites', false) on conflict (id) do nothing;
+   create table public.sites (
+     user_id uuid primary key references auth.users (id) on delete cascade,
+     slug text not null unique check (slug ~ '^[a-z0-9](?:[a-z0-9-]{1,38})[a-z0-9]$'),
+     status text not null default 'published' check (status in ('published', 'unpublished')),
+     published_version_id uuid references public.portfolio_versions (id) on delete set null,
+     published_html_hash text,
+     created_at timestamptz not null default now(),
+     updated_at timestamptz not null default now()
+   );
+   alter table public.sites enable row level security;
+   revoke all on public.sites from anon, authenticated;
+   ```
+
+2. **`src/server/sites.ts`** (Created)
+   - `RESERVED_SLUGS`: contains at least `www`, `api`, `app`, `admin`, `mail`, `ftp`, `ns1`, `ns2`, `smtp`, `imap`, `pop`, `blog`, `docs`, `help`, `support`, `status`, `static`, `assets`, `cdn`, `dev`, `staging`, `test`, `demo`, `root`, `login`, `signup`, `dashboard`, `studio`, `shipfolio`.
+   - `BLOCKED_WORDS`: contains phishing/brand safeguards (`paypal`, `google`, `microsoft`, `apple`, `amazon`, `bank`, `login`, etc.).
+   - `validateSlug(raw)`: validates lowercase, trimmed, regex `^[a-z0-9](?:[a-z0-9-]{1,38})[a-z0-9]$`, checks for no `--`, ensures not reserved or blocked.
+   - `slugFromTitle(title)`: ASCII-fold, lowercase, non-alphanumerics replaced with `-`, collapses and trims `-`, capped to 30 characters.
+   - `siteUrl(slug)`: returns `https://${slug}.${process.env["SITES_DOMAIN"]}` (reads env inside function, never module scope).
+   - `hostToSlug(host, sitesDomain)`: lowercases and strips port, ensures host ends with `.${sitesDomain}`, verifies candidate label with `validateSlug`, returns slug or null.
+
+3. **`src/routes/api/sites/check.ts`** (Created)
+   - `GET /api/sites/check?slug=`:
+     - Protected with `authMiddleware`.
+     - Rate limited via `checkHourlyRateLimit(supabase, "uploads", user.id, 120)` (copied usage from `uploads.ts`).
+     - Returns `{ status: "available" | "yours" | "taken" | "reserved" | "invalid", url }`.
+
+4. **`src/routes/api/sites/me.ts`** (Created)
+   - `GET /api/sites/me`:
+     - Protected with `authMiddleware`.
+     - Reads user's `sites` and `portfolios` rows using admin client.
+     - Computes `draftNewer`: `portfolio.updated_at > sites.updated_at`.
+     - Returns `{ site: { slug, url, status, publishedVersionId, updatedAt } | null, draftNewer }`.
+
+5. **`src/routes/api/sites/publish.ts`** (Created)
+   - `POST /api/sites/publish` body `{ slug?: string }`:
+     - Checks `hasPaidAccess(appUser)` or returns 402 `payment_required`.
+     - Fetches `portfolios.generated_html` or returns 400 `no_portfolio`.
+     - First publish requires `slug` passing `validateSlug` and slug uniqueness check; subsequent publishes enforce that the slug is fixed and ignore any new `slug` in the request body.
+     - Runs `embedStorageImagesInHtml(generatedHtml, supabase, user.id)`.
+     - Runs `sanitizeHtmlForServing(html)`, catching `UnstableHtmlError` to return 422 `publish_unsafe_html`.
+     - Fetches latest `portfolio_versions` id for `published_version_id`.
+     - Performs insert-then-upload order: upserts `sites` row first with `status: 'published'` and `onConflict: 'user_id'`. Any unique slug collision triggers 409 `slug_taken`.
+     - Uploads `{slug}/index.html` to bucket `sites` (`contentType: text/html; charset=utf-8`, `upsert: true`).
+     - Uploads images to `{slug}/images/<name>` allowing only `png`, `jpg`, `jpeg`, `webp`, `gif`, `svg+xml`, skipping disallowed files.
+     - Lists `{slug}/images/` in bucket `sites` and removes stale images that are no longer referenced.
+     - Returns `{ url }`.
+
+6. **`src/routes/api/sites/unpublish.ts`** (Created)
+   - `POST /api/sites/unpublish`:
+     - Protected with `authMiddleware`.
+     - Sets `sites.status = 'unpublished'`.
+     - Deletes root files (`{slug}/index.html`) and all files under `{slug}/images/` from bucket `sites`.
+     - Returns `{ ok: true }`.
+
+7. **`src/routes/api/admin/sites.$slug.unpublish.ts`** (Created)
+   - `POST /api/admin/sites/:slug/unpublish`:
+     - Protected with `adminMiddleware`.
+     - Verifies site exists for slug, updates `sites.status = 'unpublished'`.
+     - Deletes `{slug}/...` files from bucket `sites`.
+     - Returns `{ ok: true }`.
+
+8. **`sites-app/`** (Created)
+   - `package.json`: standalone with `@supabase/supabase-js` dependency.
+   - `vercel.json`: rewrites `/(.*)` → `/api/serve`.
+   - `api/serve.ts`:
+     - Verifies required env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SITES_DOMAIN`) or returns 500.
+     - Extracts slug via `hostToSlug(req.headers.host, sitesDomain)` or returns 404.
+     - Looks up `sites` row by slug with service-role client; missing or `status !== "published"` returns 404 with friendly HTML and `robots: noindex`.
+     - Maps `/` → `index.html`. For other paths, enforces `^/[A-Za-z0-9._/-]+$`, no `..`, no empty segment, and must start with `images/`. Invalid path returns 404.
+     - Downloads `{slug}/{path}` with service role; missing returns 404.
+     - Security headers applied on every response:
+       ```ts
+       "Content-Type": contentType,
+       "X-Content-Type-Options": "nosniff",
+       "Referrer-Policy": "strict-origin-when-cross-origin",
+       "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300"
+       ```
+       and for HTML responses:
+       ```ts
+       export const SITES_CSP = `${PUBLISHED_SITE_CSP}; sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox`;
+       headers["Content-Security-Policy"] = SITES_CSP;
+       ```
+       (with no `allow-same-origin`).
+
+9. **`src/server/sites.test.ts`** (Created)
+   - 30 tests covering:
+     - All `validateSlug` constraints (reserved, blocked, length, regex, hyphens, normalization).
+     - `slugFromTitle` ASCII folding, sanitization, and truncation.
+     - `siteUrl` formatting with domain.
+     - `hostToSlug` validation (ports, apex rejection, multi-level rejection, evil.com, reserved labels).
+     - `SITES_CSP` compliance (starts with `PUBLISHED_SITE_CSP`, ends with sandbox directive, does not contain `allow-same-origin`).
+     - `sites-app/api/serve.ts` handling: 500 on missing env, 404 on invalid hosts, path validation blocking traversal (`/..%2f`, `//`, `/index.html` non-images paths), proper CSP on HTML responses.
+     - Routes with fake Supabase client:
+       - 409 `slug_taken` race check before any upload occurs.
+       - Fixed slug preservation on second publish (ignoring body slug).
+       - Image extension filtering (uploading allowed image types, skipping `.exe`/`.pdf`) and cleanup of stale images.
+       - Slug availability checking (`available`, `yours`, `taken`, `reserved`, `invalid`).
+       - Status check in `/api/sites/me` calculating `draftNewer`.
+       - Site unpublishing and admin takedown file deletion and status update.
+
+10. **`.env.example`**
+    - Added `SITES_DOMAIN=` documentation and entry.
+
+---
+
+### Security Quotes
+
+From `src/routes/api/sites/publish.ts`:
+```ts
+// Gate with hasPaidAccess:
+if (!hasPaidAccess(appUser)) {
+  return errorResponse(402, "payment_required", "Upgrade to Pro to publish your site");
+}
+
+// Sanitize HTML before serving:
+let sanitizedHtml: string;
+try {
+  sanitizedHtml = sanitizeHtmlForServing(html);
+} catch (e) {
+  if (!(e instanceof UnstableHtmlError)) throw e;
+  return errorResponse(
+    422,
+    "publish_unsafe_html",
+    "Your page couldn't be cleaned safely. Regenerate it, then publish again.",
+  );
+}
+
+// Insert-then-upload order: reserve the slug before uploading files to prevent races:
+const { error: upsertError } = await admin
+  .from("sites")
+  .upsert(
+    {
+      user_id: user.id,
+      slug: targetSlug,
+      status: "published",
+      published_version_id: publishedVersionId,
+      published_html_hash: htmlHash,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+
+if (upsertError) {
+  if (upsertError.code === "23505" || upsertError.message.includes("unique")) {
+    return errorResponse(409, "slug_taken", "This slug is already taken");
+  }
+  return errorResponse(500, "internal_error", "Could not reserve site slug");
+}
+```
+
+From `sites-app/api/serve.ts`:
+```ts
+export const SITES_CSP = `${PUBLISHED_SITE_CSP}; sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox`;
+
+const headers: Record<string, string> = {
+  "Content-Type": contentType,
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+};
+
+if (isHtml) {
+  headers["Content-Security-Policy"] = SITES_CSP;
+}
+```
+
+---
+
+### Anything Done Differently & Why
+- In `sites-app/api/serve.ts`, exported `mapRequestPathToStoragePath` and client getter helper `setSitesSupabaseClientGetter` so `src/server/sites.test.ts` can thoroughly test path security (blocking directory traversal and malicious URL paths) and mock Supabase storage responses without modifying production handler behavior or requiring network calls.
+
+---
+
+### Open Questions
+- None. All contracts and tasks were implemented according to `docs/handoffs/06d-sites-hosting.md`.
