@@ -78,6 +78,11 @@ export function getFreeProviderChain(env: NodeJS.ProcessEnv): FreeProvider[] {
       continue;
     }
 
+    // Free tier only: an OpenRouter model that isn't a ":free" variant can bill the account, so it is never used.
+    if (def.baseUrl.includes("openrouter.ai") && !model.endsWith(":free")) {
+      continue;
+    }
+
     const budgetVal = env[def.budgetEnv]?.trim();
     const dailyRequestBudget = budgetVal ? parseInt(budgetVal, 10) || DEFAULT_BUDGET : DEFAULT_BUDGET;
 
