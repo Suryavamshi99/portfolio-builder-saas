@@ -31,8 +31,11 @@ import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
+import { Route as ApiExportGithubRouteImport } from './routes/api/export/github'
 import { Route as ApiExportHtmlRouteImport } from './routes/api/export/html'
 import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
+import { Route as ApiGithubCallbackRouteImport } from './routes/api/github/callback'
+import { Route as ApiGithubStatusRouteImport } from './routes/api/github/status'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
@@ -154,6 +157,11 @@ const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   path: '/api/dev/payment-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportGithubRoute = ApiExportGithubRouteImport.update({
+  id: '/api/export/github',
+  path: '/api/export/github',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiExportHtmlRoute = ApiExportHtmlRouteImport.update({
   id: '/api/export/html',
   path: '/api/export/html',
@@ -162,6 +170,16 @@ const ApiExportHtmlRoute = ApiExportHtmlRouteImport.update({
 const ApiExportZipRoute = ApiExportZipRouteImport.update({
   id: '/api/export/zip',
   path: '/api/export/zip',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGithubCallbackRoute = ApiGithubCallbackRouteImport.update({
+  id: '/api/github/callback',
+  path: '/api/github/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGithubStatusRoute = ApiGithubStatusRouteImport.update({
+  id: '/api/github/status',
+  path: '/api/github/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPortfolioInputsRoute = ApiPortfolioInputsRouteImport.update({
@@ -239,8 +257,11 @@ export interface FileRoutesByFullPath {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
+  '/api/github/callback': typeof ApiGithubCallbackRoute
+  '/api/github/status': typeof ApiGithubStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -275,8 +296,11 @@ export interface FileRoutesByTo {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
+  '/api/github/callback': typeof ApiGithubCallbackRoute
+  '/api/github/status': typeof ApiGithubStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -312,8 +336,11 @@ export interface FileRoutesById {
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
+  '/api/github/callback': typeof ApiGithubCallbackRoute
+  '/api/github/status': typeof ApiGithubStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -350,8 +377,11 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
+    | '/api/github/callback'
+    | '/api/github/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -386,8 +416,11 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
+    | '/api/github/callback'
+    | '/api/github/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -422,8 +455,11 @@ export interface FileRouteTypes {
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
     | '/api/dev/payment-test'
+    | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
+    | '/api/github/callback'
+    | '/api/github/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -458,8 +494,11 @@ export interface RootRouteChildren {
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
+  ApiExportGithubRoute: typeof ApiExportGithubRoute
   ApiExportHtmlRoute: typeof ApiExportHtmlRoute
   ApiExportZipRoute: typeof ApiExportZipRoute
+  ApiGithubCallbackRoute: typeof ApiGithubCallbackRoute
+  ApiGithubStatusRoute: typeof ApiGithubStatusRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
@@ -621,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDevPaymentTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/export/github': {
+      id: '/api/export/github'
+      path: '/api/export/github'
+      fullPath: '/api/export/github'
+      preLoaderRoute: typeof ApiExportGithubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/export/html': {
       id: '/api/export/html'
       path: '/api/export/html'
@@ -633,6 +679,20 @@ declare module '@tanstack/react-router' {
       path: '/api/export/zip'
       fullPath: '/api/export/zip'
       preLoaderRoute: typeof ApiExportZipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/github/callback': {
+      id: '/api/github/callback'
+      path: '/api/github/callback'
+      fullPath: '/api/github/callback'
+      preLoaderRoute: typeof ApiGithubCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/github/status': {
+      id: '/api/github/status'
+      path: '/api/github/status'
+      fullPath: '/api/github/status'
+      preLoaderRoute: typeof ApiGithubStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/portfolio/inputs': {
@@ -805,8 +865,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
+  ApiExportGithubRoute: ApiExportGithubRoute,
   ApiExportHtmlRoute: ApiExportHtmlRoute,
   ApiExportZipRoute: ApiExportZipRoute,
+  ApiGithubCallbackRoute: ApiGithubCallbackRoute,
+  ApiGithubStatusRoute: ApiGithubStatusRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
