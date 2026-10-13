@@ -6,13 +6,14 @@ This document defines the authoritative design contract for **Shipfolio** (`port
 
 ## 1. Design Read
 
-* **Product Category:** Developer & Creator Career SaaS (AI Resume-to-Portfolio Builder & Edge Deployment Platform).
+* **Product Category:** Developer & Creator Career SaaS (AI Resume-to-HTML Portfolio Builder & Deployment Platform).
 * **Target Audience:** Software engineers, systems architects, tech students, product builders, recruiters, and hiring managers.
-* **Aesthetic Language:** Elite modern tech — obsidian graphite surfaces, Cyber Emerald accents (`#10B981`), fluid WebGL motion (`FluidOrb`), high contrast, crisp typography, and zero generic AI slop.
+* **Aesthetic Language:** Obsidian graphite surfaces, Electric Blue accents (`#3457E8` / `rgb(52, 87, 232)`), fluid WebGL motion (`FluidOrb`), high contrast, crisp typography, and zero generic AI slop.
 * **Design Dials:**
   * `DESIGN_VARIANCE: 8` (Intentional asymmetry, dynamic bento rhythms, high editorial distinction).
   * `MOTION_INTENSITY: 6` (Fluid WebGL shader canvas, organic physics on primary surfaces, micro-tactile button responses).
   * `VISUAL_DENSITY: 4` (Generous breathing room, clear hierarchy, zero cluttered cockpits).
+* **Model Output Philosophy:** No rigid JSON steps or static themes. The LLM writes clean, bespoke, self-contained HTML/CSS directly based on the user's resume, design intensity (Minimal vs. Bold), reference screenshots, and guardrail rules. The resulting HTML is displayed inside a sandboxed iframe in Studio.
 
 ---
 
@@ -21,6 +22,7 @@ This document defines the authoritative design contract for **Shipfolio** (`port
 1. **Viewport Stability:**
    * Full-height sections use `min-h-[100dvh]`, never `h-screen`, preventing mobile browser bar jumping.
    * Hero top padding is strictly capped at `pt-20` / `pt-24` on desktop so content never floats awkwardly far down the screen.
+   * `overflow-x: clip` on `html, body` (never `overflow-x: hidden`, which breaks sticky elements).
 
 2. **Hero Stack Discipline (Max 4 Text Elements):**
    * Eyebrow: At most one single eyebrow or brand badge.
@@ -46,40 +48,48 @@ This document defines the authoritative design contract for **Shipfolio** (`port
 ## 3. Typography Hierarchy
 
 * **Display / Headlines:**
-  * Hero: `text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08]`.
-  * Section Titles: `text-2xl sm:text-4xl font-extrabold tracking-tight`.
-  * Sub-headings: `text-lg sm:text-xl font-semibold text-foreground`.
+   * Hero: `text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08]`.
+   * Section Titles: `text-2xl sm:text-4xl font-extrabold tracking-tight`.
+   * Sub-headings: `text-lg sm:text-xl font-semibold text-foreground`.
 * **Body Copy:**
-  * Paragraphs: `text-sm sm:text-base text-muted-foreground leading-relaxed max-w-[65ch]`.
-  * Fine print / Captions: `text-xs sm:text-sm text-muted-foreground`.
+   * Paragraphs: `text-sm sm:text-base text-muted-foreground leading-relaxed max-w-[65ch]`.
+   * Fine print / Captions: `text-xs sm:text-sm text-muted-foreground`.
 * **Monospace & Code:**
-  * Reserved for metrics, terminal commands, verified skill evidence, latency badges, and schema attributes.
+   * Reserved for metrics, terminal commands, verified skill evidence, latency badges, and schema attributes.
 
 ---
 
 ## 4. Color Tokens & Theme Calibration
 
-* **Primary Accent:** Cyber Emerald (`#10B981` / `rgb(16, 185, 129)`), synchronized with the `FluidOrb` WebGL shader.
-* **Neutrals (Obsidian System):**
-  * Light Mode: Background `rgb(250, 251, 253)`, Card `rgb(255, 255, 255)`, Border `rgb(226, 232, 240)`, Text `rgb(15, 23, 42)`.
-  * Dark Mode: Canvas `rgb(10, 14, 20)`, Card `rgb(16, 22, 30)`, Border `rgb(28, 38, 52)`, Text `rgb(248, 250, 252)`.
+The application operates in **Dark Mode by default** (`<html class="dark">`). Token definitions live in `src/styles.css` matching Tailwind v4 conventions:
+
+* **Primary Accent:** Electric Blue (`#3457E8` / `rgb(52, 87, 232)`), paired with `FluidOrb` WebGL shader (`color="#3457E8"`).
+  * `--accent`: `52 87 232`
+  * `--accent-foreground`: `255 255 255`
+  * Active hover / glow: `#5B8CFF` to `#2A46D8` gradients.
+* **Neutrals (Obsidian Dark Palette):**
+  * Canvas Background (`--background`): `rgb(9, 9, 11)` (`9 9 11`)
+  * Card Surfaces (`--card`): `rgb(24, 24, 27)` (`24 24 27`)
+  * Borders & Dividers (`--border`): `rgb(39, 39, 42)` (`39 39 42`)
+  * Foreground Text (`--foreground`): `rgb(250, 250, 250)` (`250 250 250`)
+  * Muted Foreground (`--muted-foreground`): `rgb(161, 161, 170)` (`161 161 170`)
 * **Semantic Accents:**
-  * Success: Emerald (`rgb(16, 185, 129)` / `rgb(52, 211, 153)` dark).
-  * Warning: Amber (`rgb(217, 119, 6)` / `rgb(251, 191, 36)` dark).
-  * Destructive: Rose (`rgb(225, 29, 72)` / `rgb(244, 63, 94)` dark).
+  * Success: Emerald Green (`rgb(34, 197, 94)` / `34 197 94`)
+  * Warning: Amber (`rgb(251, 191, 36)` / `251 191 36`)
+  * Destructive: Rose Red (`rgb(244, 63, 94)` / `244 63 94`)
 
 ---
 
 ## 5. Motion & FluidOrb Integration
 
 * **FluidOrb Canvas (`src/components/ui/fluid-orb.tsx`):**
-  * Integrated into high-impact visual anchors:
-    * **Hero Background & Showcase:** Provides organic, living depth behind the hero headline and interactive showcase mockup.
-    * **AI Generation Status (Wizard Step 6):** Serves as the dynamic AI processing core, pulsing with phase changes.
-    * **Auth Page (`/login`):** Ambient accent card element providing visual sophistication.
-    * **Dashboard & Settings:** Compact accent badge / status sphere communicating live state.
+  * Integrated into high-impact visual anchors using `#3457E8`:
+    * **Hero Background & Showcase:** Provides organic depth behind the headline and interactive showcase mockup.
+    * **AI Generation Status (Wizard Step 6):** Ambient processing core that pulses during generation.
+    * **Auth Page (`/login`):** Ambient backdrop element providing high visual distinction.
+    * **Settings:** Status accent card sphere.
 * **Tactile Micro-Interactions:**
-  * Buttons and clickable cards respond with `active:scale-[0.98]` or `-translate-y-0.5` on hover.
+  * Buttons and interactive cards respond with `active:scale-[0.98]` or `-translate-y-0.5` on hover.
   * Transitions standardized at `transition-all duration-200 ease-out`.
 
 ---
@@ -87,13 +97,10 @@ This document defines the authoritative design contract for **Shipfolio** (`port
 ## 6. Mobile Responsiveness & Viewport Discipline
 
 * **Root-Level Overflow Isolation:**
-  * `html, body { overflow-x: hidden; }` prevents horizontal scroll jitter caused by scaled ambient WebGL canvas orbs (`scale-125`).
-  * `.no-scrollbar` utility enables touch swipeable tab strips without jarring desktop scrollbars on iOS Safari and Chrome Android.
+  * `html, body { overflow-x: clip; }` prevents horizontal scroll jitter caused by scaled WebGL canvases.
+  * `.no-scrollbar` utility enables touch-swipeable tab ribbons without intrusive scrollbars.
 * **Header & Navigation Drawer:**
-  * Sticky `h-14` navbar collapses navigation links on mobile into an animated hamburger menu (`Menu` / `X`).
+  * Sticky `h-14` navbar collapses navigation links into mobile sheet drawer.
   * Minimum 44px touch target height for mobile action items.
-  * Primary guest CTA dynamically adapts label (`Create portfolio` on desktop, `Create` on small viewports <390px) to prevent button wrapping.
-* **Fluid Breakpoints:**
-  * Real Portfolios Grid: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` (single column on phones, 2-column split on tablets, 3 columns on desktop).
-  * Interactive Demo Chrome: Browser URL chrome and tab strip stack with `flex-col sm:flex-row`, keeping Alex Chen sample output legible on all screens.
-  * Studio Editor: Transitions from desktop split-screen view to responsive tabbed view with touch-scrollable section ribbon on mobile.
+* **Studio Workspace:**
+  * Responsive iframe preview with multi-viewport switching (Desktop, Tablet, Mobile) and safe sandbox isolation (`allow-scripts`).

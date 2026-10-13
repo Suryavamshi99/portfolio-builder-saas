@@ -1,223 +1,141 @@
 # Shipfolio — AI Developer Portfolio Builder SaaS
 
-Hosted product: students turn a resume into a live portfolio site either by
-prompting a recruiter-grade AI (their own API key) or editing structured fields directly,
-then publish it to their own Vercel account.
+Turn a resume into a bespoke, model-written HTML portfolio website in minutes.
+Free preview with watermarked studio inspection; paid unlocks everything: clean HTML, zip export, GitHub push, Vercel deployment, and subdomain hosting.
+No fixed templates or JSON steps — each portfolio is an individual, self-contained HTML/CSS document written by an LLM following strict guardrail rules and verified by automated fact checking.
 
-This repo is the **product** — accounts, per-user storage, the BYOK
-extraction endpoint, and the Vercel deploy pipeline. It is separate from
-[`surya-vamshi-portfolio`](https://github.com/Suryavamshi99/surya-vamshi-portfolio),
-which stays Surya's own single-tenant personal site (Lovable-synced,
-deployed to Cloudflare) and is untouched by this project.
+---
 
-The `/studio` editor UI (`src/routes/-studio/*`) is ported from that repo
-as the starting point — same form primitives, same content schema shape —
-generalized here to read/write a per-user row instead of a static
-`content.json` on disk.
+## Quick Start (Run Locally)
 
-## Stack
+### Prerequisites
 
-- **TanStack Start** (React 19, TanStack Router file-based routes), Vite 8
-- **Supabase** — Auth, Postgres (per-user Content rows), Storage (uploads),
-  pg_cron (retention jobs)
-- **Vercel** — hosts this app, and is the deploy target for every published
-  user site (OAuth + Deployments API)
-- Tailwind v4 + a handful of shadcn/ui primitives (Button/Input/Textarea) —
-  placeholder styling only; visual design is Antigravity's job
+- Node.js 20+ (Node 22 recommended)
+- A Supabase project (Postgres, Auth, Storage)
 
-## Commands
+### Installation & Development
+
+1. **Clone the repository and install dependencies:**
+   ```sh
+   npm ci
+   ```
+
+2. **Configure environment variables:**
+   ```sh
+   cp .env.example .env
+   ```
+   Fill in your Supabase credentials (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`), a 32-byte base64 `ENCRYPTION_KEY`, and `APP_ORIGIN` (e.g. `http://localhost:3000`).
+
+3. **Run database migrations:**
+   Apply migrations in order from `supabase/migrations/` (0001 through 0012) using the Supabase CLI (`supabase db push`) or the Supabase SQL Editor.
+
+4. **Start the local development server:**
+   ```sh
+   npm run dev
+   ```
+
+---
+
+## Available Scripts
+
+| Script | Command | Purpose |
+|---|---|---|
+| `npm run dev` | `vite dev` | Start local Vite development server |
+| `npm run build` | `vite build` | Create production client and SSR build |
+| `npm run preview` | `vite preview` | Preview production build locally |
+| `npm test` | `vitest run` | Run unit and integration tests |
+| `npm run lint` | `eslint .` | Run ESLint across codebase |
+| `npm run format` | `prettier --write .` | Format all source files with Prettier |
+| `npm run setup:retention` | `node scripts/setup-retention-cron.mjs` | Configure Supabase storage purge cron & Edge Function |
+
+---
+
+## Quality Verification Commands
+
+Before committing or opening a PR, ensure all quality gates pass:
 
 ```sh
-npm install
-npm run dev      # vite dev server
-npm run build    # production build
+# Typecheck
+npx tsc --noEmit -p .
+
+# Linting (must have 0 errors)
+npm run lint
+
+# Test suite
+npx vitest run
+
+# Production build
+npm run build
 ```
 
-## Setup (Supabase)
+---
 
-This app needs its own Supabase project — nothing here provisions one for
-you:
+## Folder Map
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Run the migrations in `supabase/migrations/` against it, in order (via
-   the Supabase CLI's `supabase db push`, or paste each file into the SQL
-   Editor). `0002_retention_cron.sql` needs the `pg_cron` extension, which
-   Supabase provides but doesn't enable by default — enable it in
-   Database → Extensions first if `create extension` fails.
-3. Copy `.env.example` to `.env` and fill in the Supabase URL + keys (Project
-   Settings → API), a generated `ENCRYPTION_KEY` (command is in the example
-   file's comment), and `APP_ORIGIN` (this app's own deployed URL).
-4. Register a Vercel OAuth app (needed for "Connect Vercel" / Publish) and
-   set its redirect URI to `${APP_ORIGIN}/api/vercel/oauth/callback`; put the
-   resulting values in `.env` as `OAUTH_VERCEL_CLIENT_ID`/`OAUTH_VERCEL_CLIENT_SECRET`
-   — **not** `VERCEL_CLIENT_ID`/`VERCEL_CLIENT_SECRET`; Vercel's own
-   dashboard rejects any custom environment variable starting with
-   `VERCEL_` at project-import time ("Environment variable ... is
-   invalid"), since it reserves that whole prefix for its own system
-   variables. The endpoint shapes (`src/config/vercel.ts`) are verified
-   against Vercel's official docs, but still not exercised against live
-   traffic — no registered app in the environment that built this.
-5. Deploy the Storage-cleanup Edge Function the retention cron depends on:
-   ```sh
-   supabase functions deploy purge-storage-objects
-   supabase secrets set CRON_SECRET=$(node -e "console.log(require('node:crypto').randomBytes(24).toString('base64url'))")
-   ```
-   Then populate `public.app_config` (SQL Editor) with that same secret and
-   the function's URL — see the comment at the top of
-   `0003_storage_cleanup.sql` for the exact `insert` statement. Skipping this
-   step doesn't break anything else; the retention cron just logs a warning
-   and leaves Storage objects orphaned (safe, just not reclaimed) until it's
-   done.
-6. Create a Dodo Payments product (one-time price, **not** recurring —
-   $19 by default, see `PRO_PRICE_USD` in `src/config/plans.ts` if you
-   change it) and a webhook endpoint pointed at
-   `${APP_ORIGIN}/api/webhooks/dodo`. Put the API key, the product's
-   `pdt_...` id, and the webhook's `whsec_...` signing secret into `.env`
-   as `DODO_PAYMENTS_API_KEY` / `DODO_PRODUCT_ID_PRO` / `DODO_WEBHOOK_SECRET`.
-   Dodo's merchant onboarding form asks for a real website URL, so this
-   step needs the app actually deployed somewhere first — can't be done
-   against `localhost`.
+```
+portfolio-builder-saas/
+├── docs/                     # Architecture, handoff specs, and rules
+│   ├── ARCHITECTURE.md       # Pipeline architecture, security boundary & table rules
+│   ├── handoffs/             # Sequential agent task specs and reports
+│   └── userflow.md           # End-to-end current and target user journeys
+├── scripts/                  # Operational utility scripts
+│   ├── hash-admin-password.mjs   # Generate scrypt hash for ADMIN_PASSWORD_HASH
+│   └── setup-retention-cron.mjs  # Provision storage purge Edge Function & secrets
+├── src/
+│   ├── components/           # UI components (shadcn/radix primitives, studio, wizard, layout)
+│   │   ├── auth/             # Authentication guards and forms
+│   │   ├── byok/             # BYOK key management components
+│   │   ├── hero/             # Landing page hero, video, and visual showcase
+│   │   ├── layout/           # Navbar, footer, logos, shell layouts
+│   │   ├── preview/          # Sandboxed iframe portfolio preview
+│   │   ├── publish/          # Publish toolbar and dialogs
+│   │   ├── ui/               # Base design system primitives (button, dialog, card, badge)
+│   │   ├── upload/           # Drag-and-drop file uploaders with progress
+│   │   └── waitlist/         # Pre-launch email capture components
+│   ├── config/               # Static configuration (plans, llm, vercel, payment-test)
+│   ├── lib/                  # Browser & client utilities (supabase client, crypto, origin)
+│   ├── routes/               # TanStack Start file-based routing
+│   │   ├── -studio/          # Studio workspace UI (Editor.tsx, preview, shortcuts)
+│   │   ├── api/              # Server route endpoints (auth, uploads, generate, publish, exports)
+│   │   ├── admin.tsx         # Standalone admin dashboard
+│   │   ├── index.tsx         # Marketing landing page
+│   │   ├── login.tsx         # User authentication
+│   │   ├── onboarding.tsx    # 6-step portfolio creation wizard
+│   │   ├── settings.tsx      # User settings, key management, danger zone
+│   │   └── studio.tsx        # Studio route shell
+│   ├── server/               # Backend business logic & security infrastructure
+│   │   ├── dodo/             # Dodo Payments checkout & webhook processing
+│   │   ├── llm/              # LLM adapters (Google, Anthropic, OpenAI) & guardrail prompts
+│   │   ├── template/         # HTML image embedding and string escape utilities
+│   │   ├── vercel/           # Vercel OAuth client and deployment pipeline
+│   │   ├── auth-middleware.ts      # Session validation & AuthedContext extraction
+│   │   ├── checked-generation.ts   # Guardrail generation + numeric fact check pipeline
+│   │   ├── fact-check.ts           # Fact-checking numbers, %, currency, and years
+│   │   ├── finalize-html.ts        # Output verification, link sanitization, mXSS defense
+│   │   ├── portfolio-inputs.ts     # Wizard inputs persistence
+│   │   ├── portfolio-versions.ts   # Portfolio version history management
+│   │   ├── rate-limit.ts           # Rolling-hour rate limiting
+│   │   ├── resume-texts.ts         # Extracted resume text storage (service-role only)
+│   │   ├── storage-markers.ts      # URL marker translation for persistent HTML
+│   │   ├── users.ts                # User entitlements & server-side hasPaidAccess()
+│   │   └── watermark.ts            # Server-side watermark injection for free tier
+│   ├── styles.css            # Tailwind v4 theme tokens, obsidian dark neutrals & electric blue
+│   ├── routeTree.gen.ts      # Auto-generated TanStack router tree
+│   └── start.ts              # TanStack Start server entry point & CSRF origin check
+├── supabase/
+│   ├── functions/            # Supabase Edge Functions (purge-storage-objects)
+│   └── migrations/           # Postgres migrations (0001 through 0012)
+├── API.md                    # Canonical API contract for all endpoints
+├── DESIGN.md                 # Design system tokens, color calibration & taste standards
+└── version2memory.md         # Source of truth for product architecture & decision history
+```
 
-## Setup (Waitlist)
+---
 
-Optional, pre-launch only. Waitlist signups go to a Google Sheet, not
-Supabase — no product data, no RLS, just a list you can open and skim.
+## Documentation Links
 
-1. Create a new Google Sheet. Give row 1 headers: `Email`, `Source`, `Submitted At`.
-2. In that Sheet, **Extensions → Apps Script**, delete the placeholder code, and paste:
-   ```javascript
-   const SHARED_SECRET = "PASTE_YOUR_WAITLIST_WEBHOOK_SECRET_HERE";
-
-   function doPost(e) {
-     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-     const data = JSON.parse(e.postData.contents);
-
-     if (data.secret !== SHARED_SECRET) {
-       return ContentService.createTextOutput(JSON.stringify({ error: "unauthorized" }))
-         .setMimeType(ContentService.MimeType.JSON);
-     }
-
-     const email = String(data.email || "").trim().toLowerCase();
-     if (!email) {
-       return ContentService.createTextOutput(JSON.stringify({ error: "missing_email" }))
-         .setMimeType(ContentService.MimeType.JSON);
-     }
-
-     const existing = sheet.getRange("A2:A").getValues().flat();
-     if (existing.includes(email)) {
-       return ContentService.createTextOutput(JSON.stringify({ ok: true, duplicate: true }))
-         .setMimeType(ContentService.MimeType.JSON);
-     }
-
-     sheet.appendRow([email, data.source || "", data.submittedAt || new Date().toISOString()]);
-     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
-       .setMimeType(ContentService.MimeType.JSON);
-   }
-   ```
-3. Generate a secret and paste it into `SHARED_SECRET` above (replacing the placeholder):
-   ```sh
-   node -e "console.log(require('node:crypto').randomBytes(24).toString('base64url'))"
-   ```
-   This same value goes into `.env`/Vercel as `WAITLIST_WEBHOOK_SECRET` — it's what stops
-   anyone who finds the Apps Script URL from writing rows directly, bypassing this app's
-   validation.
-4. **Deploy → New deployment → Web app.** Execute as **Me**, who has access **Anyone**.
-   Copy the resulting URL (`https://script.google.com/macros/s/.../exec`) into `.env`/Vercel
-   as `WAITLIST_WEBHOOK_URL`.
-5. Whenever you edit the script later, Apps Script needs **Manage deployments → Edit →
-   New version** for the change to take effect — the deployment URL itself doesn't change.
-6. Set `VITE_LAUNCH_MODE=waitlist` (and redeploy) to switch the landing page's CTAs to the
-   email-capture form; `live` (the default) shows the real sign-up flow.
-
-## The contract
-
-[`API.md`](./API.md) is the single source of truth for every endpoint —
-request/response shapes, auth requirements, error codes. Antigravity's UI
-session should only ever need to read that file, never this repo's DB
-schema or server internals.
-
-## Status
-
-Rebranded to **Shipfolio** ("Portfol.io" was never actually ownable — the
-domain was taken). See API.md's Changelog for exactly what that touched.
-
-**All six milestones are shipped, including payments** — `POST
-/api/billing/checkout` + `POST /api/webhooks/dodo` (Dodo Payments, a
-one-time $19 lifetime unlock, not a subscription), plus `POST /api/reset`
-("start over" — added later as a product requirement, see API.md). All
-backed by real Supabase tables, RLS policies, and Storage. A seventh,
-pre-launch-only milestone was added on top: `POST /api/waitlist` +
-`VITE_LAUNCH_MODE`, a GTM toggle to run the landing page as an
-email-capture waitlist before opening real signups — see "Setup
-(Waitlist)" above.
-
-One thing that changed along the way, worth knowing before treating "Pro"
-as flexible: the original pricing pitch included "unlimited portfolios" as
-a Pro benefit, but the schema only supports one portfolio per user, for
-everyone — `portfolios.user_id` is the primary key. That's a real future
-feature (a genuine schema change touching most content-facing endpoints +
-the frontend), not something Pro currently unlocks. Pro instead gates
-storage quota (250MB vs. 50MB), generation/upload rate limits, and the
-"Published with Shipfolio" badge on the live site — see `src/config/plans.ts`.
-
-**The frontend is built too** (by Antigravity, not this session) — login/
-signup, the onboarding wizard, BYOK key management with per-provider setup
-help, Studio restyled, live preview, and the publish flow. On top of that,
-this session added: `/studio` is gated behind having a ready portfolio
-(profile has real content) rather than being reachable immediately after
-sign-in — a brand-new or freshly-reset account lands on the wizard by
-default; a confirmation step before regenerating warns that it re-calls the
-BYOK provider and overwrites the current draft; and Settings has a "Danger
-Zone" to wipe a draft + its uploads back to blank (keeping connected API
-keys) via `POST /api/reset`.
-
-**Runtime-verified against a real, live Supabase project** as of this
-session — migrations applied successfully, sign-up/email-confirmation flow
-confirmed working end to end against real Supabase Auth.
-
-Highlights: uploads are validated server-side by magic-byte sniffing (never
-client-reported type), size-capped, quota- and rate-limited, and images are
-stripped of EXIF/GPS via `sharp` before storage. BYOK keys and Vercel OAuth
-tokens are both AES-256-GCM encrypted at rest with the same module
-(`src/lib/crypto.ts`). `/api/generate` extracts resume text server-side
-(`pdf-parse`/`mammoth`) before it ever reaches an LLM, applies the guardrail
-system prompt verbatim, and validates the model's output against the same
-zod schema Studio uses. `/api/publish` renders `Content` through a plain
-static-HTML template (`src/server/template/render.ts` — functionally
-complete, visually minimal on purpose; Antigravity's job to restyle),
-embeds any images that resolve to our own Storage directly into the deploy
-bundle rather than linking back to it, and pushes the result to the user's
-Vercel account. Both upload and generation rate limits are real rolling-hour
-checks (`src/server/rate-limit.ts`), not estimates. A global CSRF Origin
-check (`src/start.ts`) now covers every non-GET request across the whole
-app, not just the endpoints built after it was added.
-
-The retention cron's Storage-object deletion gap (flagged after milestone
-2b) is closed: `supabase/functions/purge-storage-objects/` (a Deno Edge
-Function, deployed separately — see Setup) is invoked via `pg_net` from
-`0003_storage_cleanup.sql`, fire-and-forget by design. Also corrected while
-building milestone 5: `uploads.published` was wrongly implemented (in
-milestone 1, before publish existed to clarify the brief's intent) to
-permanently exempt a row from the 30-day inactivity purge — the actual rule
-is that publishing copies bytes into the Vercel bundle, which is what
-protects a live site, so our copy becomes disposable under the same 30-day
-rule either way. Fixed in the migrations; see their comments.
-
-Also fixed since the frontend build: two model ids had actually gone
-stale — `gemini-2.0-flash` was shut down by Google outright (a real
-production break for anyone picking that provider, not just a cosmetic
-staleness issue), `gpt-4o` was deprecated — both replaced and verified
-against each provider's current docs. And a real gap in the Vercel
-integration: the OAuth token response's `team_id` (set when installed on a
-Vercel Team, not a personal account) was never captured, so every API call
-after connecting would 403 for a team install — fixed via a new migration
-and threaded through every call in `src/server/vercel/deploy.ts`.
-
-**Still not runtime-verified**: real BYOK provider keys (the actual LLM
-calls), the entire Vercel OAuth/Deployments flow (endpoint shapes are now
-confirmed against Vercel's official docs, but not exercised against live
-traffic — no registered OAuth app in this environment), and the entire Dodo
-Payments flow (same reason — no live product/webhook registered here
-either). `vite build` (client+SSR) and `tsc --noEmit` stay clean after every
-change; standalone smoke tests confirmed both `pdf-parse` and `mammoth`
-actually extract text from real (hand-built) PDF and DOCX buffers.
+- **[API Contract (`API.md`)](./API.md)** — Exhaustive specification of every endpoint (method, path, authentication, payload, responses, and error codes).
+- **[Design System (`DESIGN.md`)](./DESIGN.md)** — Visual design contract, typography hierarchy, Electric Blue (`#3457E8`) accent tokens, Obsidian neutrals, and layout guidelines.
+- **[Architecture Guide (`docs/ARCHITECTURE.md`)](./docs/ARCHITECTURE.md)** — Detailed pipeline flow, security boundaries, database isolation, and CSP policies.
+- **[User Journeys (`userflow.md`)](./userflow.md)** — Step-by-step current and proposed product flows with Mermaid sequence diagrams.
+- **[Project Memory & Decision Log (`version2memory.md`)](./version2memory.md)** — The primary source of truth recording all technical decisions, scope boundaries, and architectural choices.

@@ -1,676 +1,165 @@
-# API contract — Portfolio Builder SaaS
+# API Contract — Shipfolio AI
 
-This is the one file Antigravity's UI session needs to read to build the entire
-frontend. It should never need this repo's DB schema, server internals, or the
-LLM/Vercel integration code — only this contract.
+This is the definitive API contract for **Shipfolio AI**. It serves as the single source of truth for UI development, API integrations, and client tooling.
 
-**Hard rule:** every check described here (upload limits, content-integrity
-guardrails, rate limits, retention rules) is enforced **server-side, in these
-endpoints**. The UI must never reimplement or bypass them client-side — it only
-calls the API and renders what comes back.
+**Hard Rule:** Every validation, upload quota, authorization boundary, content-integrity check, and rate limit described here is enforced **server-side**. The frontend must never attempt to duplicate or circumvent these rules client-side.
 
-Status key: **✅ Shipped** (implemented, response shape is real) · **🚧 Stub**
-(designed, not implemented — shape may still change) · **⏳ Planned** (not yet
-designed in detail).
+Status key:
+- **✅ Shipped** — Implemented on `main`, tested, and operational.
+- **⏳ Planned (in progress)** — Designed in handoffs `06a`–`06d`, under active development.
 
 ---
 
-## Changelog
+## 1. Authentication & Account
 
-- **2026-09-20** — Rebranded from "Portfol.io" to **Shipfolio** (the former
-  domain was already taken) — every user-facing brand string, the badge
-  link, and the landing-page mockup URL updated; the generic English word
-  "portfolio" describing the product itself is untouched. Also shipped
-  Milestone 7 (`POST /api/waitlist`) and `VITE_LAUNCH_MODE`, a pre-launch
-  GTM toggle — see that milestone's section for the full contract. Fixed a
-  real bug found while doing this: the free-tier badge hardcoded
-  `href="https://portfol.io"`, a domain nobody owns — now links to the
-  app's own `APP_ORIGIN` instead.
-- **2026-09-17 (2)** — Milestone 6 (payments) shipped: `POST /api/billing/checkout`,
-  `POST /api/webhooks/dodo`. Shape change from the original stub: dropped
-  "unlimited portfolios" as a Pro benefit — the schema only supports one
-  portfolio per user, for everyone, which wasn't discovered as a real
-  constraint until this milestone was actually being scoped. Pro instead
-  gates storage quota, generation/upload rate limits, and the published-
-  site badge — see the milestone's intro paragraph for the full table.
-  One-time lifetime unlock, not a subscription, per explicit product
-  decision — no renewal/coupon/plan-downgrade logic exists.
-- **2026-09-17** — Closed loose ends flagged in earlier entries. Fixed two
-  real bugs, not just uncertainty: (1) `gemini-2.0-flash` (google model id)
-  was actually shut down by Google on 2026-06-01 — any generation with that
-  provider was broken; replaced with `gemini-3.5-flash`, and `gpt-4o`
-  (deprecated) with `gpt-5.6-terra`, both verified against each provider's
-  current docs. (2) Vercel's OAuth token response includes `team_id`
-  (non-null when installed on a Team, not a personal account) which was
-  never captured — every Vercel API call after connecting needed it as a
-  `teamId` query param or would 403; fixed via migration `0004` and
-  `src/server/vercel/deploy.ts`. Also confirmed DOCX extraction (`mammoth`)
-  actually works end-to-end via a standalone smoke test (previously only
-  PDF had been verified this way).
-- **2026-09-16** — Added `POST /api/reset` ("start over" — see its own section
-  below, after milestone 2). Not part of the original six milestones; added
-  as a product requirement once real usage surfaced the need for a clean-
-  slate action distinct from a wizard re-run (which only overwrites content,
-  keeps uploads). Also: the frontend now gates `/studio` behind having a
-  ready portfolio (`profile.name`/`role`/`thesis` non-empty) — a UI-only
-  routing decision, not a new server rule, so no contract change for
-  `GET /api/content` itself.
-- **2026-09-13 (4)** — Milestone 5 (Vercel OAuth + publish) shipped:
-  `GET /api/vercel/oauth/{start,callback}`, `GET /api/vercel/status`,
-  `DELETE /api/vercel`, `POST /api/publish`, `GET /api/publish/status`. New
-  `404 no_publications` on the status endpoint (not in the original stub —
-  the real first-call case needed a shape). Also corrected a retention-cron
-  bug from milestone 1: `uploads.published` was implemented to permanently
-  exempt a row from the 30-day inactivity purge, but the brief's actual
-  intent (re-read carefully once publish existed to clarify it) is that
-  publish copying bytes into the Vercel bundle is what protects a live
-  site — once that's done, our copy is disposable under the same 30-day
-  rule as any draft. Fixed in `0001`–`0003`'s migrations; not an API.md
-  contract change (internal cron behavior). Flagging clearly: the Vercel
-  OAuth/Deployments API endpoint shapes in `src/config/vercel.ts` and
-  `src/server/vercel/*` are unverified against live traffic — isolated
-  there specifically so a correction doesn't ripple into the `/api/vercel/*`
-  contract below.
-- **2026-09-13 (3)** — Milestone 3 (BYOK + resume extraction) shipped:
-  `POST/GET /api/byok-keys`, `DELETE /api/byok-keys/:provider`,
-  `POST /api/generate`. Milestone 4's generation rate limit shipped alongside
-  it (same endpoint, couldn't responsibly ship one without the other) — both
-  milestone 4 bullets are now ✅. Shape refinements from the original stub:
-  the single documented `401` became two codes (`byok_key_missing` vs.
-  `byok_key_invalid`), a new `502 llm_provider_error` covers provider-side
-  failures distinct from both of those, and every `429` (uploads and
-  generate) now carries a real `retryAfterSeconds` computed from the rolling
-  window, not a placeholder. Also closed the Storage-cleanup gap flagged in
-  the previous entry — see `supabase/functions/purge-storage-objects/` and
-  `0003_storage_cleanup.sql`; not an API.md endpoint (internal cron
-  infrastructure), so no contract change, just noting it's no longer a known
-  gap.
-- **2026-09-13 (2)** — Milestone 2b (file uploads) shipped: `POST/GET
-  /api/uploads`, `DELETE /api/uploads/:id`. Shape changes from the original
-  stub: the 409 response now uses two distinct codes — `upload_limit_exceeded`
-  (per-kind count cap) vs `upload_quota_exceeded` (storage bytes) — instead of
-  one shared code; `POST /api/uploads`'s 400 also covers `upload_invalid_kind`
-  and `upload_missing_file`, not just `upload_invalid_type`/`upload_too_large`.
-  Everything else matches the original design.
-- **2026-09-13** — Milestone 1 (auth + per-user storage) and the milestone 2
-  content endpoints shipped: `GET /api/me`, `GET /api/content`,
-  `PUT /api/content` are now real, backed by Supabase (Postgres + Auth).
-  Response shapes below match what's actually implemented, not just design —
-  the earlier draft shapes for these three were confirmed unchanged. Studio
-  (`/studio`) now reads/writes through `PUT /api/content` instead of the old
-  dev-only disk write. Auth itself is Supabase Auth directly from the
-  browser client — no custom login endpoint exists or is planned.
-- **2026-09-11** — Initial version. All endpoints are 🚧 Stub. No server code
-  exists yet; milestone 1 (auth + per-user storage) hasn't started. This
-  document exists first so the contract shape is visible from day one.
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/me` | Session Cookie | No | None | `{ id: string, email: string, plan: "free" \| "pro", isAdmin: boolean, hasPaidAccess: boolean, createdAt: string, storageUsedBytes: number, storageLimitBytes: number, vercel: { connected: boolean, username: string \| null } }` | `401 unauthorized`, `500 internal_error` |
+
+*Note:* Session creation and password resets are handled directly by the browser Supabase Auth client (`supabase.auth.signUp`, `supabase.auth.signInWithPassword`). `GET /api/me` ensures the `public.users` row exists and computes `hasPaidAccess` on the server.
 
 ---
 
-## Conventions
+## 2. File Uploads
 
-- Base URL: same origin as the app (this is a TanStack Start app; endpoints
-  are server routes under `/api/*`, not a separate service).
-- Auth: session cookie set by Supabase Auth (via `@supabase/ssr` or
-  equivalent). Endpoints marked **Auth: required** return `401` with no body
-  detail if there's no valid session — never a redirect, so the UI decides how
-  to handle it.
-- All responses are plain JSON. No server-rendering assumptions — safe to call
-  from anywhere.
-- Error shape, always:
-  ```json
-  { "error": { "code": "string_machine_code", "message": "human-readable string" } }
-  ```
-- Success shape has no fixed envelope — each endpoint documents its own body.
-- Timestamps are ISO 8601 UTC strings.
-- File size limits below are enforced against the **actual byte size and
-  real file content** (magic-byte sniffing), never the client-reported
-  `Content-Type` or filename extension.
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/uploads` | Session Cookie | No | None (query: `?kind=resume \| visual_reference \| photo \| project_image`) | `{ uploads: Array<{ id: string, kind: string, filename: string, sizeBytes: number, mimeType: string, url: string, published: boolean, createdAt: string }> }` | `400 upload_invalid_kind`, `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/uploads` | Session Cookie | No | `multipart/form-data` (`kind`, `file`) | `{ upload: { id: string, kind: string, filename: string, sizeBytes: number, mimeType: string, url: string, published: boolean, createdAt: string } }` | `400 invalid_form`, `400 upload_invalid_kind`, `400 upload_missing_file`, `400 upload_invalid_type`, `400 upload_too_large`, `409 upload_limit_exceeded`, `409 upload_quota_exceeded`, `429 rate_limited`, `401 unauthorized`, `500 internal_error` |
+| `DELETE` | `/api/uploads/:id` | Session Cookie | No | None | `{ ok: true }` | `400 upload_id_required`, `404 upload_not_found`, `401 unauthorized`, `500 internal_error` |
+
+*Upload Limits:*
+- `resume`: Single slot (replaces existing), PDF/DOCX only, 5 MB max. Extracted text stored in `resume_texts`.
+- `photo`: Single slot (replaces existing), PNG/JPEG/WEBP only, 5 MB max. EXIF/GPS stripped via `sharp`.
+- `visual_reference`: Max 3 slots, PNG/JPEG/WEBP only, 5 MB max.
+- `project_image`: Max 10 slots, PNG/JPEG/WEBP only, 5 MB max.
+- Rate limits: 10 uploads/hr for free users; 30 uploads/hr for pro users. Storage quotas: 50 MB (free), 250 MB (pro).
 
 ---
 
-## Milestone 1 — Auth + per-user storage
+## 3. Portfolio Inputs, Content & Version History
 
-Auth itself is handled client-side by the Supabase Auth SDK (sign up, sign in,
-sign out, session refresh) — Antigravity talks to Supabase directly for that,
-not to a custom endpoint here. The one endpoint this repo adds is for reading
-the app-specific user record (plan, quota, etc.) that lives in our own table
-alongside the Supabase-managed auth user.
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/content` | Session Cookie | No | None | `{ html: string \| null, updatedAt: string \| null }` | `401 unauthorized`, `500 internal_error` |
+| `PUT` | `/api/content` | Session Cookie | No | `{ html: string }` | `{ ok: true, updatedAt: string }` | `400 invalid_json`, `400 invalid_html`, `422 unsafe_html`, `401 unauthorized`, `500 internal_error` |
+| `PUT` | `/api/portfolio/inputs` | Session Cookie | No | `{ links?: { linkedin?: string, github?: string, projectLinks?: string[], otherLinks?: string[] }, specifics?: string, designIntensity?: "minimal" \| "bold", preferredSource?: string }` | `{ ok: true, inputs: object }` | `400 invalid_json`, `400 invalid_links`, `401 unauthorized`, `500 internal_error` |
+| `GET` | `/api/portfolio/versions` | Session Cookie | No | None | `{ versions: Array<{ id: string, source: string, model: string \| null, warnings: string[], createdAt: string }> }` | `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/portfolio/versions/:id/restore` | Session Cookie | No | None | `{ ok: true, versionId: string, restoredAt: string }` | `400 invalid_request`, `404 version_not_found`, `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/reset` | Session Cookie | No | None | `{ ok: true, resetAt: string }` | `401 unauthorized`, `500 internal_error` |
 
-### `GET /api/me` — ✅ Shipped
-
-**Auth:** required.
-
-Returns the current user's app-level record. Creates it on first call if this
-is a brand-new Supabase Auth user (lazy provisioning, no separate signup
-endpoint needed).
-
-Response `200`:
-
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "plan": "free",
-  "createdAt": "2026-09-11T00:00:00Z",
-  "storage": { "usedBytes": 1234000, "quotaBytes": 52428800 },
-  "vercel": { "connected": false }
-}
-```
-
-`plan` is the extension point for future billing — always `"free"` in this
-phase, not enforced against anything yet.
+*Security & Watermarking:*
+- `GET /api/content`: Free users receive watermarked HTML with `data-shipfolio-watermark`. Paid users receive clean, unwatermarked HTML.
+- `POST /api/reset`: Wipes all uploads from storage, deletes `portfolio_inputs`, `resume_texts`, `portfolio_versions`, and resets `portfolios.generated_html = null`. Preserves purchases, generations history, BYOK keys, and Vercel connections.
 
 ---
 
-## Milestone 2 — Studio content (read/write the draft)
+## 4. BYOK Keys & Direct Generation
 
-Replaces the old dev-only `POST /__studio/save` disk write. Studio's Save
-button calls only this — **it never triggers a deploy.**
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/byok-keys` | Session Cookie | No | None | `{ keys: Array<{ provider: string, createdAt: string }> }` | `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/byok-keys` | Session Cookie | No | `{ provider: "google", apiKey: string }` | `{ ok: true, provider: string }` | `400 invalid_json`, `400 invalid_provider`, `400 invalid_api_key`, `401 unauthorized`, `500 internal_error` |
+| `DELETE` | `/api/byok-keys/:provider` | Session Cookie | No | None | `{ ok: true }` | `400 provider_required`, `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/generate` | Session Cookie | No | `{ provider: "google", resumeUploadId: string, designIntensity?: "minimal" \| "bold", otherSpecifics?: string, instructions?: string, links?: object }` | `{ ok: true, html: string }` | `400 invalid_json`, `400 invalid_provider`, `400 invalid_request`, `400 resume_not_found`, `401 byok_key_missing`, `401 byok_key_invalid`, `422 generation_invalid_output`, `422 generation_unsupported_claims`, `429 rate_limited`, `429 provider_rate_limited`, `502 llm_provider_error`, `500 internal_error` |
 
-### `GET /api/content` — ✅ Shipped
-
-**Auth:** required.
-
-Returns the current user's `Content` row. If the user has none yet, creates
-and returns an empty one (see `emptyContent` in `src/data/content.ts`) rather
-than 404ing — Studio always has something to render.
-
-Response `200`:
-
-```json
-{ "content": { "profile": { "...": "..." }, "projects": [] }, "updatedAt": "2026-09-11T00:00:00Z" }
-```
-
-### `PUT /api/content` — ✅ Shipped
-
-**Auth:** required.
-
-Body: `{ "content": <full Content object> }` (same shape Studio's `serialize()`
-already produces, wrapped). Validated server-side in two passes before
-writing — this is the server-side mirror of the client-side validation
-Studio already does, not a replacement for it:
-
-1. The full object against the shared zod `contentSchema` — issue paths here
-   are dot-joined field paths (e.g. `profile.name`, `projects.1.date`).
-2. `projects` specifically through the same `projectErrors()` business-rule
-   check Studio's UI already runs (missing required fields, duplicate slugs)
-   — issue paths here are just `projects.<index>`, one combined message per
-   project, since that function flags a whole project rather than one field.
-
-Request:
-
-```json
-{ "content": { "profile": { "...": "..." }, "projects": [] } }
-```
-
-Response `200`:
-
-```json
-{ "ok": true, "updatedAt": "2026-09-13T00:12:03Z" }
-```
-
-Response `422` (validation failed — a schema-shape issue and a business-rule
-issue shown together):
-
-```json
-{
-  "error": { "code": "content_invalid", "message": "2 problem(s) found" },
-  "issues": [
-    { "path": "profile.name", "message": "Required" },
-    { "path": "projects.2", "message": "Duplicate slug \"decide\"" }
-  ]
-}
-```
+*Generation Pipeline:*
+- Performs numeric fact check against stored `resume_texts` (or resume extraction fallback).
+- Performs one repair round if unverified numbers, percentages, currency, or years appear.
+- Passes generated HTML through `finalizeHtml()` (validating semantic tags, sanitizing malicious tags/mXSS, ensuring Google Fonts only, replacing signed storage URLs with permanent storage markers).
+- Records new version in `portfolio_versions` and updates `portfolios.generated_html`.
 
 ---
 
-## "Start over" — reset a draft to blank
+## 5. Exports (Paid Only)
 
-Not one of the original six milestones — added as a product requirement.
-Distinct from re-running the wizard's Generate step (which only overwrites
-`portfolios.content`, leaving uploads and BYOK keys untouched): this wipes
-everything a user would need to re-enter to build fresh, while explicitly
-preserving what they'd have to go re-obtain from a third party.
-
-### `POST /api/reset` — ✅ Shipped
-
-**Auth:** required. No request body.
-
-Deletes every upload row **and its Storage object** for the user (resume,
-visual references, photo, project images), then resets `portfolios.content`
-to the empty `Content` shape. Does **not** touch `byok_keys`,
-`vercel_connections`, `generations`, or `publications` — connected provider
-keys stay connected, and a previously published site stays live and
-unaffected (this only resets the draft, not anything already deployed).
-
-Irreversible — the UI must get explicit confirmation before calling this;
-the endpoint does not ask twice or support undo.
-
-Response `200`:
-
-```json
-{ "ok": true, "updatedAt": "2026-09-16T00:00:00Z" }
-```
-
-Response `500`: `{ "error": { "code": "internal_error", "message": "..." } }`
-— note the message distinguishes a failure that happened before vs. after
-uploads were cleared (e.g. `"Uploads cleared, but could not reset content"`),
-since those leave the account in different partial states worth surfacing.
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/export/html` | Session Cookie | Yes | None | File download (`portfolio.html`, `text/html; charset=utf-8`) | `400 no_portfolio`, `401 unauthorized`, `402 payment_required`, `422 export_unsafe_html`, `500 internal_error` |
+| `GET` | `/api/export/zip` | Session Cookie | Yes | None | Binary zip package (`portfolio.zip`, `application/zip`) containing `index.html`, bundled `images/*`, and `README.txt` | `400 no_portfolio`, `401 unauthorized`, `402 payment_required`, `422 export_unsafe_html`, `500 internal_error` |
 
 ---
 
-## Milestone 2b — File uploads
+## 6. Publish to User's Vercel Account
 
-One reusable server-side module handles every upload type — the per-field
-limits below are config passed into it, not separate implementations.
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/vercel/oauth/start` | Session Cookie | Yes | None | Redirects to Vercel OAuth authorization URL with signed state | `401 unauthorized`, `402 payment_required` |
+| `GET` | `/api/vercel/oauth/callback` | Session Cookie | No | Query: `?code=&state=` | Redirects to `/studio?vercel=connected` (or `/studio?vercel_error=<code>`) | `302 redirect` |
+| `GET` | `/api/vercel/status` | Session Cookie | No | None | `{ connected: boolean, username: string \| null }` | `401 unauthorized`, `500 internal_error` |
+| `DELETE` | `/api/vercel` | Session Cookie | No | None | `{ ok: true }` | `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/publish` | Session Cookie | Yes | None | `202 { publication: { id: string, status: "queued", deploymentUrl: string \| null } }` | `400 no_portfolio`, `401 unauthorized`, `402 payment_required`, `409 vercel_not_connected`, `422 publish_unsafe_html`, `502 vercel_deploy_failed`, `500 internal_error` |
+| `GET` | `/api/publish/status` | Session Cookie | No | None | `{ publication: { id: string, status: "queued" \| "building" \| "ready" \| "error", deploymentUrl: string \| null, finishedAt: string \| null } }` | `401 unauthorized`, `404 no_publications`, `500 internal_error` |
 
-Guardrails enforced **before** anything is written to storage (order:
-size → real content-type → remaining quota → strip metadata → store):
+---
 
-| kind | max count | max size each | allowed types |
+## 7. Billing & Payments (Dodo Payments)
+
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `POST` | `/api/billing/checkout` | Session Cookie | No | `{ returnTo?: "studio" \| "settings" }` | `{ checkoutUrl: string }` | `400 email_required`, `401 unauthorized`, `502 checkout_failed`, `500 internal_error` |
+| `POST` | `/api/webhooks/dodo` | Webhook Signature | No | Dodo Webhook payload (`payment.succeeded`) | `{ ok: true }` | `400 invalid_signature`, `400 invalid_event` |
+| `POST` | `/api/dev/payment-test` | Session Cookie | Dev only | `{ returnTo?: "studio" \| "settings" }` | HTML redirect to simulated checkout success/failure | `403 forbidden` (production) |
+
+---
+
+## 8. Admin & Waitlist
+
+| Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
+|---|---|---|---|---|---|---|
+| `POST` | `/api/admin/login` | None | No | `{ username: string, password: string }` | `{ ok: true }` (sets `admin_session` httpOnly cookie) | `400 invalid_json`, `401 invalid_credentials`, `429 rate_limited` |
+| `POST` | `/api/admin/logout` | None | No | None | `{ ok: true }` (clears cookie) | None |
+| `GET` | `/api/admin/session` | Admin Cookie | No | None | `{ authenticated: boolean, username: string \| null }` | None |
+| `GET` | `/api/admin/users` | Admin Cookie | No | None (query: `?page=1&limit=50&search=`) | `{ users: Array<object>, total: number, page: number, limit: number }` | `401 unauthorized`, `500 internal_error` |
+| `GET` | `/api/admin/users/:id` | Admin Cookie | No | None | `{ user: object, portfolio: object \| null, uploads: Array<object>, generations: Array<object>, publications: Array<object>, purchases: Array<object> }` | `401 unauthorized`, `404 user_not_found`, `500 internal_error` |
+| `PATCH` | `/api/admin/users/:id` | Admin Cookie | No | `{ plan?: "free" \| "pro", isAdmin?: boolean, html?: string }` | `{ ok: true, user: object }` | `400 invalid_body`, `401 unauthorized`, `404 user_not_found`, `500 internal_error` |
+| `DELETE` | `/api/admin/users/:id` | Admin Cookie | No | None | `{ ok: true }` | `401 unauthorized`, `404 user_not_found`, `500 internal_error` |
+| `POST` | `/api/waitlist` | None | No | `{ email: string, source?: string }` | `{ ok: true, duplicate?: boolean }` | `400 invalid_json`, `400 invalid_email`, `502 waitlist_webhook_unreachable`, `502 waitlist_webhook_failed` |
+
+---
+
+## 9. Background Jobs & Database Maintenance (pg_cron)
+
+These cron routines run directly in Postgres via `pg_cron` and invoke Supabase Edge Functions:
+
+| Routine | Schedule | Mechanism | Action |
 |---|---|---|---|
-| `resume` | 1 | 5MB | PDF, DOCX |
-| `visual_reference` | 3 | 5MB | PNG, JPG, WEBP |
-| `photo` | 1 | 5MB | PNG, JPG, WEBP |
-| `project_image` | 10 total | 5MB | PNG, JPG, WEBP |
-
-- Per-user total storage quota: config value (`plan.quotaBytes`, currently
-  50MB flat on `"free"` — see `GET /api/me`), not hardcoded per-call.
-- Uploads per hour: ~10 per account, tracked separately from LLM generation
-  rate limits (see milestone 4).
-- Images are stripped of EXIF/GPS metadata server-side before storage.
-- Retention (enforced by a scheduled Postgres function, not this endpoint):
-  resumes and `visual_reference` images expire 48h after a successful
-  generation regardless of publish status; `photo`/`project_image` on an
-  inactive draft expire after 30 days (warning email a few days prior);
-  images tied to a **currently published** site are never auto-deleted.
-
-Singleton kinds (`resume`, `photo`) — a new upload **replaces** the existing
-one automatically. Capped kinds (`visual_reference`, `project_image`) reject
-a new upload once the count limit is hit instead — the user removes one via
-`DELETE` first. Uploaded files get a **signed URL, 1 hour TTL** — the bucket
-is private, so re-fetch `GET /api/uploads` (or re-`POST`) rather than caching
-a `url` past its expiry.
-
-### `POST /api/uploads` — ✅ Shipped
-
-**Auth:** required. `multipart/form-data`.
-
-Fields: `kind` (`resume` | `visual_reference` | `photo` | `project_image`),
-`file`.
-
-Response `201`:
-
-```json
-{
-  "id": "upload_uuid",
-  "kind": "resume",
-  "filename": "surya-resume.pdf",
-  "sizeBytes": 214532,
-  "url": "https://.../object/sign/uploads/...?token=...",
-  "createdAt": "2026-09-13T00:00:00Z"
-}
-```
-
-Response `400` (rejected — bad type/size/missing field, never touches
-storage; `code` is one of `upload_invalid_kind`, `upload_missing_file`,
-`upload_invalid_type`, `upload_too_large`):
-
-```json
-{ "error": { "code": "upload_invalid_type", "message": "Expected one of: application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document" } }
-```
-
-Response `409` — two distinct codes depending on which limit was hit:
-
-```json
-{ "error": { "code": "upload_limit_exceeded", "message": "You can have at most 3 visual_reference uploads — remove one first" } }
-```
-
-```json
-{ "error": { "code": "upload_quota_exceeded", "message": "Storage quota exceeded (50MB on the free plan)" } }
-```
-
-Response `429` (hourly upload cap, separate from the LLM rate limit):
-
-```json
-{ "error": { "code": "rate_limited", "message": "Upload limit reached, try again later" } }
-```
-
-### `GET /api/uploads` — ✅ Shipped
-
-**Auth:** required. Query: optional `?kind=`. `storage` in the response is
-always account-wide totals, even when `kind` filters which uploads are
-listed.
-
-Response `200`:
-
-```json
-{
-  "uploads": [
-    { "id": "...", "kind": "photo", "filename": "headshot.jpg", "sizeBytes": 812004, "url": "https://.../sign/...", "createdAt": "2026-09-13T00:00:00Z" }
-  ],
-  "storage": { "usedBytes": 1234000, "quotaBytes": 52428800 }
-}
-```
-
-### `DELETE /api/uploads/:id` — ✅ Shipped
-
-**Auth:** required. `204` on success, `404` (`{ "error": { "code": "not_found", ... } }`) if the upload doesn't exist or isn't yours.
+| `purge-post-generation-uploads` | Hourly (`0 * * * *`) | `public.purge_post_generation_uploads()` → Edge Function | Purges resumes and visual reference screenshots 48 hours after generation (or abandoned uploads older than 48h). |
+| `purge-stale-draft-uploads` | Daily (`0 3 * * *`) | `public.purge_stale_draft_uploads()` → Edge Function | Purges photos and project images for inactive drafts unchanged for 30+ days. |
+| `queue-stale-draft-warnings` | Daily (`0 4 * * *`) | `public.queue_stale_draft_warnings()` | Queues warning entries in `upload_deletion_warnings` for inactive drafts at day 27–28. |
 
 ---
 
-## Milestone 3 — BYOK key management + resume extraction
-
-### `POST /api/byok-keys` — ✅ Shipped
-
-**Auth:** required.
-
-Body: `{ "provider": "anthropic" | "openai" | "google", "apiKey": "sk-..." }`.
-Key is encrypted at rest immediately (AES-256-GCM, key lives only in this
-app's env — never in Postgres); never logged, never echoed back in any
-response. Calling this again for a provider you've already connected
-**rotates** the key (upsert) rather than erroring.
-
-Response `200`: `{ "provider": "anthropic", "connectedAt": "2026-09-13T00:00:00Z" }`
-
-Response `400`: `{ "error": { "code": "invalid_provider" | "invalid_api_key", "message": "..." } }`
-
-### `GET /api/byok-keys` — ✅ Shipped
-
-**Auth:** required. Response `200`:
-
-```json
-{ "keys": [ { "provider": "anthropic", "connectedAt": "2026-09-13T00:00:00Z" } ] }
-```
-
-Never includes the actual key material — the query behind this doesn't even
-select the encrypted columns.
-
-### `DELETE /api/byok-keys/:provider` — ✅ Shipped
-
-**Auth:** required. `204` on success (also 204 if that provider wasn't
-connected — delete is idempotent, not "not found").
-
-### `POST /api/generate` — ✅ Shipped
-
-**Auth:** required.
-
-The core BYOK extraction call. Takes an already-uploaded resume (PDF/DOCX —
-text is extracted server-side with `pdf-parse`/`mammoth` before it ever
-reaches the LLM, so the same code path works identically across providers)
-plus free-text "any other specifics," calls the user's own key with the
-guardrail system prompt **verbatim** (content-integrity rules are non-
-negotiable and identical regardless of provider — see
-`src/server/llm/guardrail-prompt.ts`), and returns data validated against
-`contentSchema` — never raw HTML. The model is asked to emit JSON matching a
-JSON Schema generated from that same zod schema (`zod-to-json-schema`), not a
-hand-written duplicate.
-
-Body:
-
-```json
-{
-  "provider": "anthropic",
-  "resumeUploadId": "upload_uuid",
-  "otherSpecifics": "Emphasize the pricing/growth work, keep tone concise."
-}
-```
-
-Response `200` (extraction succeeded and passed server-side validation — saved
-as the user's new draft, same row `PUT /api/content` writes to):
-
-```json
-{ "content": { "profile": { "...": "..." }, "projects": [] }, "updatedAt": "2026-09-13T00:12:03Z" }
-```
-
-Response `422` — two distinct causes, same code:
-
-```json
-{ "error": { "code": "generation_invalid_output", "message": "Model output wasn't valid JSON" } }
-```
-
-```json
-{
-  "error": { "code": "generation_invalid_output", "message": "Model output didn't match the content schema" },
-  "issues": [{ "path": "work.roles.0.id", "message": "Required" }]
-}
-```
-
-Response `400`: `{ "error": { "code": "invalid_provider" | "invalid_request" | "resume_not_found", "message": "..." } }`
-— `resume_not_found` covers both a bad id and an id that isn't a `kind: "resume"` upload owned by you.
-
-Response `401` — two distinct codes, since they mean different things to the UI:
-
-```json
-{ "error": { "code": "byok_key_missing", "message": "Connect an Anthropic/OpenAI/Google API key first" } }
-```
-
-```json
-{ "error": { "code": "byok_key_invalid", "message": "Your API key was rejected by the provider" } }
-```
-
-Response `502` (the provider's API itself failed — network error, 5xx, rate
-limited on their end — distinct from anything about the key or our schema):
-
-```json
-{ "error": { "code": "llm_provider_error", "message": "..." } }
-```
-
-Response `429`: rate limited — see milestone 4.
-
-A "succeeded" generation is recorded (starting the 48h resume-retention
-clock) as soon as the LLM call itself completes, even if the output then
-fails our schema validation — the resume has been used for an attempt
-either way. Only a provider-call failure (`byok_key_invalid`,
-`llm_provider_error`) records "failed."
-
----
-
-## Milestone 4 — Rate limiting
-
-Not a separate endpoint — behavior layered onto the above, from the same
-rolling-hour check (`src/server/rate-limit.ts`). Documented here so the UI
-knows what to expect and render (never to re-implement the limit itself):
-
-- `POST /api/generate`: capped at 5/hour per account (our compute cost even
-  though the LLM cost is the user's own key) — ✅ Shipped, built alongside
-  milestone 3 rather than separately, since generate couldn't responsibly
-  ship without it.
-- `POST /api/uploads`: capped at 10/hour per account, separately from the
-  above — ✅ Shipped (see milestone 2b).
-
-Both return `429` with the same shape:
-`{ "error": { "code": "rate_limited", "message": "...", "retryAfterSeconds": 1800 } }`.
-`retryAfterSeconds` is computed from the oldest request in the current
-rolling window, not a fixed reset time.
-
----
-
-## Milestone 5 — Vercel OAuth + publish
-
-Studio's **Save** (`PUT /api/content`) only ever updates the draft. Nothing
-below is triggered by Save — only by an explicit Publish action.
-
-**Verified 2026-09-17** against Vercel's official docs (previously an
-unconfirmed guess): the OAuth authorize/token URLs and the Deployments API
-files-by-SHA flow were both correct as implemented. One real gap the
-verification pass did catch and fix: the token response's `team_id` (set
-when the integration is installed on a Vercel Team rather than a personal
-account) was never being captured or threaded through to later API calls —
-every one of those needs it as a `teamId` query param or Vercel 403s. Fixed
-in `vercel_connections.team_id` (migration `0004`) and every call in
-`src/server/vercel/deploy.ts`. Still not exercised against live traffic (no
-registered OAuth app in this environment) — only the shapes are confirmed,
-not the actual request/response behavior.
-
-### `GET /api/vercel/oauth/start` — ✅ Shipped
-
-**Auth:** required. Redirects the browser into Vercel's OAuth consent screen.
-Not a JSON endpoint — the UI should navigate the top-level window to this URL,
-not `fetch()` it.
-
-### `GET /api/vercel/oauth/callback` — ✅ Shipped
-
-Vercel redirects back here with `code` + `state`. Requires an active session
-whose user id matches the one embedded in `state` (a self-signed, 10-minute-
-TTL token — no server-side session store needed for this). Exchanges the code
-for a token (AES-256-GCM at rest, same scheme as BYOK keys), then redirects
-the browser to `${APP_ORIGIN}/?vercel=connected` — a placeholder; Antigravity
-owns the real "connected" landing page and can request a different redirect
-target be made configurable if needed.
-
-Response `400` (state missing/expired/mismatched): `{ "error": { "code": "invalid_oauth_state", "message": "..." } }`
-
-Response `502` (Vercel's token endpoint rejected the exchange): `{ "error": { "code": "vercel_oauth_failed", "message": "..." } }`
-
-### `GET /api/vercel/status` — ✅ Shipped
-
-**Auth:** required. Response `200`:
-
-```json
-{ "connected": true, "vercelUsername": "suryavamshi", "connectedAt": "2026-09-13T00:00:00Z" }
-```
-
-or `{ "connected": false }` if never connected.
-
-### `DELETE /api/vercel` — ✅ Shipped
-
-**Auth:** required. Deletes our copy of the token; `204` always (idempotent —
-also 204 if nothing was connected). Does **not** call Vercel to revoke the
-token server-side (its exact revocation endpoint wasn't confirmed) — it
-remains valid on Vercel's side until it expires or the user revokes it from
-their own Vercel account settings. Deleting our copy is what actually
-matters: we can no longer deploy on their behalf either way.
-
-### `POST /api/publish` — ✅ Shipped
-
-**Auth:** required. Requires Vercel connected.
-
-Renders the user's current `Content` through the shared template
-(`src/server/template/render.ts` — one static HTML file, embedded CSS, no
-build step) into static HTML, copies any images that resolve to our own
-Storage into the deploy bundle itself (external image URLs are left as
-references — see `src/server/template/images.ts` for exactly what counts as
-"ours"), and pushes the result via Vercel's Deployments API to the user's own
-account. Marks the uploads whose bytes got embedded as `published: true`
-(informational — see the retention cron's comments in
-`0003_storage_cleanup.sql` for why this doesn't exempt them from anything).
-
-Response `202` (deployment kicked off — this is not necessarily synchronous):
-
-```json
-{ "deploymentId": "dpl_uuid", "status": "queued" }
-```
-
-Response `409` (Vercel not connected):
-
-```json
-{ "error": { "code": "vercel_not_connected", "message": "Connect your Vercel account first" } }
-```
-
-Response `502` (Vercel's deployment API itself failed): `{ "error": { "code": "vercel_deploy_failed", "message": "..." } }`
-
-### `GET /api/publish/status` — ✅ Shipped
-
-**Auth:** required. Poll the last publish's status — a terminal state
-(`ready`/`error`) is served from our own record; a non-terminal one
-(`queued`/`building`) re-polls Vercel's API live and updates our record
-before responding, so this is always current, not stale-until-next-webhook
-(there's no webhook receiver in this phase).
-
-Response `200`:
-
-```json
-{ "deploymentId": "dpl_uuid", "status": "ready", "url": "https://their-site.vercel.app", "finishedAt": "2026-09-13T00:03:00Z" }
-```
-
-`status` is one of `queued | building | ready | error`.
-
-Response `404` (nothing published yet — not in the original stub, added
-since it's the real first-call case): `{ "error": { "code": "no_publications", "message": "This account hasn't published yet" } }`
-
----
-
-## Milestone 6 — Payments (Dodo Payments)
-
-One-time lifetime "Pro" unlock — **not a subscription**, no renewal/coupon
-logic exists or is planned. `GET /api/me`'s `plan` field (`"free"` | `"pro"`)
-is the one thing that changes; what it gates is documented in `src/config/plans.ts`
-(storage quota, generation/upload rate limits, and whether the published
-template includes a small "Published with Shipfolio" badge — see
-`src/server/template/render.ts`). Notably **not** gated: number of portfolios
-— the schema only supports one portfolio per user, for everyone, so that
-was dropped from the original pricing pitch once this was actually being
-built; a real future feature, not a payments detail.
-
-### `POST /api/billing/checkout` — ✅ Shipped
-
-**Auth:** required. No request body.
-
-Creates a Dodo hosted checkout session for the Pro unlock and returns its
-URL — **not a redirect itself**; the UI does a top-level navigation to
-`checkoutUrl` (same pattern as `GET /api/vercel/oauth/start`, just JSON
-first since this needs the authenticated user's email before creating the
-session). The actual plan flip does **not** happen here or from the
-`return_url` redirect (a user could hit that without having paid, by
-editing the URL) — only `POST /api/webhooks/dodo` flips `plan`, once Dodo
-confirms the payment server-to-server.
-
-Response `200`:
-
-```json
-{ "checkoutUrl": "https://test.checkout.dodopayments.com/session/cks_..." }
-```
-
-Response `400`: `{ "error": { "code": "email_required", "message": "..." } }` — no email on the Supabase Auth user.
-
-Response `502`: `{ "error": { "code": "checkout_failed", "message": "..." } }` — Dodo's API itself rejected the request.
-
-### `POST /api/webhooks/dodo` — ✅ Shipped (internal — not called by the UI)
-
-Not part of the UI contract — Dodo calls this directly, server-to-server.
-Documented here for completeness, since it's the only thing that actually
-grants Pro.
-
-Verifies the Standard Webhooks signature (`webhook-id`/`webhook-timestamp`/
-`webhook-signature` headers, HMAC-SHA256 — see `src/lib/standard-webhooks.ts`,
-generic to the open spec, not Dodo-specific) before trusting anything in the
-body. On a valid `payment.succeeded` event: records a row in `purchases`
-(idempotent — `dodo_payment_id` is unique, so a replayed webhook for the
-same payment is a no-op, not a double-grant) and flips `users.plan` to
-`"pro"`. Any other event type is acknowledged (`200`) and ignored — no
-subscription/refund/dispute handling exists for this one-time,
-non-recurring product.
-
-Exempted from the global CSRF Origin check (`src/start.ts`) — every path
-under `/api/webhooks/*` is, since these are never browser requests and have
-no session cookie for CSRF to protect; authenticity comes from the
-signature instead.
-
-## Milestone 7 — Pre-launch waitlist
-
-`VITE_LAUNCH_MODE` (`src/config/launch.ts`) is a client-visible toggle —
-`"waitlist"` swaps every sign-up CTA on the landing page for an
-email-capture form (`src/components/waitlist/WaitlistCta.tsx`); `"live"`
-(the default) shows the real `/login` flow. Not a route guard — `/login`
-and `/onboarding` still work if navigated to directly in either mode.
-
-### `POST /api/waitlist` — ✅ Shipped
-
-**Auth:** none — this exists precisely because there's no account yet.
-
-Request body: `{ "email": string, "source"?: string }`.
-
-Forwards to a Google Apps Script Web App (see README "Setup (Waitlist)"),
-not Supabase — a waitlist is a marketing list someone wants to open in a
-spreadsheet, not product data needing RLS or an admin UI. The shared
-secret (`WAITLIST_WEBHOOK_SECRET`) is checked inside that script, not
-here, so someone who finds the script's URL can't write rows directly.
-
-Response `201`: `{ "ok": true }`.
-
-Response `400`: `{ "error": { "code": "invalid_email", "message": "..." } }`.
-
-Response `502`: `{ "error": { "code": "waitlist_webhook_failed" | "waitlist_webhook_unreachable", "message": "..." } }`
-— `WAITLIST_WEBHOOK_URL`/`WAITLIST_WEBHOOK_SECRET` unset, or the Apps
-Script itself rejected/errored.
+## 10. Planned (In Progress) Endpoints
+
+The following endpoints are specified in handoffs `06a`–`06d` and `version2memory.md`, currently being integrated:
+
+### A. Background Generation Jobs & Free Model Chain (Handoff 05 / 06a)
+- `POST /api/generations`: Body `{ source: "free" \| "gemini", resumeUploadId: string, otherSpecifics?: string, designIntensity?: "minimal" \| "bold", links?: object, instructions?: string }` → `202 { jobId: string, status: "queued" \| "reading" \| "writing" \| "checking" \| "saving" \| "done" \| "failed" }`.
+- `GET /api/generations/:id`: Polls real generation status → `{ id, source, status, message, error, retryAt, updatedAt }`.
+- `GET /api/generations/latest`: Returns the most recent generation job.
+- `DELETE /api/generations/:id`: Cancels an active queued generation job.
+- `GET /api/free/status`: Returns free provider quota availability `{ available: boolean, usedToday: number, limitToday: number, resetsAt: string }`.
+- `GET /api/cron/free-queue`: Cron endpoint (bearer `CRON_SECRET`) executing queued free-generation jobs when budgets reset.
+
+### B. Subdomain Hosting & Sandbox Serving (Handoff 06d)
+- `GET /api/sites/check?slug=`: Checks availability of subdomain `{ status: "available" \| "yours" \| "taken" \| "reserved" \| "invalid", url: string }`.
+- `GET /api/sites/me`: Returns site status `{ site: { slug, url, status: "published" \| "unpublished", publishedVersionId, updatedAt } \| null, draftNewer: boolean }`.
+- `POST /api/sites/publish`: Body `{ slug?: string }` → publishes portfolio HTML and bundles images into private storage bucket `sites` → `{ url: string }` (Paid: `402 payment_required`).
+- `POST /api/sites/unpublish`: Unpublishes live site from subdomain.
+- `POST /api/admin/sites/:slug/unpublish`: Superuser takedown route for hosted subdomains.
+
+### C. GitHub Push Integration (Handoff 06b)
+- `GET /api/github/status`: Returns `{ connected: boolean, account: string \| null, installUrl: string }`.
+- `GET /api/github/callback?installation_id=&state=`: Verifies signed state, links GitHub App installation, and redirects to Studio.
+- `POST /api/export/github`: Body `{ repo: "owner/repo" }` → pushes clean `index.html`, `images/*`, and `README.txt` directly to the specified GitHub repository via the Git Data API → `{ commitUrl: string, repo: string }` (Paid: `402 payment_required`).
+
+### D. MCP Server & Custom Connector (Plan 6.4)
+- `GET/POST /mcp`: Streamable HTTP Model Context Protocol endpoint for user's Claude.ai / ChatGPT. Tools: `get_portfolio_brief`, `save_portfolio_html`, `get_portfolio_html`.
+- `GET /.well-known/oauth-protected-resource`, `GET /.well-known/oauth-authorization-server`: OAuth 2.1 metadata discovery endpoints.
+- `/authorize`, `/token`, `/register`: OAuth 2.1 authorization server endpoints supporting PKCE.
+
+### E. Custom Domain Management (Plan 6.9)
+- `POST /api/domains`: Body `{ hostname: string }` → verifies format, registers domain with Vercel Domains API, stores verification token in `custom_domains` (Paid: `402 payment_required`).
+- `POST /api/domains/:id/verify`: Queries Vercel and checks `_shipfolio-verify.<hostname>` TXT token → activates domain.
+- `DELETE /api/domains/:id`: Removes custom domain mapping.
