@@ -48,6 +48,10 @@ import { Route as ApiMcpStatusRouteImport } from './routes/api/mcp.status'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
+import { Route as ApiSitesCheckRouteImport } from './routes/api/sites/check'
+import { Route as ApiSitesMeRouteImport } from './routes/api/sites/me'
+import { Route as ApiSitesPublishRouteImport } from './routes/api/sites/publish'
+import { Route as ApiSitesUnpublishRouteImport } from './routes/api/sites/unpublish'
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
 import { Route as ApiWebhooksDodoRouteImport } from './routes/api/webhooks/dodo'
@@ -55,6 +59,7 @@ import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$i
 import { Route as ApiMcpConnectionsClientIdRouteImport } from './routes/api/mcp.connections.$clientId'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
+import { Route as ApiAdminSitesSlugUnpublishRouteImport } from './routes/api/admin/sites.$slug.unpublish'
 import { Route as ApiPortfolioVersionsIdRestoreRouteImport } from './routes/api/portfolio/versions.$id.restore'
 
 const IndexRoute = IndexRouteImport.update({
@@ -254,6 +259,26 @@ const ApiPublishStatusRoute = ApiPublishStatusRouteImport.update({
   path: '/status',
   getParentRoute: () => ApiPublishRoute,
 } as any)
+const ApiSitesCheckRoute = ApiSitesCheckRouteImport.update({
+  id: '/api/sites/check',
+  path: '/api/sites/check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSitesMeRoute = ApiSitesMeRouteImport.update({
+  id: '/api/sites/me',
+  path: '/api/sites/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSitesPublishRoute = ApiSitesPublishRouteImport.update({
+  id: '/api/sites/publish',
+  path: '/api/sites/publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSitesUnpublishRoute = ApiSitesUnpublishRouteImport.update({
+  id: '/api/sites/unpublish',
+  path: '/api/sites/unpublish',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiUploadsIdRoute = ApiUploadsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -290,6 +315,12 @@ const ApiVercelOauthStartRoute = ApiVercelOauthStartRouteImport.update({
   path: '/oauth/start',
   getParentRoute: () => ApiVercelRoute,
 } as any)
+const ApiAdminSitesSlugUnpublishRoute =
+  ApiAdminSitesSlugUnpublishRouteImport.update({
+    id: '/api/admin/sites/$slug/unpublish',
+    path: '/api/admin/sites/$slug/unpublish',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPortfolioVersionsIdRestoreRoute =
   ApiPortfolioVersionsIdRestoreRouteImport.update({
     id: '/$id/restore',
@@ -337,6 +368,10 @@ export interface FileRoutesByFullPath {
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
+  '/api/sites/check': typeof ApiSitesCheckRoute
+  '/api/sites/me': typeof ApiSitesMeRoute
+  '/api/sites/publish': typeof ApiSitesPublishRoute
+  '/api/sites/unpublish': typeof ApiSitesUnpublishRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
@@ -344,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/admin/sites/$slug/unpublish': typeof ApiAdminSitesSlugUnpublishRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRoutesByTo {
@@ -386,6 +422,10 @@ export interface FileRoutesByTo {
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
+  '/api/sites/check': typeof ApiSitesCheckRoute
+  '/api/sites/me': typeof ApiSitesMeRoute
+  '/api/sites/publish': typeof ApiSitesPublishRoute
+  '/api/sites/unpublish': typeof ApiSitesUnpublishRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
@@ -393,6 +433,7 @@ export interface FileRoutesByTo {
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/admin/sites/$slug/unpublish': typeof ApiAdminSitesSlugUnpublishRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRoutesById {
@@ -436,6 +477,10 @@ export interface FileRoutesById {
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
+  '/api/sites/check': typeof ApiSitesCheckRoute
+  '/api/sites/me': typeof ApiSitesMeRoute
+  '/api/sites/publish': typeof ApiSitesPublishRoute
+  '/api/sites/unpublish': typeof ApiSitesUnpublishRoute
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
@@ -443,6 +488,7 @@ export interface FileRoutesById {
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/admin/sites/$slug/unpublish': typeof ApiAdminSitesSlugUnpublishRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRouteTypes {
@@ -487,6 +533,10 @@ export interface FileRouteTypes {
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
+    | '/api/sites/check'
+    | '/api/sites/me'
+    | '/api/sites/publish'
+    | '/api/sites/unpublish'
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
@@ -494,6 +544,7 @@ export interface FileRouteTypes {
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/admin/sites/$slug/unpublish'
     | '/api/portfolio/versions/$id/restore'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -536,6 +587,10 @@ export interface FileRouteTypes {
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
+    | '/api/sites/check'
+    | '/api/sites/me'
+    | '/api/sites/publish'
+    | '/api/sites/unpublish'
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
@@ -543,6 +598,7 @@ export interface FileRouteTypes {
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/admin/sites/$slug/unpublish'
     | '/api/portfolio/versions/$id/restore'
   id:
     | '__root__'
@@ -585,6 +641,10 @@ export interface FileRouteTypes {
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
+    | '/api/sites/check'
+    | '/api/sites/me'
+    | '/api/sites/publish'
+    | '/api/sites/unpublish'
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
@@ -592,6 +652,7 @@ export interface FileRouteTypes {
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/admin/sites/$slug/unpublish'
     | '/api/portfolio/versions/$id/restore'
   fileRoutesById: FileRoutesById
 }
@@ -631,8 +692,13 @@ export interface RootRouteChildren {
   ApiMcpStatusRoute: typeof ApiMcpStatusRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
+  ApiSitesCheckRoute: typeof ApiSitesCheckRoute
+  ApiSitesMeRoute: typeof ApiSitesMeRoute
+  ApiSitesPublishRoute: typeof ApiSitesPublishRoute
+  ApiSitesUnpublishRoute: typeof ApiSitesUnpublishRoute
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
   ApiMcpConnectionsClientIdRoute: typeof ApiMcpConnectionsClientIdRoute
+  ApiAdminSitesSlugUnpublishRoute: typeof ApiAdminSitesSlugUnpublishRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -910,6 +976,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublishStatusRouteImport
       parentRoute: typeof ApiPublishRoute
     }
+    '/api/sites/check': {
+      id: '/api/sites/check'
+      path: '/api/sites/check'
+      fullPath: '/api/sites/check'
+      preLoaderRoute: typeof ApiSitesCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sites/me': {
+      id: '/api/sites/me'
+      path: '/api/sites/me'
+      fullPath: '/api/sites/me'
+      preLoaderRoute: typeof ApiSitesMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sites/publish': {
+      id: '/api/sites/publish'
+      path: '/api/sites/publish'
+      fullPath: '/api/sites/publish'
+      preLoaderRoute: typeof ApiSitesPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sites/unpublish': {
+      id: '/api/sites/unpublish'
+      path: '/api/sites/unpublish'
+      fullPath: '/api/sites/unpublish'
+      preLoaderRoute: typeof ApiSitesUnpublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/uploads/$id': {
       id: '/api/uploads/$id'
       path: '/$id'
@@ -958,6 +1052,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/vercel/oauth/start'
       preLoaderRoute: typeof ApiVercelOauthStartRouteImport
       parentRoute: typeof ApiVercelRoute
+    }
+    '/api/admin/sites/$slug/unpublish': {
+      id: '/api/admin/sites/$slug/unpublish'
+      path: '/api/admin/sites/$slug/unpublish'
+      fullPath: '/api/admin/sites/$slug/unpublish'
+      preLoaderRoute: typeof ApiAdminSitesSlugUnpublishRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/portfolio/versions/$id/restore': {
       id: '/api/portfolio/versions/$id/restore'
@@ -1096,8 +1197,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMcpStatusRoute: ApiMcpStatusRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
+  ApiSitesCheckRoute: ApiSitesCheckRoute,
+  ApiSitesMeRoute: ApiSitesMeRoute,
+  ApiSitesPublishRoute: ApiSitesPublishRoute,
+  ApiSitesUnpublishRoute: ApiSitesUnpublishRoute,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
   ApiMcpConnectionsClientIdRoute: ApiMcpConnectionsClientIdRoute,
+  ApiAdminSitesSlugUnpublishRoute: ApiAdminSitesSlugUnpublishRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -13,8 +13,7 @@ import { withTeamId } from "./oauth";
  */
 export class VercelDeployError extends Error {}
 
-export const PUBLISHED_SITE_CSP =
-  "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'none'; form-action 'none'; frame-src 'none'; base-uri 'none'";
+export { PUBLISHED_SITE_CSP } from "@/server/site-csp";
 
 async function uploadVercelFile(
   accessToken: string,
