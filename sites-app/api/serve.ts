@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { PUBLISHED_SITE_CSP } from "../lib/site-csp";
 import { hostToSlug } from "../lib/sites";
+import { validateHostname } from "../lib/domains";
 
 export const SITES_CSP = `${PUBLISHED_SITE_CSP}; sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox`;
 
@@ -149,25 +150,73 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return;
   }
 
-  // 1. hostToSlug
-  const host = req.headers.host;
-  const slug = hostToSlug(host, sitesDomain);
-  if (!slug) {
-    sendResponse(res, 404, NOT_FOUND_HTML, "text/html; charset=utf-8");
-    return;
+  const hostHeader = req.headers.host;
+  const rawHost = hostHeader ? hostHeader.trim().toLowerCase().split(":")[0] ?? "" : "";
+  const normalizedSitesDomain = sitesDomain.trim().toLowerCase();
+
+  const supabase = getSitesSupabaseClient(supabaseUrl, serviceRoleKey);
+  let slug: string | null = null;
+
+  // Check if Host is *.<sitesDomain>
+  if (rawHost.endsWith(`.${normalizedSitesDomain}`)) {
+    slug = hostToSlug(rawHost, sitesDomain);
+    if (!slug) {
+      sendResponse(res, 404, NOT_FOUND_HTML, "text/html; charset=utf-8");
+      return;
+    }
+
+    const { data: site, error: siteError } = await supabase
+      .from("sites")
+      .select("slug, status")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (siteError || !site || site.status !== "published") {
+      sendResponse(res, 404, UNPUBLISHED_HTML, "text/html; charset=utf-8");
+      return;
+    }
+  } else {
+    // Custom domain flow: Host is NOT *.<sitesDomain>
+    // Hosts that are not valid hostnames -> 404 without a query
+    const hostValidation = validateHostname(rawHost, sitesDomain);
+    if (!hostValidation.ok) {
+      sendResponse(res, 404, NOT_FOUND_HTML, "text/html; charset=utf-8");
+      return;
+    }
+
+    const hostname = hostValidation.hostname;
+
+    // Look up custom_domains by exact hostname with status verified or live
+    const { data: domainRow, error: domainError } = await supabase
+      .from("custom_domains")
+      .select("user_id, status")
+      .eq("hostname", hostname)
+      .in("status", ["verified", "live"])
+      .maybeSingle();
+
+    if (domainError || !domainRow) {
+      sendResponse(res, 404, UNPUBLISHED_HTML, "text/html; charset=utf-8");
+      return;
+    }
+
+    // Then look up owner's sites row (status = 'published') -> slug
+    const { data: site, error: siteError } = await supabase
+      .from("sites")
+      .select("slug, status")
+      .eq("user_id", domainRow.user_id)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (siteError || !site) {
+      sendResponse(res, 404, UNPUBLISHED_HTML, "text/html; charset=utf-8");
+      return;
+    }
+
+    slug = site.slug;
   }
 
-  // 2. Look up sites by slug with service-role client
-  const supabase = getSitesSupabaseClient(supabaseUrl, serviceRoleKey);
-
-  const { data: site, error: siteError } = await supabase
-    .from("sites")
-    .select("slug, status")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (siteError || !site || site.status !== "published") {
-    sendResponse(res, 404, UNPUBLISHED_HTML, "text/html; charset=utf-8");
+  if (!slug) {
+    sendResponse(res, 404, NOT_FOUND_HTML, "text/html; charset=utf-8");
     return;
   }
 

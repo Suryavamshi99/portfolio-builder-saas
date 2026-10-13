@@ -56,3 +56,76 @@ Hostname validation (accepts `example.com`, `my-site.co.uk`, `xn--abc.com`; reje
 UI (handoff 07a), apex/www redirect pairing, subdomain→custom redirect, payments.
 
 ## Handoff report
+
+### Files changed
+- `.env.example`: Added `VERCEL_API_TOKEN`, `SITES_PROJECT_ID`, and `VERCEL_TEAM_ID`.
+- `supabase/migrations/0017_custom_domains.sql`: Created `public.custom_domains` table with uuid primary key, user_id unique foreign key, hostname lowercase check, status check (`pending`, `verified`, `live`), verify_token, timestamps, row level security enabled, and revoked all privileges from anon/authenticated.
+- `src/server/domains.ts`: Pure domain helpers: `validateHostname`, `verifyRecordName`, `newVerifyToken`, and `txtMatches`.
+- `sites-app/lib/domains.ts`: Mirror copy of `src/server/domains.ts` for standalone `sites-app`.
+- `src/server/vercel/domains.ts`: Vercel REST client (`addDomain`, `getDomainConfig`, `removeDomain`, `VercelDomainError`) using native `fetch`, bearer auth and `teamId` query param. Never leaks auth token in error messages.
+- `src/routes/api/domains/index.ts`: Route `Route = createFileRoute("/api/domains/")` handling `GET`, `POST`, and `DELETE`.
+  - `GET`: Returns `{ domain: null | { hostname, status, verifyRecord, dns, lastCheckedAt } }`. DNS details filled from `getDomainConfig` when status is `verified` or `live`. Rechecks config and promotes `verified` to `live` when `misconfigured === false`.
+  - `POST`: 402 if `!hasPaidAccess(appUser)`, 400 `domain_invalid` if invalid format, 400 `no_site` if no published site, 409 `domain_exists` if user already configured a domain, 409 `domain_taken` if another user has the hostname. Inserts `pending` with `newVerifyToken()`. Does **not** call Vercel.
+  - `DELETE`: Calls `removeDomain` on Vercel then deletes DB row.
+- `src/routes/api/domains/verify.ts`: Route `POST /api/domains/verify`. Refuses requests when `last_checked_at` is under 10s old (429). Resolves TXT using `node:dns/promises` (via injectable `txtResolver`). If no match, updates `last_checked_at` and responds pending. If match, calls `addDomain`, sets `verified` + `verified_at`, checks `getDomainConfig` (promotes to `live` if `misconfigured === false`).
+- `src/routes/api/cron/domains.ts`: Route `GET /api/cron/domains`. Protected by `CRON_SECRET` bearer check using `timingSafeEqual`. Deletes `pending` rows older than 14 days.
+- `vercel.json`: Added cron schedule `20 0 * * *` for `/api/cron/domains` alongside existing free-queue cron.
+- `sites-app/api/serve.ts`: Updated custom domain routing. When Host is not `*.${SITES_DOMAIN}`, validates hostname (404 without query if invalid), looks up `custom_domains` where status in `('verified', 'live')`, looks up owner's site with `status = 'published'`, and serves files under `{slug}/`. Never serves pending domains.
+- `src/server/sites-app-sync.test.ts`: Added sync assertion for `src/server/domains.ts` matching `sites-app/lib/domains.ts`.
+- `src/server/sites.test.ts`: Updated 404 test mock for `sites-app` to provide mocked Supabase client so dummy URL doesn't attempt external network call.
+- `src/routeTree.gen.ts`: Regenerated TanStack router tree with new domain and cron routes.
+- `src/server/domains.test.ts`: Tests for hostname validation, verify record names, random tokens, and TXT chunk matching.
+- `src/server/vercel/domains.test.ts`: Tests for Vercel domain client with mocked `fetch` (same-project 409 success, other-project 409 error, config mapping, token sanitization, 404 removal success).
+- `src/server/domains-routes.test.ts`: Integration tests for domain routes, rate limiting, verification flow, cron cleanup, and custom domain serving.
+
+### Tests
+- `src/server/domains.test.ts`: 15 tests passing.
+  - Accepts `example.com`, `my-site.co.uk`, `xn--abc.com`, subdomains.
+  - Rejects `localhost`, `1.2.3.4`, `a.vercel.app`, `shipfolio.xyz`, `x.shipfolio.xyz`, `http://a.com`, `a b.com`, `-a.com`, `a..com`, 254 chars.
+  - TXT matching: chunked records, single chunk, multiple records, mismatched tokens.
+- `src/server/vercel/domains.test.ts`: 10 tests passing.
+  - `addDomain`: 200 OK, 409 same project OK, 409 other project error with clean message, token never in error.
+  - `getDomainConfig`: typed mapping of `misconfigured`, `recommendedIPv4`, `recommendedCNAME`, token never in error.
+  - `removeDomain`: 200 OK, 404 treated as success, throws on 500.
+- `src/server/domains-routes.test.ts`: 16 tests passing.
+  - `POST /api/domains`: 402 for free users, 400 for invalid hostname, 400 for no published site, 409 for taken domain, creates `pending` and does NOT call Vercel.
+  - `POST /api/domains/verify`: 404 when no domain, 429 when under 10 seconds, wrong TXT stays `pending` without calling Vercel, matching TXT calls `addDomain` once and sets `verified`/`live`.
+  - `GET /api/domains`: returns null when none, promotes `verified` to `live` when `misconfigured === false`.
+  - `DELETE /api/domains`: calls `removeDomain` and deletes DB row.
+  - `GET /api/cron/domains`: 401 unauthorized, deletes pending rows older than 14 days with valid bearer secret.
+  - `sites-app`: ignores `pending` custom domains, serves custom domain with sandbox CSP when status is `verified` or `live` and site is published.
+- `src/server/sites-app-sync.test.ts`: 4 tests passing (enforcing byte-exact copies in `sites-app/lib/`).
+- Full vitest suite: 24 test files, 265 tests all passing.
+
+### Security-related code changes
+1. **Migration RLS lockdown** (`supabase/migrations/0017_custom_domains.sql`):
+```sql
+alter table public.custom_domains enable row level security;
+revoke all on public.custom_domains from anon, authenticated;
+```
+2. **Never serve pending custom domains** (`sites-app/api/serve.ts`):
+```ts
+const { data: domainRow, error: domainError } = await supabase
+  .from("custom_domains")
+  .select("user_id, status")
+  .eq("hostname", hostname)
+  .in("status", ["verified", "live"])
+  .maybeSingle();
+
+if (domainError || !domainRow) {
+  sendResponse(res, 404, UNPUBLISHED_HTML, "text/html; charset=utf-8");
+  return;
+}
+```
+3. **Domain creation does not call Vercel until TXT ownership is proven** (`src/routes/api/domains/index.ts` lines 180-205):
+Domain row is inserted with `status: 'pending'` and a 24-byte cryptographically random token (`shipfolio-verify=...`). Only `POST /api/domains/verify` calls `addDomain` after `txtMatches` succeeds.
+4. **No token leakage in Vercel client errors** (`src/server/vercel/domains.ts`):
+Error messages contain HTTP status and Vercel error message only, never authorization header or token values.
+
+### Anything done differently & why
+- In `src/routes/api/domains/verify.ts`, exposed `setTxtResolver(fn)` to allow injecting a DNS TXT lookup function in tests. Node ESM module namespace exports cannot be mutated with `vi.spyOn(dnsPromises, "resolveTxt")` in Vitest.
+- In `sites-app/api/serve.ts`, imported `validateHostname` from `../lib/domains` to validate incoming custom domain Host headers without DB queries when invalid.
+- In `src/server/sites.test.ts`, the test for `missing or invalid host slug` was passing `host: "invalid.com"` without mocking the Supabase client, which previously triggered a live network request to `https://example.supabase.co` that timed out. Configured the mock client so it returns the 404 unpublished response immediately.
+
+### Open questions
+- None. All tasks and contracts in `docs/handoffs/06e-custom-domains.md` were implemented and verified.

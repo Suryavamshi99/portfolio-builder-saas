@@ -37,8 +37,11 @@ import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
+import { Route as ApiCronDomainsRouteImport } from './routes/api/cron/domains'
 import { Route as ApiCronFreeQueueRouteImport } from './routes/api/cron.free-queue'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
+import { Route as ApiDomainsIndexRouteImport } from './routes/api/domains/index'
+import { Route as ApiDomainsVerifyRouteImport } from './routes/api/domains/verify'
 import { Route as ApiExportGithubRouteImport } from './routes/api/export/github'
 import { Route as ApiExportHtmlRouteImport } from './routes/api/export/html'
 import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
@@ -207,6 +210,11 @@ const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
   path: '/$provider',
   getParentRoute: () => ApiByokKeysRoute,
 } as any)
+const ApiCronDomainsRoute = ApiCronDomainsRouteImport.update({
+  id: '/api/cron/domains',
+  path: '/api/cron/domains',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronFreeQueueRoute = ApiCronFreeQueueRouteImport.update({
   id: '/api/cron/free-queue',
   path: '/api/cron/free-queue',
@@ -215,6 +223,16 @@ const ApiCronFreeQueueRoute = ApiCronFreeQueueRouteImport.update({
 const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   id: '/api/dev/payment-test',
   path: '/api/dev/payment-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDomainsIndexRoute = ApiDomainsIndexRouteImport.update({
+  id: '/api/domains/',
+  path: '/api/domains/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDomainsVerifyRoute = ApiDomainsVerifyRouteImport.update({
+  id: '/api/domains/verify',
+  path: '/api/domains/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiExportGithubRoute = ApiExportGithubRouteImport.update({
@@ -375,8 +393,10 @@ export interface FileRoutesByFullPath {
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/domains/verify': typeof ApiDomainsVerifyRoute
   '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
@@ -396,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
+  '/api/domains/': typeof ApiDomainsIndexRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
@@ -432,8 +453,10 @@ export interface FileRoutesByTo {
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/domains/verify': typeof ApiDomainsVerifyRoute
   '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
@@ -453,6 +476,7 @@ export interface FileRoutesByTo {
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
+  '/api/domains': typeof ApiDomainsIndexRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
@@ -490,8 +514,10 @@ export interface FileRoutesById {
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/domains/verify': typeof ApiDomainsVerifyRoute
   '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
@@ -511,6 +537,7 @@ export interface FileRoutesById {
   '/api/uploads/$id': typeof ApiUploadsIdRoute
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
+  '/api/domains/': typeof ApiDomainsIndexRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
@@ -549,8 +576,10 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
+    | '/api/cron/domains'
     | '/api/cron/free-queue'
     | '/api/dev/payment-test'
+    | '/api/domains/verify'
     | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
@@ -570,6 +599,7 @@ export interface FileRouteTypes {
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
+    | '/api/domains/'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
@@ -606,8 +636,10 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
+    | '/api/cron/domains'
     | '/api/cron/free-queue'
     | '/api/dev/payment-test'
+    | '/api/domains/verify'
     | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
@@ -627,6 +659,7 @@ export interface FileRouteTypes {
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
+    | '/api/domains'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
@@ -663,8 +696,10 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
+    | '/api/cron/domains'
     | '/api/cron/free-queue'
     | '/api/dev/payment-test'
+    | '/api/domains/verify'
     | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
@@ -684,6 +719,7 @@ export interface FileRouteTypes {
     | '/api/uploads/$id'
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
+    | '/api/domains/'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
@@ -720,8 +756,10 @@ export interface RootRouteChildren {
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
+  ApiCronDomainsRoute: typeof ApiCronDomainsRoute
   ApiCronFreeQueueRoute: typeof ApiCronFreeQueueRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
+  ApiDomainsVerifyRoute: typeof ApiDomainsVerifyRoute
   ApiExportGithubRoute: typeof ApiExportGithubRoute
   ApiExportHtmlRoute: typeof ApiExportHtmlRoute
   ApiExportZipRoute: typeof ApiExportZipRoute
@@ -736,6 +774,7 @@ export interface RootRouteChildren {
   ApiSitesPublishRoute: typeof ApiSitesPublishRoute
   ApiSitesUnpublishRoute: typeof ApiSitesUnpublishRoute
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
+  ApiDomainsIndexRoute: typeof ApiDomainsIndexRoute
   ApiMcpConnectionsClientIdRoute: typeof ApiMcpConnectionsClientIdRoute
   ApiAdminSitesSlugUnpublishRoute: typeof ApiAdminSitesSlugUnpublishRoute
 }
@@ -938,6 +977,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiByokKeysProviderRouteImport
       parentRoute: typeof ApiByokKeysRoute
     }
+    '/api/cron/domains': {
+      id: '/api/cron/domains'
+      path: '/api/cron/domains'
+      fullPath: '/api/cron/domains'
+      preLoaderRoute: typeof ApiCronDomainsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/free-queue': {
       id: '/api/cron/free-queue'
       path: '/api/cron/free-queue'
@@ -950,6 +996,20 @@ declare module '@tanstack/react-router' {
       path: '/api/dev/payment-test'
       fullPath: '/api/dev/payment-test'
       preLoaderRoute: typeof ApiDevPaymentTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/domains/': {
+      id: '/api/domains/'
+      path: '/api/domains'
+      fullPath: '/api/domains/'
+      preLoaderRoute: typeof ApiDomainsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/domains/verify': {
+      id: '/api/domains/verify'
+      path: '/api/domains/verify'
+      fullPath: '/api/domains/verify'
+      preLoaderRoute: typeof ApiDomainsVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/export/github': {
@@ -1249,8 +1309,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSessionRoute: ApiAdminSessionRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
+  ApiCronDomainsRoute: ApiCronDomainsRoute,
   ApiCronFreeQueueRoute: ApiCronFreeQueueRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
+  ApiDomainsVerifyRoute: ApiDomainsVerifyRoute,
   ApiExportGithubRoute: ApiExportGithubRoute,
   ApiExportHtmlRoute: ApiExportHtmlRoute,
   ApiExportZipRoute: ApiExportZipRoute,
@@ -1265,6 +1327,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSitesPublishRoute: ApiSitesPublishRoute,
   ApiSitesUnpublishRoute: ApiSitesUnpublishRoute,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
+  ApiDomainsIndexRoute: ApiDomainsIndexRoute,
   ApiMcpConnectionsClientIdRoute: ApiMcpConnectionsClientIdRoute,
   ApiAdminSitesSlugUnpublishRoute: ApiAdminSitesSlugUnpublishRoute,
 }
