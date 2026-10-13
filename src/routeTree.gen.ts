@@ -18,6 +18,7 @@ import { Route as StudioRouteImport } from './routes/studio'
 import { Route as ApiByokKeysRouteImport } from './routes/api/byok-keys'
 import { Route as ApiContentRouteImport } from './routes/api/content'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
+import { Route as ApiGenerationsRouteImport } from './routes/api/generations'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as ApiPublishRouteImport } from './routes/api/publish'
 import { Route as ApiResetRouteImport } from './routes/api/reset'
@@ -30,9 +31,13 @@ import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
+import { Route as ApiCronFreeQueueRouteImport } from './routes/api/cron.free-queue'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
 import { Route as ApiExportHtmlRouteImport } from './routes/api/export/html'
 import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
+import { Route as ApiFreeStatusRouteImport } from './routes/api/free.status'
+import { Route as ApiGenerationsIdRouteImport } from './routes/api/generations.$id'
+import { Route as ApiGenerationsLatestRouteImport } from './routes/api/generations.latest'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
@@ -87,6 +92,11 @@ const ApiContentRoute = ApiContentRouteImport.update({
 const ApiGenerateRoute = ApiGenerateRouteImport.update({
   id: '/api/generate',
   path: '/api/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerationsRoute = ApiGenerationsRouteImport.update({
+  id: '/api/generations',
+  path: '/api/generations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMeRoute = ApiMeRouteImport.update({
@@ -149,6 +159,11 @@ const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
   path: '/$provider',
   getParentRoute: () => ApiByokKeysRoute,
 } as any)
+const ApiCronFreeQueueRoute = ApiCronFreeQueueRouteImport.update({
+  id: '/api/cron/free-queue',
+  path: '/api/cron/free-queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   id: '/api/dev/payment-test',
   path: '/api/dev/payment-test',
@@ -163,6 +178,21 @@ const ApiExportZipRoute = ApiExportZipRouteImport.update({
   id: '/api/export/zip',
   path: '/api/export/zip',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFreeStatusRoute = ApiFreeStatusRouteImport.update({
+  id: '/api/free/status',
+  path: '/api/free/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerationsIdRoute = ApiGenerationsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiGenerationsRoute,
+} as any)
+const ApiGenerationsLatestRoute = ApiGenerationsLatestRouteImport.update({
+  id: '/latest',
+  path: '/latest',
+  getParentRoute: () => ApiGenerationsRoute,
 } as any)
 const ApiPortfolioInputsRoute = ApiPortfolioInputsRouteImport.update({
   id: '/api/portfolio/inputs',
@@ -226,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
+  '/api/generations': typeof ApiGenerationsRouteWithChildren
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
@@ -238,9 +269,13 @@ export interface FileRoutesByFullPath {
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
+  '/api/free/status': typeof ApiFreeStatusRoute
+  '/api/generations/$id': typeof ApiGenerationsIdRoute
+  '/api/generations/latest': typeof ApiGenerationsLatestRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -262,6 +297,7 @@ export interface FileRoutesByTo {
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
+  '/api/generations': typeof ApiGenerationsRouteWithChildren
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
@@ -274,9 +310,13 @@ export interface FileRoutesByTo {
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
+  '/api/free/status': typeof ApiFreeStatusRoute
+  '/api/generations/$id': typeof ApiGenerationsIdRoute
+  '/api/generations/latest': typeof ApiGenerationsLatestRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -299,6 +339,7 @@ export interface FileRoutesById {
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
+  '/api/generations': typeof ApiGenerationsRouteWithChildren
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
@@ -311,9 +352,13 @@ export interface FileRoutesById {
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
+  '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
+  '/api/free/status': typeof ApiFreeStatusRoute
+  '/api/generations/$id': typeof ApiGenerationsIdRoute
+  '/api/generations/latest': typeof ApiGenerationsLatestRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -337,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/byok-keys'
     | '/api/content'
     | '/api/generate'
+    | '/api/generations'
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
@@ -349,9 +395,13 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
+    | '/api/cron/free-queue'
     | '/api/dev/payment-test'
     | '/api/export/html'
     | '/api/export/zip'
+    | '/api/free/status'
+    | '/api/generations/$id'
+    | '/api/generations/latest'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -373,6 +423,7 @@ export interface FileRouteTypes {
     | '/api/byok-keys'
     | '/api/content'
     | '/api/generate'
+    | '/api/generations'
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
@@ -385,9 +436,13 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
+    | '/api/cron/free-queue'
     | '/api/dev/payment-test'
     | '/api/export/html'
     | '/api/export/zip'
+    | '/api/free/status'
+    | '/api/generations/$id'
+    | '/api/generations/latest'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -409,6 +464,7 @@ export interface FileRouteTypes {
     | '/api/byok-keys'
     | '/api/content'
     | '/api/generate'
+    | '/api/generations'
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
@@ -421,9 +477,13 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
+    | '/api/cron/free-queue'
     | '/api/dev/payment-test'
     | '/api/export/html'
     | '/api/export/zip'
+    | '/api/free/status'
+    | '/api/generations/$id'
+    | '/api/generations/latest'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -446,6 +506,7 @@ export interface RootRouteChildren {
   ApiByokKeysRoute: typeof ApiByokKeysRouteWithChildren
   ApiContentRoute: typeof ApiContentRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
+  ApiGenerationsRoute: typeof ApiGenerationsRouteWithChildren
   ApiMeRoute: typeof ApiMeRoute
   ApiPublishRoute: typeof ApiPublishRouteWithChildren
   ApiResetRoute: typeof ApiResetRoute
@@ -457,9 +518,11 @@ export interface RootRouteChildren {
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
+  ApiCronFreeQueueRoute: typeof ApiCronFreeQueueRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
   ApiExportHtmlRoute: typeof ApiExportHtmlRoute
   ApiExportZipRoute: typeof ApiExportZipRoute
+  ApiFreeStatusRoute: typeof ApiFreeStatusRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
@@ -528,6 +591,13 @@ declare module '@tanstack/react-router' {
       path: '/api/generate'
       fullPath: '/api/generate'
       preLoaderRoute: typeof ApiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generations': {
+      id: '/api/generations'
+      path: '/api/generations'
+      fullPath: '/api/generations'
+      preLoaderRoute: typeof ApiGenerationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/me': {
@@ -614,6 +684,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiByokKeysProviderRouteImport
       parentRoute: typeof ApiByokKeysRoute
     }
+    '/api/cron/free-queue': {
+      id: '/api/cron/free-queue'
+      path: '/api/cron/free-queue'
+      fullPath: '/api/cron/free-queue'
+      preLoaderRoute: typeof ApiCronFreeQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dev/payment-test': {
       id: '/api/dev/payment-test'
       path: '/api/dev/payment-test'
@@ -634,6 +711,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/export/zip'
       preLoaderRoute: typeof ApiExportZipRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/free/status': {
+      id: '/api/free/status'
+      path: '/api/free/status'
+      fullPath: '/api/free/status'
+      preLoaderRoute: typeof ApiFreeStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generations/$id': {
+      id: '/api/generations/$id'
+      path: '/$id'
+      fullPath: '/api/generations/$id'
+      preLoaderRoute: typeof ApiGenerationsIdRouteImport
+      parentRoute: typeof ApiGenerationsRoute
+    }
+    '/api/generations/latest': {
+      id: '/api/generations/latest'
+      path: '/latest'
+      fullPath: '/api/generations/latest'
+      preLoaderRoute: typeof ApiGenerationsLatestRouteImport
+      parentRoute: typeof ApiGenerationsRoute
     }
     '/api/portfolio/inputs': {
       id: '/api/portfolio/inputs'
@@ -720,6 +818,20 @@ const ApiByokKeysRouteWithChildren = ApiByokKeysRoute._addFileChildren(
   ApiByokKeysRouteChildren,
 )
 
+interface ApiGenerationsRouteChildren {
+  ApiGenerationsIdRoute: typeof ApiGenerationsIdRoute
+  ApiGenerationsLatestRoute: typeof ApiGenerationsLatestRoute
+}
+
+const ApiGenerationsRouteChildren: ApiGenerationsRouteChildren = {
+  ApiGenerationsIdRoute: ApiGenerationsIdRoute,
+  ApiGenerationsLatestRoute: ApiGenerationsLatestRoute,
+}
+
+const ApiGenerationsRouteWithChildren = ApiGenerationsRoute._addFileChildren(
+  ApiGenerationsRouteChildren,
+)
+
 interface ApiPublishRouteChildren {
   ApiPublishStatusRoute: typeof ApiPublishStatusRoute
 }
@@ -793,6 +905,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiByokKeysRoute: ApiByokKeysRouteWithChildren,
   ApiContentRoute: ApiContentRoute,
   ApiGenerateRoute: ApiGenerateRoute,
+  ApiGenerationsRoute: ApiGenerationsRouteWithChildren,
   ApiMeRoute: ApiMeRoute,
   ApiPublishRoute: ApiPublishRouteWithChildren,
   ApiResetRoute: ApiResetRoute,
@@ -804,9 +917,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSessionRoute: ApiAdminSessionRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
+  ApiCronFreeQueueRoute: ApiCronFreeQueueRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
   ApiExportHtmlRoute: ApiExportHtmlRoute,
   ApiExportZipRoute: ApiExportZipRoute,
+  ApiFreeStatusRoute: ApiFreeStatusRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
