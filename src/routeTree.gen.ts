@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthorizeRouteImport } from './routes/authorize'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -78,6 +79,11 @@ const AdminRoute = AdminRouteImport.update({
 const AuthorizeRoute = AuthorizeRouteImport.update({
   id: '/authorize',
   path: '/authorize',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -350,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/authorize': typeof AuthorizeRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -407,6 +414,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/authorize': typeof AuthorizeRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -465,6 +473,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/authorize': typeof AuthorizeRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -524,6 +533,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/authorize'
+    | '/connect'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -581,6 +591,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/authorize'
+    | '/connect'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -638,6 +649,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/authorize'
+    | '/connect'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -696,6 +708,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthorizeRoute: typeof AuthorizeRoute
+  ConnectRoute: typeof ConnectRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -761,6 +774,13 @@ declare module '@tanstack/react-router' {
       path: '/authorize'
       fullPath: '/authorize'
       preLoaderRoute: typeof AuthorizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1223,6 +1243,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthorizeRoute: AuthorizeRoute,
+  ConnectRoute: ConnectRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
