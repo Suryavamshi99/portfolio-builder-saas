@@ -1,4 +1,7 @@
 {
   "framework": "tanstack-start",
-  "crons": [{ "path": "/api/cron/free-queue", "schedule": "10 0 * * *" }]
+  "crons": [
+    { "path": "/api/cron/free-queue", "schedule": "10 0 * * *" },
+    { "path": "/api/cron/domains", "schedule": "20 0 * * *" }
+  ]
 }

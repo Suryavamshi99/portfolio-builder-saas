@@ -218,13 +218,32 @@ describe("sites-app serve handler", () => {
     process.env["SUPABASE_SERVICE_ROLE_KEY"] = "dummy-key";
     process.env["SITES_DOMAIN"] = "shipfolio.xyz";
 
+    const { setSitesSupabaseClientGetter } = await import("../../sites-app/api/serve");
+    setSitesSupabaseClientGetter(() => ({
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            in: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        }),
+      }),
+      storage: {
+        from: vi.fn().mockReturnValue({
+          download: vi.fn().mockResolvedValue({ data: null, error: { message: "not found" } }),
+        }),
+      },
+    } as never));
+
     const { req, res, getResult } = makeReqRes({ host: "invalid.com" });
     await sitesAppHandler(req, res);
 
     expect(getResult().statusCode).toBe(404);
     expect(getResult().responseHeaders["Content-Security-Policy"]).toBe(SITES_CSP);
     expect(getResult().responseHeaders["X-Content-Type-Options"]).toBe("nosniff");
-    expect(getResult().responseBody).toContain("Page Not Found");
+    expect(getResult().responseBody).toContain("This site isn't published.");
   });
 
   it("blocks directory traversal attempts (/..%2f, //, etc.) and non-images/ paths", async () => {

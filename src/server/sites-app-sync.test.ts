@@ -7,6 +7,7 @@ describe("sites-app copies", () => {
   it.each([
     ["src/server/sites.ts", "sites-app/lib/sites.ts"],
     ["src/server/site-csp.ts", "sites-app/lib/site-csp.ts"],
+    ["src/server/domains.ts", "sites-app/lib/domains.ts"],
   ])("%s matches %s", (src, copy) => {
     expect(readFileSync(copy, "utf8")).toBe(readFileSync(src, "utf8"));
   });
