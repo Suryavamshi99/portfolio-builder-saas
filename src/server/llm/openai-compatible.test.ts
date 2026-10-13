@@ -323,3 +323,23 @@ describe("callOpenAICompatible", () => {
     );
   });
 });
+
+describe("slow or broken replies", () => {
+  const input = { apiKey: "k", systemPrompt: "s", userMessage: "u", baseUrl: "https://openrouter.ai/api/v1", model: "m:free", maxOutputTokens: 100, timeoutMs: 1000 };
+  const withBody = (body: () => Promise<unknown>, ok = true) =>
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok, status: ok ? 200 : 500, headers: new Headers(), json: body, text: body }) as unknown as Response));
+
+  it("maps a time limit hit while reading the reply to a provider error (not a crash)", async () => {
+    withBody(async () => { throw new DOMException("The operation was aborted due to timeout", "TimeoutError"); });
+    await expect(callOpenAICompatible(input)).rejects.toThrow("m:free timed out");
+    await expect(callOpenAICompatible(input)).rejects.toBeInstanceOf(LlmProviderError);
+  });
+  it("maps an unreadable reply to a provider error", async () => {
+    withBody(async () => { throw new SyntaxError("Unexpected end of JSON input"); });
+    await expect(callOpenAICompatible(input)).rejects.toBeInstanceOf(LlmProviderError);
+  });
+  it("maps a failure while reading an error body to a provider error", async () => {
+    withBody(async () => { throw new DOMException("aborted", "AbortError"); }, false);
+    await expect(callOpenAICompatible(input)).rejects.toBeInstanceOf(LlmProviderError);
+  });
+});

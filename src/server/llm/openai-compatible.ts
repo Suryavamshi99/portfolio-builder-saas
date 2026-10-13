@@ -118,19 +118,35 @@ export async function callOpenAICompatible(
     throw new LlmRateLimitError("Provider rate limit reached", retryAfter);
   }
 
+  // The time limit also covers reading the reply, so a slow model can time out here too.
+  const readFailure = (err: unknown) =>
+    new LlmProviderError(
+      err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError") ? `${model} timed out` : "Provider sent an unreadable response",
+    );
+
   if (!res.ok) {
-    const rawBody = await res.text();
+    let rawBody: string;
+    try {
+      rawBody = await res.text();
+    } catch (err) {
+      throw readFailure(err);
+    }
     // Safety: ensure api key is never in error message
     const safeBody = (apiKey ? rawBody.replaceAll(apiKey, "[REDACTED]") : rawBody).slice(0, 300);
     throw new LlmProviderError(`Provider API error (${res.status}): ${safeBody}`);
   }
 
-  const json = (await res.json()) as {
+  let json: {
     choices?: Array<{
       message?: { content?: unknown };
       finish_reason?: string | null;
     }>;
   };
+  try {
+    json = await res.json();
+  } catch (err) {
+    throw readFailure(err);
+  }
 
   const choice = json.choices?.[0];
   const content = choice?.message?.content;
