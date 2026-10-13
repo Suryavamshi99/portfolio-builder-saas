@@ -6,15 +6,20 @@ import { createAuthCode, getClient } from "@/server/mcp/store";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-const PAGE_HEADERS = {
+// The consent page must never be framed (clickjacking). `form-action` also governs the redirect that
+// follows the form post, so the consent page must allow the app's own return address, or the browser
+// refuses to send the user back to Claude / ChatGPT after they click Allow.
+export const consentCsp = (returnOrigin?: string) =>
+  `default-src 'none'; style-src 'unsafe-inline'; form-action 'self'${returnOrigin ? ` ${returnOrigin}` : ""}; frame-ancestors 'none'; base-uri 'none'`;
+
+const pageHeaders = (returnOrigin?: string) => ({
   "content-type": "text/html; charset=utf-8",
   "cache-control": "no-store",
-  // The consent page must never be framed (clickjacking).
-  "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+  "content-security-policy": consentCsp(returnOrigin),
   "x-frame-options": "DENY",
-};
+});
 
-const page = (title: string, body: string, status = 200) =>
+const page = (title: string, body: string, status = 200, returnOrigin?: string) =>
   new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>` +
       `<style>body{font-family:system-ui,sans-serif;background:#0b0b0f;color:#f4f4f5;display:grid;place-items:center;min-height:100vh;margin:0;padding:16px}` +
@@ -22,7 +27,7 @@ const page = (title: string, body: string, status = 200) =>
       `code{background:#27272a;padding:2px 6px;border-radius:6px;color:#f4f4f5}.row{display:flex;gap:10px;margin-top:20px}` +
       `button{flex:1;padding:11px 14px;border-radius:9px;border:1px solid #3f3f46;background:#27272a;color:#f4f4f5;font-size:15px;cursor:pointer}` +
       `button.allow{background:#f4f4f5;color:#09090b;border-color:#f4f4f5;font-weight:600}</style></head><body><main>${body}</main></body></html>`,
-    { status, headers: PAGE_HEADERS },
+    { status, headers: pageHeaders(returnOrigin) },
   );
 
 type Params = { clientId: string; redirectUri: string; state: string; codeChallenge: string };
@@ -86,6 +91,8 @@ export const Route = createFileRoute("/authorize")({
             `<p>You can disconnect it any time in Shipfolio settings.</p>` +
             `<form method="post" action="/authorize">${hidden}<div class="row">` +
             `<button name="decision" value="deny" type="submit">Cancel</button><button class="allow" name="decision" value="allow" type="submit">Allow</button></div></form>`,
+          200,
+          new URL(v.p.redirectUri).origin,
         );
       },
       // Same-origin form post: protected by the Origin check in src/start.ts and the session cookie.
