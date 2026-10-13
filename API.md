@@ -61,7 +61,7 @@ Status key:
 | `GET` | `/api/byok-keys` | Session Cookie | No | None | `{ keys: Array<{ provider: string, createdAt: string }> }` | `401 unauthorized`, `500 internal_error` |
 | `POST` | `/api/byok-keys` | Session Cookie | No | `{ provider: "google", apiKey: string }` | `{ ok: true, provider: string }` | `400 invalid_json`, `400 invalid_provider`, `400 invalid_api_key`, `401 unauthorized`, `500 internal_error` |
 | `DELETE` | `/api/byok-keys/:provider` | Session Cookie | No | None | `{ ok: true }` | `400 provider_required`, `401 unauthorized`, `500 internal_error` |
-| `POST` | `/api/generate` | Session Cookie | No | `{ provider: "google", resumeUploadId: string, designIntensity?: "minimal" \| "bold", otherSpecifics?: string, instructions?: string, links?: object }` | `{ ok: true, html: string }` | `400 invalid_json`, `400 invalid_provider`, `400 invalid_request`, `400 resume_not_found`, `401 byok_key_missing`, `401 byok_key_invalid`, `422 generation_invalid_output`, `422 generation_unsupported_claims`, `429 rate_limited`, `429 provider_rate_limited`, `502 llm_provider_error`, `500 internal_error` |
+| `POST` | `/api/generations` | Session Cookie | No | `{ source: "free" \| "gemini", resumeUploadId: string, designIntensity?: "minimal" \| "bold", otherSpecifics?: string, instructions?: string, links?: object }` | `202 { jobId, status }`; poll `GET /api/generations/:id` | `400 invalid_request`, `400 resume_not_found`, `401 byok_key_missing`, `409 job_in_progress`, `429 rate_limited`, `429 free_daily_limit`, `503 free_unavailable` (replaces the removed `/api/generate`) |
 
 *Generation Pipeline:*
 - Performs numeric fact check against stored `resume_texts` (or resume extraction fallback).

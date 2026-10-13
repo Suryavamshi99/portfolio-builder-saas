@@ -24,7 +24,6 @@ import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './rout
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
 import { Route as ApiByokKeysRouteImport } from './routes/api/byok-keys'
 import { Route as ApiContentRouteImport } from './routes/api/content'
-import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiGenerationsRouteImport } from './routes/api/generations'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as ApiPublishRouteImport } from './routes/api/publish'
@@ -141,11 +140,6 @@ const ApiByokKeysRoute = ApiByokKeysRouteImport.update({
 const ApiContentRoute = ApiContentRouteImport.update({
   id: '/api/content',
   path: '/api/content',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGenerateRoute = ApiGenerateRouteImport.update({
-  id: '/api/generate',
-  path: '/api/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGenerationsRoute = ApiGenerationsRouteImport.update({
@@ -368,7 +362,6 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
-  '/api/generate': typeof ApiGenerateRoute
   '/api/generations': typeof ApiGenerationsRouteWithChildren
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
@@ -426,7 +419,6 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
-  '/api/generate': typeof ApiGenerateRoute
   '/api/generations': typeof ApiGenerationsRouteWithChildren
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
@@ -485,7 +477,6 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
-  '/api/generate': typeof ApiGenerateRoute
   '/api/generations': typeof ApiGenerationsRouteWithChildren
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
@@ -545,7 +536,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/api/byok-keys'
     | '/api/content'
-    | '/api/generate'
     | '/api/generations'
     | '/api/me'
     | '/api/publish'
@@ -603,7 +593,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/api/byok-keys'
     | '/api/content'
-    | '/api/generate'
     | '/api/generations'
     | '/api/me'
     | '/api/publish'
@@ -661,7 +650,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/api/byok-keys'
     | '/api/content'
-    | '/api/generate'
     | '/api/generations'
     | '/api/me'
     | '/api/publish'
@@ -720,7 +708,6 @@ export interface RootRouteChildren {
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   ApiByokKeysRoute: typeof ApiByokKeysRouteWithChildren
   ApiContentRoute: typeof ApiContentRoute
-  ApiGenerateRoute: typeof ApiGenerateRoute
   ApiGenerationsRoute: typeof ApiGenerationsRouteWithChildren
   ApiMeRoute: typeof ApiMeRoute
   ApiPublishRoute: typeof ApiPublishRouteWithChildren
@@ -858,13 +845,6 @@ declare module '@tanstack/react-router' {
       path: '/api/content'
       fullPath: '/api/content'
       preLoaderRoute: typeof ApiContentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/generate': {
-      id: '/api/generate'
-      path: '/api/generate'
-      fullPath: '/api/generate'
-      preLoaderRoute: typeof ApiGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/generations': {
@@ -1257,7 +1237,6 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthProtectedResourceRoute,
   ApiByokKeysRoute: ApiByokKeysRouteWithChildren,
   ApiContentRoute: ApiContentRoute,
-  ApiGenerateRoute: ApiGenerateRoute,
   ApiGenerationsRoute: ApiGenerationsRouteWithChildren,
   ApiMeRoute: ApiMeRoute,
   ApiPublishRoute: ApiPublishRouteWithChildren,
