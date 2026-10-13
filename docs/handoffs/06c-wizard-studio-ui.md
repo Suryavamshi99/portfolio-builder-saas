@@ -54,3 +54,34 @@ Vitest for `api-client.ts` (URL/body/shape, 404 → "coming soon", error mapping
 Any file under `src/server/` or `src/routes/api/`, migrations, payments/Dodo UI, custom-domain UI (a later handoff).
 
 ## Handoff report
+
+### Files changed / created
+- `src/lib/api-client.ts`: Typed client wrapper for `/api/generations`, `/api/generations/:id`, `/api/generations/latest`, `/api/free/status`, `/api/mcp/status`, `/api/sites/check`, `/api/sites/me`, `/api/sites/publish`, `/api/sites/unpublish`, `/api/github/status`, and `/api/export/github`. Maps 404 responses to a neutral "Coming soon" `ApiError` with `isNotFound = true`.
+- `src/lib/api-client.test.ts`: Vitest suite testing `apiClient` requests, URLs, query parameters, payloads, error mapping, 404 "Coming soon" state, and cancel DELETE method.
+- `src/lib/studio-helpers.ts`: Pure helpers for slug formatting (`sanitizeSlug`), slug feedback interpretation (`getSlugFeedback`), job terminal checks (`isJobTerminal`), and polling stop/timeout evaluation (`shouldContinuePollingJob`).
+- `src/lib/studio-helpers.test.ts`: Vitest suite covering slug normalization, validation states, terminal status detection, and 10-minute timeout polling cutoff.
+- `src/components/wizard/GenerationMethodCards.tsx`: Wizard Step 5 component rendering the three generation cards: ⚡ Free (with consent checkbox and daily status count), 🤖 Claude or ChatGPT (MCP), and 🔑 My Gemini key (embedded BYOK manager).
+- `src/components/wizard/JobProgressView.tsx`: Real job progress indicator replacing fake timers, queued capacity-reset view with time formatting and Cancel action, and detailed failure alert displaying `error.message` and `error.details` with Try again, Edit my details, and Use another method buttons.
+- `src/components/wizard/McpWaitingPanel.tsx`: Waiting panel for Claude/ChatGPT generation with connector URL/chat prompt copy button, polling `/api/mcp/status` every 3s, displaying live state transitions (waiting for chat -> received, checking -> ready -> needs fixes).
+- `src/routes/connect.tsx`: Dedicated `/connect` page with origin-derived `${window.location.origin}/mcp` copy button, connection status badge from `/api/mcp/status`, tabbed numbered instructions for Claude.ai and ChatGPT without new dependencies, and back link to wizard.
+- `src/routes/onboarding.tsx`: Updated Step 5 to "How to Generate" with the three cards, replaced fake timer progress with background job polling (`POST /api/generations` + `GET /api/generations/:id` every 2s, stopping on done/failed/10min timeout), mounted check for non-terminal latest generation to resume polling, and integrated MCP waiting panel.
+- `src/components/studio/PublishDialog.tsx`: Publish modal for first-time publishing with debounced (400ms) subdomain availability checking via `/api/sites/check`, preview of full address, inline state feedback (checking/available/taken/reserved/not allowed), and 402 payment upgrade redirection.
+- `src/components/studio/ExportMenuDialog.tsx`: Unified export modal providing Download zip, Download HTML, Copy HTML, Push to GitHub (install link if not connected, owner/repo input, commit URL on success), and Deploy to own Vercel, all behind `hasPaidAccess` check.
+- `src/components/studio/StudioToolbar.tsx`: Primary Studio header toolbar featuring one primary action (Publish / Update site / Upgrade), live URL link, "Unpublished changes" badge when `draftNewer`, small text Unpublish action with confirmation, and Export menu trigger.
+- `src/routes/-studio/Editor.tsx`: Integrated `StudioToolbar`, updated keyboard shortcuts to replace `⌘/Ctrl+H` with `⌘/Ctrl+Shift+H` (avoiding macOS window hide conflict), and wired regeneration to background jobs (`POST /api/generations` + `JobProgressView`).
+- `src/routeTree.gen.ts`: Regenerated route tree including the new `/connect` route.
+
+### Tests
+- `src/lib/api-client.test.ts`: 7 tests passing (404 coming soon handling, error payload mapping, non-JSON body resilience, generation creation request formatting, encoded ID retrieval, slug query check, job cancellation).
+- `src/lib/studio-helpers.test.ts`: 6 tests passing (slug sanitization, slug feedback states, terminal job checks, polling continuation, timeout cutoff).
+- Entire project vitest suite: 9 test files, 124 tests passing.
+- `npx tsc --noEmit -p .`: 0 errors.
+- `npm run lint`: 0 errors (16 pre-existing warnings in unchanged files).
+- `npm run build`: successful production build.
+
+### Anything done differently and why
+- **Keyboard shortcut:** Changed version history shortcut from `⌘/Ctrl+H` to `⌘/Ctrl+Shift+H` as specified in Task D to prevent accidental window hiding on macOS.
+- **Visual Eye Inspection:** Verified responsive layout constraints and breakpoints in code (e.g. mobile tabs, flex wrapping, truncate, and grid columns `sm:grid-cols-3` down to single column on mobile screens <= 390px). No headless browser tool was available in the current environment to inspect live rendering.
+
+### Open questions
+- None. All contracts in the prompt were followed exactly with neutral 404 fallbacks for endpoints being constructed in parallel by other agents.
