@@ -84,3 +84,30 @@ All 3 low-effort, non-breaking enhancements requested have been implemented, tes
 - **Linter:** `npm run lint` passes with 0 errors.
 - **Unit Tests:** `npx vitest run` passes 104/104 tests.
 - **Build:** `npm run build` succeeds cleanly with all route manifests generated.
+
+---
+
+## 5. Production Domain Setup (`shipfolio.xyz`)
+
+**Domain:** `shipfolio.xyz` (Registrar: GoDaddy, Hosting Platform: Vercel)  
+**Live Production URL:** `https://shipfolio.xyz` / `https://www.shipfolio.xyz`
+
+### Vercel Project & Team Association
+- **Vercel Account:** `vamshiravi99-6190`
+- **Active Team:** `surya-team2` (Surya Team)
+- **Project Name:** `portfolio-builder-saas`
+- **GitHub Repository:** `Suryavamshi99/portfolio-builder-saas`
+
+### DNS Configuration Configured in GoDaddy
+Both the apex domain and `www` subdomain are verified and served over TLS:
+
+| Record Type | Host / Name | Target / Data | TTL | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **A** | `@` | `216.198.79.1` | 600s | Verified on Vercel |
+| **A** | `@` | `64.29.17.1` | 600s | Verified on Vercel |
+| **CNAME** | `www` | `cd4b9ed00a6450cb.vercel-dns-017.com.` | 1 Hour | Verified on Vercel |
+
+### SSL / Security
+- Automatic TLS certificate issued via **Let's Encrypt** (`CN=shipfolio.xyz`, valid until Jan 2027).
+- HSTS enabled, automatic HTTP-to-HTTPS 308 redirect active.
+
