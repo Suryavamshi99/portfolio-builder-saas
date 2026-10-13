@@ -94,3 +94,11 @@ describe("siteUrl", () => {
     delete process.env["SITES_BASE_URL"];
   });
 });
+
+describe("takedown speed", () => {
+  it("keeps published pages in the shared cache for seconds, not minutes", () => {
+    const cc = responseHeaders("text/html")["Cache-Control"]!;
+    expect(cc).toContain("s-maxage=20");
+    expect(cc).not.toContain("stale-while-revalidate");
+  });
+});
