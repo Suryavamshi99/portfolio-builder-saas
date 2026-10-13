@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { verifyRecordName, txtMatches } from "@/server/domains";
-import { addDomain, getDomainConfig } from "@/server/vercel/domains";
+import { addDomain, getDomainConfig, VercelDomainError } from "@/server/vercel/domains";
 import { formatDomainResponse } from "./index";
 
 export let txtResolver = resolveTxt;
@@ -82,7 +82,13 @@ export const Route = createFileRoute("/api/domains/verify")({
         }
 
         // Matching -> addDomain, set verified + verified_at, then getDomainConfig: if misconfigured === false set live.
-        await addDomain(row.hostname);
+        try {
+          await addDomain(row.hostname);
+        } catch (e) {
+          // e.g. the domain is already attached to another Vercel project: say so instead of a bare 500.
+          const message = e instanceof VercelDomainError ? e.message : "Could not connect this domain right now.";
+          return errorResponse(e instanceof VercelDomainError && e.status < 500 ? 409 : 502, "domain_unavailable", message);
+        }
 
         const verifiedAtIso = nowIso;
         let finalStatus: "verified" | "live" = "verified";

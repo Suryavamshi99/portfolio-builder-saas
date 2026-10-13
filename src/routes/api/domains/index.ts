@@ -164,12 +164,18 @@ export const Route = createFileRoute("/api/domains/")({
         // 409 domain_taken if another user has the hostname
         const { data: domainTaken } = await admin
           .from("custom_domains")
-          .select("user_id")
+          .select("user_id, status")
           .eq("hostname", hostname)
           .maybeSingle();
 
         if (domainTaken) {
-          return errorResponse(409, "domain_taken", "This domain is already registered by another user");
+          // Only a domain whose owner has PROVEN control (verified/live) is protected. A pending claim proves
+          // nothing, so a later claimant replaces it; otherwise anyone could squat a domain name they don't own.
+          if (domainTaken.status === "pending") {
+            await admin.from("custom_domains").delete().eq("hostname", hostname).eq("status", "pending");
+          } else {
+            return errorResponse(409, "domain_taken", "This domain is already registered by another user");
+          }
         }
 
         const verifyToken = newVerifyToken();
