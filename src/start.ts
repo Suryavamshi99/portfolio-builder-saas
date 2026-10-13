@@ -1,5 +1,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
+import { isAllowedOrigin } from "@/lib/origin";
+
 /**
  * SameSite=Lax on Supabase's session cookie already blocks most
  * cross-site CSRF against our POST/PUT/DELETE routes, but not a POST
@@ -18,9 +20,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 const csrfMiddleware = createMiddleware().server(async ({ next, request }) => {
   const isWebhook = new URL(request.url).pathname.startsWith("/api/webhooks/");
   if (!isWebhook && request.method !== "GET" && request.method !== "HEAD") {
-    const origin = request.headers.get("origin");
-    const appOrigin = process.env["APP_ORIGIN"];
-    if (!appOrigin || !origin || new URL(origin).origin !== appOrigin) {
+    if (!isAllowedOrigin(request.headers.get("origin"), process.env)) {
       return new Response(JSON.stringify({ error: { code: "origin_check_failed", message: "Origin check failed" } }), {
         status: 403,
         headers: { "content-type": "application/json" },
