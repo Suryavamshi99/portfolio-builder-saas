@@ -87,6 +87,11 @@ How to run or host:
           compressionOptions: { level: 6 },
         });
 
+        await admin.from("exports").insert({
+          user_id: user.id,
+          kind: "zip",
+        });
+
         return new Response(new Uint8Array(zipBuffer), {
           status: 200,
           headers: {
@@ -96,6 +101,7 @@ How to run or host:
           },
         });
       },
+
     },
   },
 });

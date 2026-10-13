@@ -54,6 +54,11 @@ export const Route = createFileRoute("/api/export/html")({
           );
         }
 
+        await admin.from("exports").insert({
+          user_id: user.id,
+          kind: "html",
+        });
+
         return new Response(sanitizedHtml, {
           status: 200,
           headers: {

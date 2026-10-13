@@ -39,11 +39,14 @@ import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/che
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiCronFreeQueueRouteImport } from './routes/api/cron.free-queue'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
+import { Route as ApiExportGithubRouteImport } from './routes/api/export/github'
 import { Route as ApiExportHtmlRouteImport } from './routes/api/export/html'
 import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
 import { Route as ApiFreeStatusRouteImport } from './routes/api/free.status'
 import { Route as ApiGenerationsIdRouteImport } from './routes/api/generations.$id'
 import { Route as ApiGenerationsLatestRouteImport } from './routes/api/generations.latest'
+import { Route as ApiGithubCallbackRouteImport } from './routes/api/github/callback'
+import { Route as ApiGithubStatusRouteImport } from './routes/api/github/status'
 import { Route as ApiMcpStatusRouteImport } from './routes/api/mcp.status'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
@@ -214,6 +217,11 @@ const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
   path: '/api/dev/payment-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportGithubRoute = ApiExportGithubRouteImport.update({
+  id: '/api/export/github',
+  path: '/api/export/github',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiExportHtmlRoute = ApiExportHtmlRouteImport.update({
   id: '/api/export/html',
   path: '/api/export/html',
@@ -238,6 +246,16 @@ const ApiGenerationsLatestRoute = ApiGenerationsLatestRouteImport.update({
   id: '/latest',
   path: '/latest',
   getParentRoute: () => ApiGenerationsRoute,
+} as any)
+const ApiGithubCallbackRoute = ApiGithubCallbackRouteImport.update({
+  id: '/api/github/callback',
+  path: '/api/github/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGithubStatusRoute = ApiGithubStatusRouteImport.update({
+  id: '/api/github/status',
+  path: '/api/github/status',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMcpStatusRoute = ApiMcpStatusRouteImport.update({
   id: '/api/mcp/status',
@@ -359,11 +377,14 @@ export interface FileRoutesByFullPath {
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
   '/api/free/status': typeof ApiFreeStatusRoute
   '/api/generations/$id': typeof ApiGenerationsIdRoute
   '/api/generations/latest': typeof ApiGenerationsLatestRoute
+  '/api/github/callback': typeof ApiGithubCallbackRoute
+  '/api/github/status': typeof ApiGithubStatusRoute
   '/api/mcp/status': typeof ApiMcpStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
@@ -413,11 +434,14 @@ export interface FileRoutesByTo {
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
   '/api/free/status': typeof ApiFreeStatusRoute
   '/api/generations/$id': typeof ApiGenerationsIdRoute
   '/api/generations/latest': typeof ApiGenerationsLatestRoute
+  '/api/github/callback': typeof ApiGithubCallbackRoute
+  '/api/github/status': typeof ApiGithubStatusRoute
   '/api/mcp/status': typeof ApiMcpStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
@@ -468,11 +492,14 @@ export interface FileRoutesById {
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
+  '/api/export/github': typeof ApiExportGithubRoute
   '/api/export/html': typeof ApiExportHtmlRoute
   '/api/export/zip': typeof ApiExportZipRoute
   '/api/free/status': typeof ApiFreeStatusRoute
   '/api/generations/$id': typeof ApiGenerationsIdRoute
   '/api/generations/latest': typeof ApiGenerationsLatestRoute
+  '/api/github/callback': typeof ApiGithubCallbackRoute
+  '/api/github/status': typeof ApiGithubStatusRoute
   '/api/mcp/status': typeof ApiMcpStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
@@ -524,11 +551,14 @@ export interface FileRouteTypes {
     | '/api/byok-keys/$provider'
     | '/api/cron/free-queue'
     | '/api/dev/payment-test'
+    | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
     | '/api/free/status'
     | '/api/generations/$id'
     | '/api/generations/latest'
+    | '/api/github/callback'
+    | '/api/github/status'
     | '/api/mcp/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
@@ -578,11 +608,14 @@ export interface FileRouteTypes {
     | '/api/byok-keys/$provider'
     | '/api/cron/free-queue'
     | '/api/dev/payment-test'
+    | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
     | '/api/free/status'
     | '/api/generations/$id'
     | '/api/generations/latest'
+    | '/api/github/callback'
+    | '/api/github/status'
     | '/api/mcp/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
@@ -632,11 +665,14 @@ export interface FileRouteTypes {
     | '/api/byok-keys/$provider'
     | '/api/cron/free-queue'
     | '/api/dev/payment-test'
+    | '/api/export/github'
     | '/api/export/html'
     | '/api/export/zip'
     | '/api/free/status'
     | '/api/generations/$id'
     | '/api/generations/latest'
+    | '/api/github/callback'
+    | '/api/github/status'
     | '/api/mcp/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
@@ -686,9 +722,12 @@ export interface RootRouteChildren {
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiCronFreeQueueRoute: typeof ApiCronFreeQueueRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
+  ApiExportGithubRoute: typeof ApiExportGithubRoute
   ApiExportHtmlRoute: typeof ApiExportHtmlRoute
   ApiExportZipRoute: typeof ApiExportZipRoute
   ApiFreeStatusRoute: typeof ApiFreeStatusRoute
+  ApiGithubCallbackRoute: typeof ApiGithubCallbackRoute
+  ApiGithubStatusRoute: typeof ApiGithubStatusRoute
   ApiMcpStatusRoute: typeof ApiMcpStatusRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
@@ -913,6 +952,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDevPaymentTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/export/github': {
+      id: '/api/export/github'
+      path: '/api/export/github'
+      fullPath: '/api/export/github'
+      preLoaderRoute: typeof ApiExportGithubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/export/html': {
       id: '/api/export/html'
       path: '/api/export/html'
@@ -947,6 +993,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/generations/latest'
       preLoaderRoute: typeof ApiGenerationsLatestRouteImport
       parentRoute: typeof ApiGenerationsRoute
+    }
+    '/api/github/callback': {
+      id: '/api/github/callback'
+      path: '/api/github/callback'
+      fullPath: '/api/github/callback'
+      preLoaderRoute: typeof ApiGithubCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/github/status': {
+      id: '/api/github/status'
+      path: '/api/github/status'
+      fullPath: '/api/github/status'
+      preLoaderRoute: typeof ApiGithubStatusRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/mcp/status': {
       id: '/api/mcp/status'
@@ -1191,9 +1251,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiCronFreeQueueRoute: ApiCronFreeQueueRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
+  ApiExportGithubRoute: ApiExportGithubRoute,
   ApiExportHtmlRoute: ApiExportHtmlRoute,
   ApiExportZipRoute: ApiExportZipRoute,
   ApiFreeStatusRoute: ApiFreeStatusRoute,
+  ApiGithubCallbackRoute: ApiGithubCallbackRoute,
+  ApiGithubStatusRoute: ApiGithubStatusRoute,
   ApiMcpStatusRoute: ApiMcpStatusRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
