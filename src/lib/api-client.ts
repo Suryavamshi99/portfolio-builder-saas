@@ -84,9 +84,53 @@ export interface FreeStatusResponse {
   resetsAt: string;
 }
 
+export interface McpConnection {
+  clientId: string;
+  name: string;
+  connectedAt: string;
+}
+
 export interface McpStatusResponse {
   connected: boolean;
+  connections?: McpConnection[] | undefined;
   latestJob: GenerationJob | null;
+}
+
+// -------------------------------------------------------------
+// Custom Domains
+// -------------------------------------------------------------
+
+export interface DomainVerifyRecord {
+  type: "TXT";
+  name: string;
+  value: string;
+}
+
+export interface DomainDnsRecords {
+  a: string[];
+  cname: string[];
+}
+
+export interface CustomDomain {
+  hostname: string;
+  status: "pending" | "verified" | "live";
+  verifyRecord: DomainVerifyRecord;
+  dns: DomainDnsRecords | null;
+  lastCheckedAt?: string | null | undefined;
+}
+
+export interface GetDomainsResponse {
+  domain: CustomDomain | null;
+}
+
+export interface VerifyDomainResponse {
+  domain?: CustomDomain | null | undefined;
+  status?: "pending" | "verified" | "live" | undefined;
+  message?: string | undefined;
+  // If the verify endpoint returns the domain directly or the get shape
+  hostname?: string | undefined;
+  verifyRecord?: DomainVerifyRecord | undefined;
+  dns?: DomainDnsRecords | null | undefined;
 }
 
 // -------------------------------------------------------------
@@ -217,6 +261,12 @@ export const apiClient = {
     return requestJson<McpStatusResponse>("/api/mcp/status");
   },
 
+  disconnectMcpConnection: async (clientId: string): Promise<{ ok: boolean }> => {
+    return requestJson<{ ok: boolean }>(`/api/mcp/connections/${encodeURIComponent(clientId)}`, {
+      method: "DELETE",
+    });
+  },
+
   // Hosting
   checkSiteSlug: async (slug: string): Promise<SiteCheckResponse> => {
     return requestJson<SiteCheckResponse>(`/api/sites/check?slug=${encodeURIComponent(slug)}`);
@@ -237,6 +287,31 @@ export const apiClient = {
   unpublishSite: async (): Promise<UnpublishSiteResponse> => {
     return requestJson<UnpublishSiteResponse>("/api/sites/unpublish", {
       method: "POST",
+    });
+  },
+
+  // Custom Domains
+  getDomains: async (): Promise<GetDomainsResponse> => {
+    return requestJson<GetDomainsResponse>("/api/domains");
+  },
+
+  addDomain: async (hostname: string): Promise<GetDomainsResponse> => {
+    return requestJson<GetDomainsResponse>("/api/domains", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ hostname }),
+    });
+  },
+
+  verifyDomain: async (): Promise<VerifyDomainResponse> => {
+    return requestJson<VerifyDomainResponse>("/api/domains/verify", {
+      method: "POST",
+    });
+  },
+
+  deleteDomain: async (): Promise<{ ok: boolean }> => {
+    return requestJson<{ ok: boolean }>("/api/domains", {
+      method: "DELETE",
     });
   },
 

@@ -187,4 +187,125 @@ describe("apiClient", () => {
     });
     expect(res.ok).toBe(true);
   });
+
+  it("calls disconnectMcpConnection with DELETE and encoded clientId", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const res = await apiClient.disconnectMcpConnection("client 123");
+    expect(fetchMock).toHaveBeenCalledWith("/api/mcp/connections/client%20123", {
+      method: "DELETE",
+    });
+    expect(res.ok).toBe(true);
+  });
+
+  it("calls getDomains with GET", async () => {
+    const domainData = {
+      domain: {
+        hostname: "alex.dev",
+        status: "pending" as const,
+        verifyRecord: { type: "TXT" as const, name: "_shipfolio-verify.alex.dev", value: "shipfolio-verify=abc" },
+        dns: null,
+      },
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(domainData), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const res = await apiClient.getDomains();
+    expect(fetchMock).toHaveBeenCalledWith("/api/domains", undefined);
+    expect(res.domain?.hostname).toBe("alex.dev");
+  });
+
+  it("calls addDomain with POST and body", async () => {
+    const domainData = {
+      domain: {
+        hostname: "alex.dev",
+        status: "pending" as const,
+        verifyRecord: { type: "TXT" as const, name: "_shipfolio-verify.alex.dev", value: "shipfolio-verify=abc" },
+        dns: null,
+      },
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(domainData), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const res = await apiClient.addDomain("alex.dev");
+    expect(fetchMock).toHaveBeenCalledWith("/api/domains", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ hostname: "alex.dev" }),
+    });
+    expect(res.domain?.status).toBe("pending");
+  });
+
+  it("calls verifyDomain with POST", async () => {
+    const verifyData = {
+      status: "pending",
+      message: "We can't see the TXT record yet. DNS changes can take a few minutes.",
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(verifyData), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const res = await apiClient.verifyDomain();
+    expect(fetchMock).toHaveBeenCalledWith("/api/domains/verify", {
+      method: "POST",
+    });
+    expect(res.status).toBe("pending");
+    expect(res.message).toContain("DNS changes");
+  });
+
+  it("calls deleteDomain with DELETE", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const res = await apiClient.deleteDomain();
+    expect(fetchMock).toHaveBeenCalledWith("/api/domains", {
+      method: "DELETE",
+    });
+    expect(res.ok).toBe(true);
+  });
+
+  it("calls getGitHubStatus with GET", async () => {
+    const githubData = {
+      connected: true,
+      account: "octocat",
+      installUrl: "https://github.com/apps/shipfolio/installations/new",
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(githubData), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const res = await apiClient.getGitHubStatus();
+    expect(fetchMock).toHaveBeenCalledWith("/api/github/status", undefined);
+    expect(res.connected).toBe(true);
+    expect(res.account).toBe("octocat");
+  });
 });

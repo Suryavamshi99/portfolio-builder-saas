@@ -12,6 +12,9 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { FluidOrb } from "@/components/ui/fluid-orb";
+import { ConnectedAppsSection } from "@/components/settings/ConnectedAppsSection";
+import { GitHubSection } from "@/components/settings/GitHubSection";
+import { CustomDomainSection } from "@/components/settings/CustomDomainSection";
 import {
   KeyRound,
   HardDrive,
@@ -24,18 +27,29 @@ import {
   RotateCcw,
   Sparkles,
   Clock,
+  Bot,
+  Github,
 } from "lucide-react";
 
 interface SettingsSearch {
-  upgrade?: "pending" | "failed";
+  upgrade?: "pending" | "failed" | undefined;
+  github?: string | undefined;
+  github_error?: string | undefined;
 }
 
 export const Route = createFileRoute("/settings")({
   validateSearch: (search: Record<string, unknown>): SettingsSearch => {
+    const res: SettingsSearch = {};
     if (search["upgrade"] === "pending" || search["upgrade"] === "failed") {
-      return { upgrade: search["upgrade"] };
+      res.upgrade = search["upgrade"];
     }
-    return {};
+    if (typeof search["github"] === "string") {
+      res.github = search["github"];
+    }
+    if (typeof search["github_error"] === "string") {
+      res.github_error = search["github_error"];
+    }
+    return res;
   },
   head: () => ({
     meta: [{ title: "Account & Settings — Shipfolio" }],
@@ -271,22 +285,34 @@ function SettingsContent() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="byok" className="gap-2 text-xs">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 gap-1">
+          <TabsTrigger value="byok" className="gap-1.5 text-xs">
             <KeyRound className="size-3.5" />
             BYOK Keys
           </TabsTrigger>
-          <TabsTrigger value="vercel" className="gap-2 text-xs">
+          <TabsTrigger value="domains" className="gap-1.5 text-xs">
             <Globe className="size-3.5" />
-            Vercel Hosting
+            Domains
           </TabsTrigger>
-          <TabsTrigger value="storage" className="gap-2 text-xs">
+          <TabsTrigger value="github" className="gap-1.5 text-xs">
+            <Github className="size-3.5" />
+            GitHub
+          </TabsTrigger>
+          <TabsTrigger value="apps" className="gap-1.5 text-xs">
+            <Bot className="size-3.5" />
+            Apps
+          </TabsTrigger>
+          <TabsTrigger value="vercel" className="gap-1.5 text-xs">
+            <Globe className="size-3.5" />
+            Vercel
+          </TabsTrigger>
+          <TabsTrigger value="storage" className="gap-1.5 text-xs">
             <HardDrive className="size-3.5" />
-            Storage & Files
+            Storage
           </TabsTrigger>
-          <TabsTrigger value="danger" className="gap-2 text-xs text-destructive">
+          <TabsTrigger value="danger" className="gap-1.5 text-xs text-destructive">
             <AlertTriangle className="size-3.5" />
-            Danger Zone
+            Danger
           </TabsTrigger>
         </TabsList>
 
@@ -295,7 +321,26 @@ function SettingsContent() {
           <ByokManager />
         </TabsContent>
 
-        {/* Tab 2: Vercel Hosting */}
+        {/* Tab 2: Custom Domains */}
+        <TabsContent value="domains" className="pt-4 space-y-6">
+          <CustomDomainSection
+            hasPaidAccess={userRecord?.plan === "pro"}
+            onUpgrade={() => void handleUpgrade()}
+            upgrading={upgrading}
+          />
+        </TabsContent>
+
+        {/* Tab 3: GitHub Integration */}
+        <TabsContent value="github" className="pt-4 space-y-6">
+          <GitHubSection />
+        </TabsContent>
+
+        {/* Tab 4: Connected Apps */}
+        <TabsContent value="apps" className="pt-4 space-y-6">
+          <ConnectedAppsSection />
+        </TabsContent>
+
+        {/* Tab 5: Vercel Hosting */}
         <TabsContent value="vercel" className="pt-4 space-y-6">
           <Card>
             <CardHeader>
