@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -52,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -219,6 +225,7 @@ const ApiPortfolioVersionsIdRestoreRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/connect'
     | '/login'
     | '/onboarding'
     | '/settings'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/connect'
     | '/login'
     | '/onboarding'
     | '/settings'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/connect'
     | '/login'
     | '/onboarding'
     | '/settings'
@@ -439,6 +451,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ConnectRoute: typeof ConnectRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
@@ -479,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -786,6 +806,7 @@ const ApiPortfolioVersionsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ConnectRoute: ConnectRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
