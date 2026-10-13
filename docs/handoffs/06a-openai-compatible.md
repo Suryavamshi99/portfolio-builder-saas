@@ -55,3 +55,20 @@ Mock `fetch` (`vi.stubGlobal`). Cover: request URL/headers/body (text-only and w
 Don't touch `src/server/llm/index.ts`, `google.ts`, `types.ts`, `src/config/llm.ts`, routes, or migrations. Claude Code wires the chain.
 
 ## Handoff report
+
+### 1. Summary of changes
+- **`src/server/llm/openai-compatible.ts`** (new): Created `callOpenAICompatible(input: OpenAiCompatibleInput): Promise<OpenAiCompatibleResult>`. Handles `POST {baseUrl}/chat/completions` with bearer authorization, optional OpenRouter headers (`HTTP-Referer`, `X-Title`) when target hostname is `openrouter.ai`, text or image payload structure with `data:<mime>;base64,<data>` data URLs, `AbortSignal.timeout(timeoutMs)`, mapping 401/403 to `LlmAuthError`, 429 to `LlmRateLimitError` (respecting `retry-after` header or defaulting to 60s), non-2xx status to `LlmProviderError` (truncated to 300 chars with API key redacted), and empty response checks.
+- **`src/config/free-models.ts`** (new): Created `getFreeProviderChain(env: NodeJS.ProcessEnv): FreeProvider[]`. Implements the provider chain order: `openrouter-a`, `openrouter-b`, `groq`, `cerebras`. Reads env vars per provider inside the function (no module-scope reads), drops providers whose API key or model id is missing or empty, sets defaults (`dailyRequestBudget: 200`, `maxOutputTokens: 12000`, `timeoutMs: 100000`, `supportsImages: false`), and supports overrides (`FREE_BUDGET_<ID>`, `FREE_MAX_OUTPUT_TOKENS`, `FREE_IMAGES_<ID>`).
+- **`.env.example`**: Appended documentation and placeholders for all free provider API keys, model variables, and optional overrides.
+- **`src/server/llm/openai-compatible.test.ts`** (new): 12 unit tests verifying endpoint construction, payload format (text-only and images), OpenRouter-specific headers, finish reasons, error status mappings (401, 403, 429 with/without retry-after, 500 with truncation & key redaction, empty choices/content), timeouts, and network errors.
+- **`src/config/free-models.test.ts`** (new): 4 unit tests verifying provider ordering, omitted providers on missing key/model, defaults, and overrides.
+
+### 2. Verification
+All verification checks executed in `/Users/suryavamshi/portfolio-builder-saas-06a`:
+- `npx tsc --noEmit -p .` passed with 0 errors.
+- `npm run lint` passed with 0 errors (17 existing pre-task warnings in unrelated files).
+- `npx vitest run` passed: 9 test files, 127 tests passed (including all 16 new tests).
+- `npm run build` passed with 0 errors.
+
+### 3. Open questions / notes
+- None. All contracts and types adhere strictly to the specification in `docs/handoffs/06a-openai-compatible.md`.
