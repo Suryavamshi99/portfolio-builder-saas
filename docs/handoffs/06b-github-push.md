@@ -69,3 +69,59 @@ export async function pushSiteToRepo(opts: {
 UI (handoff 06c builds the Studio buttons against these routes), Pages, PRs, creating repos, `src/routes/api/publish.ts`, other migrations.
 
 ## Handoff report
+
+### Files changed / created
+- `supabase/migrations/0014_github_connections_exports.sql`: Created tables `github_connections` and `exports`, added index on `exports(user_id, created_at desc)`, enabled RLS, and revoked all privileges on both tables from `anon, authenticated`.
+- `.env.example`: Documented `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, and `GITHUB_APP_PRIVATE_KEY`.
+- `src/server/github/app.ts`: Implemented `createAppJwt`, `getInstallationToken`, `getInstallation`, `installUrl`, and `GithubError`.
+- `src/server/github/push.ts`: Implemented `pushSiteToRepo` supporting normal Git Data API flow, empty-repo initialization flow via contents API, path/repo validation, and error mapping without token leakage.
+- `src/server/github/app.test.ts`: Vitest unit tests verifying RS256 JWT claims/expiration/signature using a test RSA keypair, `installUrl`, token generation, and installation lookups.
+- `src/server/github/push.test.ts`: Vitest unit tests verifying Git Data API call ordering, empty-repo creation flow, path traversal validation, and 403/404 error messages.
+- `src/routes/api/github/status.ts`: Implemented `GET /api/github/status` returning connection status, GitHub account login, and signed install URL.
+- `src/routes/api/github/callback.ts`: Implemented `GET /api/github/callback` verifying HMAC signed state against session user, validating installation ownership with GitHub, and upserting `github_connections`.
+- `src/routes/api/export/github.ts`: Implemented `POST /api/export/github` enforcing `hasPaidAccess`, loading and sanitizing generated HTML with embedded storage images, pushing via `pushSiteToRepo`, and logging export to `exports`.
+- `src/routes/api/export/zip.ts`: Inserted `exports` record (`kind: "zip"`) on successful export generation.
+- `src/routes/api/export/html.ts`: Inserted `exports` record (`kind: "html"`) on successful export generation.
+- `src/routeTree.gen.ts`: Updated by TanStack Start router generator for new API routes.
+
+### Security and Privilege Rules
+- **Migration RLS & Privileges**:
+```sql
+alter table public.github_connections enable row level security;
+alter table public.exports enable row level security;
+revoke all on public.github_connections from anon, authenticated;
+revoke all on public.exports from anon, authenticated;
+```
+Direct access to `github_connections` and `exports` is revoked from `anon` and `authenticated`; all access is routed strictly through server-side handlers via the service-role admin client with session `user.id`.
+
+- **User ID Scoping**:
+`user.id` is strictly extracted from `context.user.id` via `authMiddleware` (never from request body or URL parameters).
+State verification in `callback.ts`:
+```ts
+if (!installationIdRaw || !state || !verifyOAuthState(state, user.id)) {
+  return Response.redirect(`${getAppOrigin()}/studio?github_error=invalid_state`, 302);
+}
+```
+State creation in `status.ts`:
+```ts
+const state = createOAuthState(user.id);
+const url = installUrl(state);
+```
+
+- **Paid Access Enforcement**:
+Server-side paid gate in `src/routes/api/export/github.ts`:
+```ts
+if (!hasPaidAccess(appUser)) {
+  return errorResponse(402, "payment_required", "Upgrade to Pro to export your portfolio to GitHub");
+}
+```
+
+### Verification
+- `npx tsc --noEmit -p .`: Passed with 0 errors.
+- `npm run lint`: Passed with 0 errors (17 existing pre-existing warnings in UI components).
+- `npx vitest run`: Passed (9 test suites, 124 tests passed).
+- `npm run build`: Passed cleanly.
+
+### Open Questions / Notes
+- None. Implemented exactly to contract.
+
