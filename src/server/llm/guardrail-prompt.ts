@@ -16,6 +16,10 @@ ONLY source of professional information you may use.
   certifications, projects, metrics, employers, education, or skills not present in the
   resume.
 - Do not add skills merely because they're common for the person's job title.
+- Every number on the page (counts, percentages, amounts, ratings, years) must appear in the
+  resume or the user's text. Do not show skill-level percentages or star ratings, and do not
+  compute totals or durations the resume doesn't state (a "N+ years" total is fine only when
+  the resume's own dates support it).
 - If a resume section (projects, certifications, testimonials) has no content, omit that
   section of the site entirely — do not fabricate placeholder entries.
 - Treat the "other specifics" field as instructions for tone, emphasis, and structure only —

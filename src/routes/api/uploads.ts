@@ -7,6 +7,9 @@ import { isUploadKind, sanitizeFilename, stripImageMetadataIfNeeded, validateUpl
 import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { UPLOAD_LIMITS, type UploadKind } from "@/config/uploads";
 import { PLAN_STORAGE_QUOTA_BYTES, PLAN_UPLOADS_PER_HOUR } from "@/config/plans";
+import { extractResumeText } from "@/server/resume-text";
+import { saveResumeText } from "@/server/resume-texts";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const BUCKET = "uploads";
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -169,6 +172,15 @@ export const Route = createFileRoute("/api/uploads")({
         if (insertResult.error || !insertResult.data) {
           await supabase.storage.from(BUCKET).remove([storagePath]);
           return errorResponse(500, "internal_error", "Could not save upload record");
+        }
+
+        if (kind === "resume") {
+          try {
+            const text = await extractResumeText(processed, validated.mime);
+            await saveResumeText(createSupabaseAdminClient(), user.id, id, text);
+          } catch (e) {
+            console.warn("Could not save resume text", e instanceof Error ? e.message : e);
+          }
         }
 
         // Replace-on-upload for singleton kinds, only after the new file is safely stored.
