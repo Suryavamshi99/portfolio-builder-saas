@@ -70,3 +70,63 @@ async function pruneOldVersions(admin: SupabaseClient, userId: string): Promise<
     console.warn(`Could not prune old portfolio versions: ${deleteError.message}`);
   }
 }
+
+export type PortfolioVersionSummary = {
+  id: string;
+  source: string;
+  model: string | null;
+  warnings: string[];
+  createdAt: string;
+};
+
+export async function listPortfolioVersions(
+  admin: SupabaseClient,
+  userId: string,
+): Promise<PortfolioVersionSummary[]> {
+  const { data, error } = await admin
+    .from("portfolio_versions")
+    .select("id, source, model, warnings, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(MAX_VERSIONS_PER_USER);
+
+  if (error) {
+    throw new Error(`Failed to list portfolio versions: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    source: row.source,
+    model: row.model,
+    warnings: Array.isArray(row.warnings) ? row.warnings : [],
+    createdAt: row.created_at,
+  }));
+}
+
+export async function restorePortfolioVersion(
+  admin: SupabaseClient,
+  userId: string,
+  versionId: string,
+): Promise<{ html: string; updatedAt: string }> {
+  const { data: versionRow, error: fetchError } = await admin
+    .from("portfolio_versions")
+    .select("html")
+    .eq("user_id", userId)
+    .eq("id", versionId)
+    .maybeSingle();
+
+  if (fetchError || !versionRow) {
+    throw new Error(`Portfolio version not found: ${fetchError?.message ?? "unknown"}`);
+  }
+
+  const updatedAt = new Date().toISOString();
+  const { error: upsertError } = await admin
+    .from("portfolios")
+    .upsert({ user_id: userId, generated_html: versionRow.html, updated_at: updatedAt }, { onConflict: "user_id" });
+
+  if (upsertError) {
+    throw new Error(`Failed to restore portfolio draft: ${upsertError.message}`);
+  }
+
+  return { html: versionRow.html, updatedAt };
+}

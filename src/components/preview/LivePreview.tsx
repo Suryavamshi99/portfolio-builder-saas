@@ -70,7 +70,7 @@ export function LivePreview({ html }: LivePreviewProps) {
             <iframe
               title="Portfolio live preview"
               srcDoc={html}
-              sandbox="allow-same-origin"
+              sandbox="allow-scripts"
               className="h-full w-full border-0 bg-white"
             />
           )}
