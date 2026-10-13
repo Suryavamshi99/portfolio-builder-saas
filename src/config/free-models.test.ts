@@ -148,3 +148,19 @@ describe("free tier only", () => {
     expect(chain.map((p) => p.id)).toEqual(["openrouter-b"]);
   });
 });
+
+describe("four OpenRouter slots", () => {
+  it("keeps the configured order and skips empty slots", () => {
+    const chain = getFreeProviderChain({
+      OPENROUTER_API_KEY: "k",
+      FREE_MODEL_OPENROUTER_A: "a:free",
+      FREE_MODEL_OPENROUTER_C: "c:free",
+      FREE_MODEL_OPENROUTER_D: "d:free",
+    } as NodeJS.ProcessEnv);
+    expect(chain.map((p) => [p.id, p.model])).toEqual([
+      ["openrouter-a", "a:free"],
+      ["openrouter-c", "c:free"],
+      ["openrouter-d", "d:free"],
+    ]);
+  });
+});

@@ -1,5 +1,5 @@
 export interface FreeProvider {
-  id: "openrouter-a" | "openrouter-b" | "groq" | "cerebras";
+  id: "openrouter-a" | "openrouter-b" | "openrouter-c" | "openrouter-d" | "groq" | "cerebras";
   label: string;
   baseUrl: string;
   apiKeyEnv: string; // name of the env var holding the key
@@ -38,6 +38,24 @@ const PROVIDER_DEFINITIONS: ProviderDefinition[] = [
     modelEnv: "FREE_MODEL_OPENROUTER_B",
     budgetEnv: "FREE_BUDGET_OPENROUTER_B",
     imagesEnv: "FREE_IMAGES_OPENROUTER_B",
+  },
+  {
+    id: "openrouter-c",
+    label: "OpenRouter (C)",
+    baseUrl: "https://openrouter.ai/api/v1",
+    apiKeyEnv: "OPENROUTER_API_KEY",
+    modelEnv: "FREE_MODEL_OPENROUTER_C",
+    budgetEnv: "FREE_BUDGET_OPENROUTER_C",
+    imagesEnv: "FREE_IMAGES_OPENROUTER_C",
+  },
+  {
+    id: "openrouter-d",
+    label: "OpenRouter (D)",
+    baseUrl: "https://openrouter.ai/api/v1",
+    apiKeyEnv: "OPENROUTER_API_KEY",
+    modelEnv: "FREE_MODEL_OPENROUTER_D",
+    budgetEnv: "FREE_BUDGET_OPENROUTER_D",
+    imagesEnv: "FREE_IMAGES_OPENROUTER_D",
   },
   {
     id: "groq",
