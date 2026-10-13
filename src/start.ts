@@ -1,6 +1,6 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
-import { isAllowedOrigin } from "@/lib/origin";
+import { isAllowedOrigin, isMachineEndpoint } from "@/lib/origin";
 
 /**
  * SameSite=Lax on Supabase's session cookie already blocks most
@@ -18,7 +18,8 @@ import { isAllowedOrigin } from "@/lib/origin";
  * without also giving it real signature verification.
  */
 const csrfMiddleware = createMiddleware().server(async ({ next, request }) => {
-  const isWebhook = new URL(request.url).pathname.startsWith("/api/webhooks/");
+  const pathname = new URL(request.url).pathname;
+  const isWebhook = pathname.startsWith("/api/webhooks/") || isMachineEndpoint(pathname);
   if (!isWebhook && request.method !== "GET" && request.method !== "HEAD") {
     if (!isAllowedOrigin(request.headers.get("origin"), process.env)) {
       return new Response(JSON.stringify({ error: { code: "origin_check_failed", message: "Origin check failed" } }), {

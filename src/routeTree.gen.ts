@@ -11,10 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthorizeRouteImport } from './routes/authorize'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as TokenRouteImport } from './routes/token'
+import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
 import { Route as ApiByokKeysRouteImport } from './routes/api/byok-keys'
 import { Route as ApiContentRouteImport } from './routes/api/content'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
@@ -38,6 +44,7 @@ import { Route as ApiExportZipRouteImport } from './routes/api/export/zip'
 import { Route as ApiFreeStatusRouteImport } from './routes/api/free.status'
 import { Route as ApiGenerationsIdRouteImport } from './routes/api/generations.$id'
 import { Route as ApiGenerationsLatestRouteImport } from './routes/api/generations.latest'
+import { Route as ApiMcpStatusRouteImport } from './routes/api/mcp.status'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
@@ -45,6 +52,7 @@ import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
 import { Route as ApiWebhooksDodoRouteImport } from './routes/api/webhooks/dodo'
 import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
+import { Route as ApiMcpConnectionsClientIdRouteImport } from './routes/api/mcp.connections.$clientId'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
 import { Route as ApiPortfolioVersionsIdRestoreRouteImport } from './routes/api/portfolio/versions.$id.restore'
@@ -59,14 +67,29 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthorizeRoute = AuthorizeRouteImport.update({
+  id: '/authorize',
+  path: '/authorize',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -79,6 +102,23 @@ const StudioRoute = StudioRouteImport.update({
   path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TokenRoute = TokenRouteImport.update({
+  id: '/token',
+  path: '/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotwellKnownOauthAuthorizationServerRoute =
+  DotwellKnownOauthAuthorizationServerRouteImport.update({
+    id: '/.well-known/oauth-authorization-server',
+    path: '/.well-known/oauth-authorization-server',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownOauthProtectedResourceRoute =
+  DotwellKnownOauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiByokKeysRoute = ApiByokKeysRouteImport.update({
   id: '/api/byok-keys',
   path: '/api/byok-keys',
@@ -194,6 +234,11 @@ const ApiGenerationsLatestRoute = ApiGenerationsLatestRouteImport.update({
   path: '/latest',
   getParentRoute: () => ApiGenerationsRoute,
 } as any)
+const ApiMcpStatusRoute = ApiMcpStatusRouteImport.update({
+  id: '/api/mcp/status',
+  path: '/api/mcp/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPortfolioInputsRoute = ApiPortfolioInputsRouteImport.update({
   id: '/api/portfolio/inputs',
   path: '/api/portfolio/inputs',
@@ -229,6 +274,12 @@ const ApiAdminUsersIdRoute = ApiAdminUsersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiAdminUsersRoute,
 } as any)
+const ApiMcpConnectionsClientIdRoute =
+  ApiMcpConnectionsClientIdRouteImport.update({
+    id: '/api/mcp/connections/$clientId',
+    path: '/api/mcp/connections/$clientId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiVercelOauthCallbackRoute = ApiVercelOauthCallbackRouteImport.update({
   id: '/oauth/callback',
   path: '/oauth/callback',
@@ -249,10 +300,16 @@ const ApiPortfolioVersionsIdRestoreRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/authorize': typeof AuthorizeRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
+  '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
+  '/token': typeof TokenRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
@@ -276,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/api/free/status': typeof ApiFreeStatusRoute
   '/api/generations/$id': typeof ApiGenerationsIdRoute
   '/api/generations/latest': typeof ApiGenerationsLatestRoute
+  '/api/mcp/status': typeof ApiMcpStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -283,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
+  '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
@@ -290,10 +349,16 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/authorize': typeof AuthorizeRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
+  '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
+  '/token': typeof TokenRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
@@ -317,6 +382,7 @@ export interface FileRoutesByTo {
   '/api/free/status': typeof ApiFreeStatusRoute
   '/api/generations/$id': typeof ApiGenerationsIdRoute
   '/api/generations/latest': typeof ApiGenerationsLatestRoute
+  '/api/mcp/status': typeof ApiMcpStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -324,6 +390,7 @@ export interface FileRoutesByTo {
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
+  '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
@@ -332,10 +399,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/authorize': typeof AuthorizeRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
+  '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
+  '/token': typeof TokenRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/byok-keys': typeof ApiByokKeysRouteWithChildren
   '/api/content': typeof ApiContentRoute
   '/api/generate': typeof ApiGenerateRoute
@@ -359,6 +432,7 @@ export interface FileRoutesById {
   '/api/free/status': typeof ApiFreeStatusRoute
   '/api/generations/$id': typeof ApiGenerationsIdRoute
   '/api/generations/latest': typeof ApiGenerationsLatestRoute
+  '/api/mcp/status': typeof ApiMcpStatusRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -366,6 +440,7 @@ export interface FileRoutesById {
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
+  '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
@@ -375,10 +450,16 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/authorize'
     | '/login'
+    | '/mcp'
     | '/onboarding'
+    | '/register'
     | '/settings'
     | '/studio'
+    | '/token'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/api/byok-keys'
     | '/api/content'
     | '/api/generate'
@@ -402,6 +483,7 @@ export interface FileRouteTypes {
     | '/api/free/status'
     | '/api/generations/$id'
     | '/api/generations/latest'
+    | '/api/mcp/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -409,6 +491,7 @@ export interface FileRouteTypes {
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
     | '/api/admin/users/$id'
+    | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
     | '/api/portfolio/versions/$id/restore'
@@ -416,10 +499,16 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/authorize'
     | '/login'
+    | '/mcp'
     | '/onboarding'
+    | '/register'
     | '/settings'
     | '/studio'
+    | '/token'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/api/byok-keys'
     | '/api/content'
     | '/api/generate'
@@ -443,6 +532,7 @@ export interface FileRouteTypes {
     | '/api/free/status'
     | '/api/generations/$id'
     | '/api/generations/latest'
+    | '/api/mcp/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -450,6 +540,7 @@ export interface FileRouteTypes {
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
     | '/api/admin/users/$id'
+    | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
     | '/api/portfolio/versions/$id/restore'
@@ -457,10 +548,16 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/authorize'
     | '/login'
+    | '/mcp'
     | '/onboarding'
+    | '/register'
     | '/settings'
     | '/studio'
+    | '/token'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/api/byok-keys'
     | '/api/content'
     | '/api/generate'
@@ -484,6 +581,7 @@ export interface FileRouteTypes {
     | '/api/free/status'
     | '/api/generations/$id'
     | '/api/generations/latest'
+    | '/api/mcp/status'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -491,6 +589,7 @@ export interface FileRouteTypes {
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
     | '/api/admin/users/$id'
+    | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
     | '/api/portfolio/versions/$id/restore'
@@ -499,10 +598,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AuthorizeRoute: typeof AuthorizeRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
+  RegisterRoute: typeof RegisterRoute
   SettingsRoute: typeof SettingsRoute
   StudioRoute: typeof StudioRoute
+  TokenRoute: typeof TokenRoute
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   ApiByokKeysRoute: typeof ApiByokKeysRouteWithChildren
   ApiContentRoute: typeof ApiContentRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
@@ -523,9 +628,11 @@ export interface RootRouteChildren {
   ApiExportHtmlRoute: typeof ApiExportHtmlRoute
   ApiExportZipRoute: typeof ApiExportZipRoute
   ApiFreeStatusRoute: typeof ApiFreeStatusRoute
+  ApiMcpStatusRoute: typeof ApiMcpStatusRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
+  ApiMcpConnectionsClientIdRoute: typeof ApiMcpConnectionsClientIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -544,6 +651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/authorize': {
+      id: '/authorize'
+      path: '/authorize'
+      fullPath: '/authorize'
+      preLoaderRoute: typeof AuthorizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -551,11 +665,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -570,6 +698,27 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/studio'
       preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/token': {
+      id: '/token'
+      path: '/token'
+      fullPath: '/token'
+      preLoaderRoute: typeof TokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-authorization-server': {
+      id: '/.well-known/oauth-authorization-server'
+      path: '/.well-known/oauth-authorization-server'
+      fullPath: '/.well-known/oauth-authorization-server'
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/byok-keys': {
@@ -733,6 +882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGenerationsLatestRouteImport
       parentRoute: typeof ApiGenerationsRoute
     }
+    '/api/mcp/status': {
+      id: '/api/mcp/status'
+      path: '/api/mcp/status'
+      fullPath: '/api/mcp/status'
+      preLoaderRoute: typeof ApiMcpStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/portfolio/inputs': {
       id: '/api/portfolio/inputs'
       path: '/api/portfolio/inputs'
@@ -781,6 +937,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/users/$id'
       preLoaderRoute: typeof ApiAdminUsersIdRouteImport
       parentRoute: typeof ApiAdminUsersRoute
+    }
+    '/api/mcp/connections/$clientId': {
+      id: '/api/mcp/connections/$clientId'
+      path: '/api/mcp/connections/$clientId'
+      fullPath: '/api/mcp/connections/$clientId'
+      preLoaderRoute: typeof ApiMcpConnectionsClientIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/vercel/oauth/callback': {
       id: '/api/vercel/oauth/callback'
@@ -898,10 +1061,18 @@ const ApiPortfolioVersionsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AuthorizeRoute: AuthorizeRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
+  RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
   StudioRoute: StudioRoute,
+  TokenRoute: TokenRoute,
+  DotwellKnownOauthAuthorizationServerRoute:
+    DotwellKnownOauthAuthorizationServerRoute,
+  DotwellKnownOauthProtectedResourceRoute:
+    DotwellKnownOauthProtectedResourceRoute,
   ApiByokKeysRoute: ApiByokKeysRouteWithChildren,
   ApiContentRoute: ApiContentRoute,
   ApiGenerateRoute: ApiGenerateRoute,
@@ -922,9 +1093,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiExportHtmlRoute: ApiExportHtmlRoute,
   ApiExportZipRoute: ApiExportZipRoute,
   ApiFreeStatusRoute: ApiFreeStatusRoute,
+  ApiMcpStatusRoute: ApiMcpStatusRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
+  ApiMcpConnectionsClientIdRoute: ApiMcpConnectionsClientIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

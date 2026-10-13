@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAllowedOrigin } from "./origin";
+import { isAllowedOrigin, isMachineEndpoint } from "./origin";
 
 const env = { APP_ORIGIN: "https://app.vercel.app", APP_EXTRA_ORIGINS: "https://www.shipfolio.xyz, https://shipfolio.xyz" };
 
@@ -22,5 +22,12 @@ describe("isAllowedOrigin", () => {
   });
   it("rejects everything when APP_ORIGIN is not set", () => {
     expect(isAllowedOrigin("https://www.shipfolio.xyz", { APP_EXTRA_ORIGINS: "https://www.shipfolio.xyz" })).toBe(false);
+  });
+});
+
+describe("isMachineEndpoint", () => {
+  it("exempts only the connector endpoints, never authorize or app routes", () => {
+    for (const p of ["/mcp", "/token", "/register", "/.well-known/oauth-protected-resource"]) expect(isMachineEndpoint(p)).toBe(true);
+    for (const p of ["/authorize", "/api/reset", "/mcp/extra", "/tokens", "/api/token", "/register/x"]) expect(isMachineEndpoint(p)).toBe(false);
   });
 });

@@ -20,3 +20,13 @@ export function isAllowedOrigin(
     .filter(Boolean);
   return allowed.includes(requested);
 }
+
+/**
+ * Endpoints called by other companies' servers (Claude, ChatGPT) rather than by
+ * our own pages. They never read the session cookie, only bearer tokens or PKCE
+ * secrets, so the browser Origin check doesn't apply. `/authorize` is NOT here:
+ * its consent form is posted by a signed-in browser and stays protected.
+ */
+export function isMachineEndpoint(pathname: string): boolean {
+  return pathname === "/mcp" || pathname === "/token" || pathname === "/register" || pathname.startsWith("/.well-known/");
+}

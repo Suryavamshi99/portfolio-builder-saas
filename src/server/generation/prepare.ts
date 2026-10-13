@@ -25,7 +25,7 @@ export type PreparedGeneration =
 export async function prepareGeneration(
   admin: SupabaseClient,
   userId: string,
-  opts: { resumeUploadId: string; instructions?: string | undefined },
+  opts: { resumeUploadId: string; instructions?: string | undefined; skipImages?: boolean },
 ): Promise<PreparedGeneration> {
   const { data: resumeRow } = await admin
     .from("uploads")
@@ -53,7 +53,10 @@ export async function prepareGeneration(
     });
   }
 
-  const [{ data: photoRow }, { data: referenceRows }] = await Promise.all([
+  // The checks after a page is saved only need the text, not the photo link or screenshots.
+  const [{ data: photoRow }, { data: referenceRows }] = opts.skipImages
+    ? [{ data: null }, { data: null }]
+    : await Promise.all([
     admin.from("uploads").select("storage_path").eq("user_id", userId).eq("kind", "photo").maybeSingle(),
     admin.from("uploads").select("storage_path, mime_type").eq("user_id", userId).eq("kind", "visual_reference").limit(3),
   ]);

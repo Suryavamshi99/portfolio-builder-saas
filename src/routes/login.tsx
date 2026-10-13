@@ -51,7 +51,11 @@ function LoginRoute() {
   // If already authenticated, redirect to destination
   React.useEffect(() => {
     if (user) {
-      void resolveDestination().then((to) => navigate({ to: to as any }));
+      void resolveDestination().then((to) => {
+        // /authorize is a server route (the connector consent page), not a client route: load it normally.
+        if (to.startsWith("/authorize?")) window.location.assign(to);
+        else navigate({ to: to as any });
+      });
     }
   }, [user, resolveDestination, navigate]);
 

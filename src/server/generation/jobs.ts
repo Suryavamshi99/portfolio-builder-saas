@@ -100,8 +100,12 @@ export async function getUserJob(admin: SupabaseClient, userId: string, id: stri
   return getJobById(admin, row.id);
 }
 
+/** A chat can take a while to write a page, so MCP jobs get longer before they count as dead. */
+const MCP_STALE_AFTER_MS = 30 * 60_000;
+
 export function isStale(row: JobRow, now = Date.now()): boolean {
-  return ["reading", "writing", "checking", "saving"].includes(row.status) && now - new Date(row.updated_at).getTime() > STALE_AFTER_MS;
+  const limit = row.source === "mcp" ? MCP_STALE_AFTER_MS : STALE_AFTER_MS;
+  return ["reading", "writing", "checking", "saving"].includes(row.status) && now - new Date(row.updated_at).getTime() > limit;
 }
 
 export async function setStatus(admin: SupabaseClient, id: string, status: JobStatus, extra: { provider?: string } = {}) {
