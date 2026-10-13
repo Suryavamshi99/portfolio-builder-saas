@@ -1,17 +1,30 @@
-import type { LlmImageInput } from "@/server/llm";
+import { getFreeProviderChain, type FreeProvider } from "@/config/free-models";
+import { LlmProviderError, type LlmImageInput } from "@/server/llm";
+import { GUARDRAIL_SYSTEM_PROMPT } from "@/server/llm";
+import { callOpenAICompatible } from "@/server/llm/openai-compatible";
 import type { ChainProvider } from "./free-chain";
 
-// The real providers come from src/config/free-models.ts and
-// callOpenAICompatible (handoff 06a). Until that is merged the free chain is
-// empty and free generation reports "unavailable".
-export function getFreeChain(): ChainProvider[] {
-  return [];
+/** Free providers that are configured (key and model set) in this environment. */
+export function getFreeChain(): FreeProvider[] {
+  return getFreeProviderChain(process.env);
 }
 
 export async function callFreeProvider(
-  _provider: ChainProvider,
-  _userMessage: string,
-  _images: LlmImageInput[],
+  provider: ChainProvider,
+  userMessage: string,
+  images: LlmImageInput[],
 ): Promise<{ text: string; finishReason: string | null }> {
-  throw new Error("Free providers are not configured");
+  const full = getFreeChain().find((p) => p.id === provider.id);
+  const apiKey = full ? process.env[full.apiKeyEnv]?.trim() : undefined;
+  if (!full || !apiKey) throw new LlmProviderError(`${provider.label} is not configured`);
+  return callOpenAICompatible({
+    apiKey,
+    systemPrompt: GUARDRAIL_SYSTEM_PROMPT,
+    userMessage,
+    images,
+    baseUrl: full.baseUrl,
+    model: full.model,
+    maxOutputTokens: full.maxOutputTokens,
+    timeoutMs: full.timeoutMs,
+  });
 }
