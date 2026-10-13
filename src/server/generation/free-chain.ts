@@ -64,6 +64,7 @@ export async function runFreeChain(opts: {
         details: result.details,
       };
     } catch (e) {
+      console.warn("Free provider failed", provider.id, e instanceof Error ? e.constructor.name : "error", e instanceof Error ? e.message.slice(0, 300) : "");
       if (e instanceof LlmRateLimitError) await opts.cooldown(provider, e.retryAfterSeconds || COOLDOWN_RATE_LIMIT_FALLBACK_S);
       else if (e instanceof LlmAuthError) await opts.cooldown(provider, COOLDOWN_AUTH_ERROR_S);
       else if (e instanceof LlmProviderError) await opts.cooldown(provider, COOLDOWN_PROVIDER_ERROR_S);
