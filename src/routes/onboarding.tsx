@@ -10,7 +10,6 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { UploadWidget, type UploadItem } from "@/components/upload/UploadWidget";
-import { ByokManager, type LLMProvider } from "@/components/byok/ByokManager";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
@@ -18,13 +17,11 @@ import {
   Image as ImageIcon,
   User,
   MessageSquare,
-  KeyRound,
   Sparkles,
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
   Loader2,
-  Clock,
   AlertTriangle,
   LayoutTemplate,
   Globe,
@@ -34,6 +31,14 @@ import {
   X,
   Link2,
 } from "lucide-react";
+import { apiClient, ApiError, type FreeStatusResponse, type GenerationJob } from "@/lib/api-client";
+import {
+  GenerationMethodCards,
+  type GenerationMethod,
+} from "@/components/wizard/GenerationMethodCards";
+import { JobProgressView } from "@/components/wizard/JobProgressView";
+import { McpWaitingPanel } from "@/components/wizard/McpWaitingPanel";
+import { isJobTerminal, shouldContinuePollingJob } from "@/lib/studio-helpers";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -57,7 +62,7 @@ const STEPS = [
   { step: 2, title: "Visual Style", icon: ImageIcon },
   { step: 3, title: "Profile Photo", icon: User },
   { step: 4, title: "Specifics", icon: MessageSquare },
-  { step: 5, title: "BYOK Key", icon: KeyRound },
+  { step: 5, title: "How to Generate", icon: Sparkles },
   { step: 6, title: "Generate", icon: Sparkles },
 ] as const;
 
@@ -75,26 +80,28 @@ function OnboardingWizard() {
   const [githubProjectLinks, setGithubProjectLinks] = React.useState<string[]>([]);
   const [otherLinks, setOtherLinks] = React.useState<{ label: string; url: string }[]>([]);
   const [designIntensity, setDesignIntensity] = React.useState<"minimal" | "bold">("minimal");
-  const [selectedProvider, setSelectedProvider] = React.useState<LLMProvider>("google");
-  const [hasProviderKey, setHasProviderKey] = React.useState(false);
-  // True while any upload/delete on the currently visible step is in
-  // flight — blocks Next/Skip/step-jump so a visitor can't navigate away
-  // before we actually know whether their file made it (see UploadWidget's
-  // onBusyChange).
+
+  // Step 5 & Generation method state
+  const [selectedMethod, setSelectedMethod] = React.useState<GenerationMethod>("free");
+  const [freeConsentChecked, setFreeConsentChecked] = React.useState(false);
+  const [freeStatus, setFreeStatus] = React.useState<FreeStatusResponse | null>(null);
+  const [freeLoading, setFreeLoading] = React.useState(true);
+  const [hasGeminiKey, setHasGeminiKey] = React.useState(false);
+  const [comingSoonNotice, setComingSoonNotice] = React.useState<string | null>(null);
+
+  // Upload busy guard
   const [uploadBusy, setUploadBusy] = React.useState(false);
 
-  // Generation state
+  // Generation & Job state (Task B)
+  const [activeJob, setActiveJob] = React.useState<GenerationJob | null>(null);
   const [generating, setGenerating] = React.useState(false);
-  const [generationPhase, setGenerationPhase] = React.useState<string>("");
   const [generationComplete, setGenerationComplete] = React.useState(false);
   const [confirmRegenerateOpen, setConfirmRegenerateOpen] = React.useState(false);
-  const [errorDetails, setErrorDetails] = React.useState<{
-    title: string;
-    message: string;
-    details?: string[];
-    /** Absolute timestamp (epoch ms), computed once when the error lands, so the displayed clock time doesn't drift across re-renders. */
-    retryAtMs?: number | undefined;
-  } | null>(null);
+  const [isCancelingQueued, setIsCancelingQueued] = React.useState(false);
+
+  const activeJobIdRef = React.useRef<string | null>(null);
+  const pollingTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollStartTimeRef = React.useRef<number>(0);
 
   // Check on mount for existing resume and keys
   React.useEffect(() => {
@@ -109,13 +116,146 @@ function OnboardingWizard() {
 
     void fetch("/api/byok-keys")
       .then((r) => r.json())
-      .then((data: { keys?: Array<{ provider: LLMProvider }> }) => {
-        if (data.keys && data.keys.some((k) => k.provider === selectedProvider)) {
-          setHasProviderKey(true);
+      .then((data: { keys?: Array<{ provider: string }> }) => {
+        if (data.keys && data.keys.some((k) => k.provider === "google")) {
+          setHasGeminiKey(true);
         }
       })
       .catch(() => {});
-  }, [selectedProvider]);
+  }, []);
+
+  // Fetch free capacity status
+  React.useEffect(() => {
+    let alive = true;
+    setFreeLoading(true);
+    void apiClient
+      .getFreeStatus()
+      .then((status) => {
+        if (!alive) return;
+        setFreeStatus(status);
+        if (status.available) {
+          setSelectedMethod("free");
+        } else {
+          // If free is unavailable, fallback to gemini or mcp
+          setSelectedMethod((prev) => (prev === "free" ? "gemini" : prev));
+        }
+      })
+      .catch((err: unknown) => {
+        if (!alive) return;
+        if ((err as { isNotFound?: boolean })?.isNotFound) {
+          setComingSoonNotice("Free tier harness endpoint is coming soon. You can use your Gemini key or Claude/ChatGPT.");
+          setSelectedMethod("gemini");
+        }
+      })
+      .finally(() => {
+        if (alive) setFreeLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Stop polling helper
+  const stopPolling = React.useCallback(() => {
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
+      pollingTimerRef.current = null;
+    }
+  }, []);
+
+  // Job Polling Loop (Task B)
+  const pollJob = React.useCallback(
+    (jobId: string) => {
+      stopPolling();
+      activeJobIdRef.current = jobId;
+      pollStartTimeRef.current = Date.now();
+      setGenerating(true);
+
+      const check = async () => {
+        try {
+          const job = await apiClient.getGeneration(jobId);
+          setActiveJob(job);
+
+          const elapsedMs = Date.now() - pollStartTimeRef.current;
+          const checkResult = shouldContinuePollingJob({
+            status: job.status,
+            elapsedMs,
+          });
+
+          if (job.status === "done") {
+            stopPolling();
+            setGenerating(false);
+            await refreshPortfolioStatus();
+            setGenerationComplete(true);
+            return;
+          }
+
+          if (job.status === "failed") {
+            stopPolling();
+            setGenerating(false);
+            return;
+          }
+
+          if (!checkResult.shouldContinue && checkResult.isTimedOut) {
+            stopPolling();
+            setGenerating(false);
+            setActiveJob((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    message: "Generation is taking longer than usual. Please check back in a moment or refresh.",
+                  }
+                : null
+            );
+          }
+        } catch (err: unknown) {
+          if ((err as { isNotFound?: boolean })?.isNotFound) {
+            stopPolling();
+            setGenerating(false);
+            setActiveJob({
+              id: jobId,
+              source: "free",
+              status: "failed",
+              message: "Generation endpoint coming soon.",
+              error: {
+                code: "not_found",
+                message: "Generation endpoint coming soon.",
+              },
+              retryAt: null,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        }
+      };
+
+      // Poll immediately then every 2 seconds
+      void check();
+      pollingTimerRef.current = setInterval(check, 2000);
+    },
+    [refreshPortfolioStatus, stopPolling]
+  );
+
+  // Resume non-terminal latest generation job on mount (Task B)
+  React.useEffect(() => {
+    let alive = true;
+    void apiClient
+      .getLatestGeneration()
+      .then((latest) => {
+        if (!alive || !latest) return;
+        if (!isJobTerminal(latest.status)) {
+          setActiveJob(latest);
+          setCurrentStep(6);
+          pollJob(latest.id);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      alive = false;
+      stopPolling();
+    };
+  }, [pollJob, stopPolling]);
 
   const hasLoadedInputsRef = React.useRef(false);
   const isDirtyRef = React.useRef(false);
@@ -196,131 +336,99 @@ function OnboardingWizard() {
     return () => clearTimeout(timer);
   }, [otherSpecifics, linkedinUrl, githubProfileUrl, githubProjectLinks, otherLinks, designIntensity]);
 
+  // Handle generation start for Card 1 (free) and Card 3 (gemini)
   const handleGenerate = async () => {
     if (!resumeUpload) {
-      setErrorDetails({
-        title: "Resume missing",
-        message: "Please upload your resume before generating your portfolio.",
-      });
       setCurrentStep(1);
       return;
     }
 
+    if (selectedMethod === "gemini" && !hasGeminiKey) {
+      setCurrentStep(5);
+      return;
+    }
+
+    if (selectedMethod === "free" && !freeConsentChecked) {
+      setCurrentStep(5);
+      return;
+    }
+
     setGenerating(true);
-    setErrorDetails(null);
-    setGenerationPhase("Reading your resume and getting to know your story…");
-
-    const timer1 = setTimeout(() => {
-      setGenerationPhase("Designing a portfolio that actually looks like you…");
-    }, 1500);
-
-    const timer2 = setTimeout(() => {
-      setGenerationPhase("Writing the code for your site — this can take a minute or two…");
-    }, 4500);
-
-    const timer3 = setTimeout(() => {
-      setGenerationPhase("Almost there — polishing the final details…");
-    }, 12000);
+    setActiveJob(null);
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          provider: selectedProvider,
-          resumeUploadId: resumeUpload.id,
-          otherSpecifics: otherSpecifics.trim() || undefined,
-          designIntensity,
-          links: {
-            linkedin: linkedinUrl.trim() || undefined,
-            github: githubProfileUrl.trim() || undefined,
-            githubProjects: githubProjectLinks.map((l) => l.trim()).filter(Boolean),
-            other: otherLinks
-              .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
-              .filter((l) => l.label && l.url),
-          },
-        }),
+      const created = await apiClient.createGeneration({
+        source: selectedMethod === "free" ? "free" : "gemini",
+        resumeUploadId: resumeUpload.id,
+        otherSpecifics: otherSpecifics.trim() || undefined,
+        designIntensity,
+        links: {
+          linkedin: linkedinUrl.trim() || undefined,
+          github: githubProfileUrl.trim() || undefined,
+          githubProjects: githubProjectLinks.map((l) => l.trim()).filter(Boolean),
+          other: otherLinks
+            .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+            .filter((l) => l.label && l.url),
+        },
       });
 
-      const json = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        const err = json?.error;
-        if (res.status === 401) {
-          if (err?.code === "byok_key_invalid") {
-            setErrorDetails({
-              title: "API Key Rejected by Provider",
-              message: err.message ?? "The provider rejected your API key. Check or rotate your key.",
-            });
-            setCurrentStep(5);
-          } else {
-            setErrorDetails({
-              title: "Missing API Key",
-              message: "Please connect an API key for your selected provider first.",
-            });
-            setCurrentStep(5);
-          }
-        } else if (res.status === 429) {
-          const retryAtMs = err?.retryAfterSeconds ? Date.now() + err.retryAfterSeconds * 1000 : undefined;
-          if (err?.code === "provider_rate_limited") {
-            setErrorDetails({
-              title: "The AI model is busy right now",
-              message:
-                "Gemini is handling a lot of requests at the moment and needs a little time to catch up. Please try again after the time below.",
-              retryAtMs,
-            });
-          } else {
-            setErrorDetails({
-              title: "Generation Rate Limited",
-              message:
-                err?.message ??
-                "You have reached the limit of 5 generations per hour. Please wait before trying again.",
-              retryAtMs,
-            });
-          }
-        } else if (res.status === 422) {
-          setErrorDetails({
-            title:
-              err?.code === "generation_unsupported_claims"
-                ? "Some facts aren't in your resume"
-                : "The page didn't pass our checks",
-            message: err?.message ?? "The AI's page didn't pass our checks. Please try again.",
-            details: Array.isArray(err?.details) ? err.details : undefined,
-          });
-        } else if (res.status === 502) {
-          setErrorDetails({
-            title: "LLM Provider Unavailable",
-            message:
-              err?.message ??
-              "The upstream AI provider experienced an error or rate limit. Please try again in a moment.",
-          });
-        } else {
-          setErrorDetails({
-            title: "Generation Failed",
-            message: err?.message ?? `Server returned error (${res.status})`,
-          });
-        }
-        return;
-      }
-
-      // Success! Unlock Studio (refreshes the shared readiness flag Navbar
-      // and the /studio route both gate on), then show a deliberate
-      // hand-off screen rather than silently whisking the user away —
-      // they should land on a clear next step, not a surprise redirect.
-      setGenerationPhase("Your portfolio is ready! Unlocking Studio…");
-      await refreshPortfolioStatus();
-      setGenerationComplete(true);
-    } catch (e: unknown) {
-      setErrorDetails({
-        title: "Network Error",
-        message: e instanceof Error ? e.message : "Failed to connect to generation endpoint.",
-      });
-    } finally {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
+      // Poll created job
+      pollJob(created.jobId);
+    } catch (err: unknown) {
       setGenerating(false);
+      if (err instanceof ApiError) {
+        setActiveJob({
+          id: "temp",
+          source: selectedMethod === "free" ? "free" : "gemini",
+          status: "failed",
+          message: err.message,
+          error: {
+            code: err.code,
+            message: err.message,
+            details: err.details,
+            retryAfterSeconds: err.retryAfterSeconds,
+          },
+          retryAt: null,
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        setActiveJob({
+          id: "temp",
+          source: selectedMethod === "free" ? "free" : "gemini",
+          status: "failed",
+          message: "Failed to start generation",
+          error: {
+            code: "network_error",
+            message: err instanceof Error ? err.message : "Failed to connect to generation endpoint.",
+          },
+          retryAt: null,
+          updatedAt: new Date().toISOString(),
+        });
+      }
     }
+  };
+
+  const handleCancelQueuedJob = async () => {
+    if (!activeJob?.id || activeJob.status !== "queued") return;
+    setIsCancelingQueued(true);
+    try {
+      await apiClient.cancelGeneration(activeJob.id);
+      stopPolling();
+      setActiveJob(null);
+      setGenerating(false);
+      setCurrentStep(5);
+    } catch (e) {
+      console.warn("Failed to cancel queued job:", e);
+    } finally {
+      setIsCancelingQueued(false);
+    }
+  };
+
+  const canProceedFromStep5 = () => {
+    if (selectedMethod === "free") return freeConsentChecked;
+    if (selectedMethod === "gemini") return hasGeminiKey;
+    if (selectedMethod === "mcp") return true;
+    return false;
   };
 
   return (
@@ -559,8 +667,6 @@ function OnboardingWizard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              {/* Links & Profiles — exact URLs, embedded verbatim in the
-                  generated site (never fabricated, never guessed). */}
               <div className="space-y-3 rounded-xl border border-border/80 bg-muted/20 p-3.5">
                 <div className="text-xs font-semibold text-foreground">Links & profiles (optional)</div>
 
@@ -593,7 +699,7 @@ function OnboardingWizard() {
                   </div>
                 </div>
 
-                {/* GitHub project links — repeatable */}
+                {/* GitHub project links */}
                 <div className="space-y-1.5">
                   <div className="text-[11px] font-medium text-muted-foreground">GitHub project links</div>
                   {githubProjectLinks.map((link, idx) => (
@@ -628,7 +734,7 @@ function OnboardingWizard() {
                   </button>
                 </div>
 
-                {/* Any other link — Figma, Behance, personal site, etc. */}
+                {/* Any other link */}
                 <div className="space-y-1.5">
                   <div className="text-[11px] font-medium text-muted-foreground">Other links (Figma, Behance, personal site, etc.)</div>
                   {otherLinks.map((entry, idx) => (
@@ -709,28 +815,34 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(5)}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
-                Next: BYOK Key Setup
+                Next: How to Generate
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
           </>
         )}
 
-        {/* Step 5: BYOK Key Selection */}
+        {/* Step 5: How should we generate it? (Task A: 3 Cards) */}
         {currentStep === 5 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 5: Connect Your API Key</CardTitle>
+              <CardTitle className="text-lg">Step 5: How should we generate it?</CardTitle>
               <CardDescription>
-                Connect your free Google Gemini API key. We never bill you for inference.
+                Choose how you want your portfolio generated. You can use free models, your own Claude/ChatGPT subscription, or a Gemini key.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ByokManager
+              <GenerationMethodCards
+                selectedMethod={selectedMethod}
+                onSelectMethod={setSelectedMethod}
+                freeStatus={freeStatus}
+                freeLoading={freeLoading}
+                freeConsentChecked={freeConsentChecked}
+                onFreeConsentChange={setFreeConsentChecked}
                 onKeyConnected={(prov) => {
-                  setSelectedProvider(prov);
-                  setHasProviderKey(true);
+                  if (prov === "google") setHasGeminiKey(true);
                 }}
+                comingSoonNotice={comingSoonNotice}
               />
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
@@ -744,17 +856,18 @@ function OnboardingWizard() {
               </Button>
               <Button
                 type="button"
+                disabled={!canProceedFromStep5()}
                 onClick={() => setCurrentStep(6)}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
-                Next: Review & Generate
+                {selectedMethod === "mcp" ? "Proceed to Waiting Panel" : "Next: Review & Generate"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
           </>
         )}
 
-        {/* Step 6: Trigger Generation, or the post-generation hand-off */}
+        {/* Step 6: Trigger Generation, Progress & Hand-off */}
         {currentStep === 6 && generationComplete && (
           <>
             <CardContent className="flex flex-col items-center gap-6 py-12 text-center relative overflow-hidden">
@@ -779,7 +892,7 @@ function OnboardingWizard() {
                     Publishing is a separate, explicit step
                   </div>
                   <p className="leading-relaxed">
-                    Editing and saving in Studio never goes live on its own. When you're happy with it, connect Vercel and hit Publish from Studio to deploy it to your own domain.
+                    Editing and saving in Studio never goes live on its own. When you're happy with it, publish directly to your custom subdomain or export your site package.
                   </p>
                 </div>
 
@@ -795,88 +908,67 @@ function OnboardingWizard() {
         {currentStep === 6 && !generationComplete && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 6: Generate Your Portfolio Draft</CardTitle>
+              <CardTitle className="text-lg">
+                {selectedMethod === "mcp"
+                  ? "Step 6: Chat with Claude or ChatGPT"
+                  : "Step 6: Generate Your Portfolio Draft"}
+              </CardTitle>
               <CardDescription>
-                Review your inputs and trigger the AI generation pipeline.
+                {selectedMethod === "mcp"
+                  ? "Follow the prompt in your chat to build your portfolio."
+                  : "Review your inputs and trigger the AI generation pipeline."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Summary overview */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
-                  <span className="text-muted-foreground">Selected Resume:</span>
-                  <div className="font-semibold truncate text-foreground">
-                    {resumeUpload?.filename ?? "No resume uploaded"}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
-                  <span className="text-muted-foreground">LLM Provider:</span>
-                  <div className="font-semibold uppercase tracking-wider text-accent">
-                    {selectedProvider}
-                  </div>
-                </div>
-              </div>
-
-              {portfolioReady && (
-                <Alert variant="warning">
-                  <AlertTriangle className="size-4" />
-                  <AlertTitle>You already have a portfolio</AlertTitle>
-                  <AlertDescription>
-                    Generating again will overwrite your current draft and call your {selectedProvider} key
-                    again — using more of your API credits, subject to what your account has available.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Error Callouts */}
-              {errorDetails && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="size-4" />
-                  <AlertTitle>{errorDetails.title}</AlertTitle>
-                  <AlertDescription className="space-y-2">
-                    <p>{errorDetails.message}</p>
-                    {errorDetails.details && errorDetails.details.length > 0 && (
-                      <ul className="mt-2 list-disc space-y-1 rounded bg-black/10 p-2 pl-6 text-xs">
-                        {errorDetails.details.map((detail, idx) => (
-                          <li key={idx}>{detail}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {errorDetails.retryAtMs && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs">
-                        <Clock className="size-3.5" />
-                        <span>
-                          Please try again after{" "}
-                          {new Date(errorDetails.retryAtMs).toLocaleTimeString([], {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                          .
-                        </span>
+              {/* Task C: If B is chosen, show MCP waiting panel */}
+              {selectedMethod === "mcp" ? (
+                <McpWaitingPanel
+                  onPortfolioReady={async () => {
+                    await refreshPortfolioStatus();
+                    setGenerationComplete(true);
+                  }}
+                />
+              ) : (
+                <>
+                  {/* Summary overview */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
+                      <span className="text-muted-foreground">Selected Resume:</span>
+                      <div className="font-semibold truncate text-foreground">
+                        {resumeUpload?.filename ?? "No resume uploaded"}
                       </div>
-                    )}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Generating active state with FluidOrb living core */}
-              {generating && (
-                <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-2xl border border-accent/40 bg-accent/5 p-8 text-center shadow-lg">
-                  <div className="relative">
-                    <FluidOrb size={170} color="#3457E8" className="shadow-2xl ring-4 ring-accent/20" />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <Sparkles className="size-8 text-white drop-shadow-md animate-pulse" />
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
+                      <span className="text-muted-foreground">Generation Method:</span>
+                      <div className="font-semibold text-accent">
+                        {selectedMethod === "free" ? "⚡ Free Models" : "🔑 My Gemini Key"}
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-1.5 max-w-sm">
-                    <h3 className="font-bold text-lg text-foreground tracking-tight">A beautiful portfolio is in the works…</h3>
-                    <p className="text-xs text-accent font-medium animate-pulse">{generationPhase}</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="size-3.5 animate-spin text-accent" />
-                    <span>Sticking to the facts on your resume — nothing made up</span>
-                  </div>
-                </div>
+
+                  {portfolioReady && !generating && (
+                    <Alert variant="warning">
+                      <AlertTriangle className="size-4" />
+                      <AlertTitle>You already have a portfolio</AlertTitle>
+                      <AlertDescription>
+                        Generating again will overwrite your current draft.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Active Job Progress View or Failure (Task B) */}
+                  {(generating || activeJob) && (
+                    <JobProgressView
+                      job={activeJob}
+                      generating={generating}
+                      onTryAgain={() => void handleGenerate()}
+                      onEditDetails={() => setCurrentStep(4)}
+                      onUseAnotherMethod={() => setCurrentStep(5)}
+                      onCancelQueued={() => void handleCancelQueuedJob()}
+                      isCancelingQueued={isCancelingQueued}
+                    />
+                  )}
+                </>
               )}
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
@@ -889,22 +981,24 @@ function OnboardingWizard() {
               >
                 <ArrowLeft className="size-4" /> Back
               </Button>
-              <Button
-                type="button"
-                disabled={generating || !resumeUpload}
-                onClick={() => (portfolioReady ? setConfirmRegenerateOpen(true) : void handleGenerate())}
-                className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-              >
-                {generating ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" /> Generating…
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="size-4" /> {portfolioReady ? "Regenerate Portfolio" : "Generate Portfolio"}
-                  </>
-                )}
-              </Button>
+              {selectedMethod !== "mcp" && (
+                <Button
+                  type="button"
+                  disabled={generating || !resumeUpload}
+                  onClick={() => (portfolioReady ? setConfirmRegenerateOpen(true) : void handleGenerate())}
+                  className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Generating…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-4" /> {portfolioReady ? "Regenerate Portfolio" : "Generate Portfolio"}
+                    </>
+                  )}
+                </Button>
+              )}
             </CardFooter>
           </>
         )}
@@ -918,8 +1012,7 @@ function OnboardingWizard() {
               Regenerate and overwrite your current draft?
             </DialogTitle>
             <DialogDescription>
-              This calls your {selectedProvider} API key again and uses more of your available credits —
-              subject to whatever quota or balance your account has with that provider. Your current
+              This will run generation with your chosen method ({selectedMethod}). Your current
               Studio draft will be overwritten with the new result.
             </DialogDescription>
           </DialogHeader>

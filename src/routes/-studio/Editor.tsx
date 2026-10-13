@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { LivePreview } from "@/components/preview/LivePreview";
-import { PublishToolbar } from "@/components/publish/PublishToolbar";
+import { StudioToolbar } from "@/components/studio/StudioToolbar";
+import { JobProgressView } from "@/components/wizard/JobProgressView";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import {
@@ -15,8 +16,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Download,
-  Lock,
   Loader2,
   Sparkles,
   AlertCircle,
@@ -24,10 +23,9 @@ import {
   CheckCircle2,
   History,
   RotateCcw,
-  Copy,
-  Check,
-  FileCode,
 } from "lucide-react";
+import { apiClient, type GenerationJob } from "@/lib/api-client";
+import { shouldContinuePollingJob } from "@/lib/studio-helpers";
 
 interface EditorProps {
   initialHtml: string;
@@ -43,16 +41,11 @@ interface VersionItem {
 }
 
 export function Editor({ initialHtml, onRegenerated }: EditorProps) {
-  // hasPaidAccess already honors PAYMENTS_ENABLED (see src/config/payments.ts)
-  // server-side, via /api/me — so setting PAYMENTS_ENABLED=false makes
-  // download (and publish) free for everyone with no separate flag here.
   const { hasPaidAccess: downloadUnlocked } = useAuth();
   const [html, setHtml] = useState(initialHtml);
   const [instructions, setInstructions] = useState("");
   const [resumeUploadId, setResumeUploadId] = useState<string | null>(null);
-  const [regenerating, setRegenerating] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [checkingOut, setCheckingOut] = useState(false);
   const [downloadingZip, setDownloadingZip] = useState(false);
   const [downloadingHtml, setDownloadingHtml] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -62,6 +55,18 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     msg: string;
     details?: string[] | undefined;
   } | null>(null);
+
+  // Vercel connection state for export dialog
+  const [vercelStatus, setVercelStatus] = useState<{
+    connected: boolean;
+    vercelUsername?: string | undefined;
+  }>({ connected: false });
+
+  // Regeneration job & progress state (Task D + reusing Task B JobProgressView)
+  const [regenerating, setRegenerating] = useState(false);
+  const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
+  const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollStartTimeRef = useRef<number>(0);
 
   // Version history state
   const [versionsOpen, setVersionsOpen] = useState(false);
@@ -93,7 +98,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
   }
 
-  // Keyboard shortcuts: Cmd/Ctrl+Enter to regenerate, Cmd/Ctrl+H or Cmd/Ctrl+S for history
+  // Keyboard shortcuts: Cmd/Ctrl+Enter to regenerate, Cmd/Ctrl+Shift+H for history
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const isMod = e.metaKey || e.ctrlKey;
@@ -102,7 +107,8 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
         if (!regenerating && resumeUploadId) {
           setConfirmOpen(true);
         }
-      } else if (isMod && (e.key === "h" || e.key === "H")) {
+      } else if (isMod && e.shiftKey && (e.key === "h" || e.key === "H")) {
+        // Task D: replace ⌘/Ctrl+H with ⌘/Ctrl+Shift+H to avoid Mac window hide clash
         e.preventDefault();
         setVersionsOpen(true);
         void loadVersions();
@@ -117,6 +123,13 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       .then((r) => r.json())
       .then((data: { uploads?: { id: string }[] }) => {
         if (data.uploads && data.uploads[0]) setResumeUploadId(data.uploads[0].id);
+      })
+      .catch(() => {});
+
+    void fetch("/api/vercel/status")
+      .then((r) => r.json())
+      .then((data: { connected: boolean; vercelUsername?: string }) => {
+        setVercelStatus(data);
       })
       .catch(() => {});
   }, []);
@@ -163,6 +176,94 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
   }
 
+  const stopPolling = useCallback(() => {
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
+      pollingTimerRef.current = null;
+    }
+  }, []);
+
+  const pollJob = useCallback(
+    (jobId: string) => {
+      stopPolling();
+      pollStartTimeRef.current = Date.now();
+      setRegenerating(true);
+
+      const check = async () => {
+        try {
+          const job = await apiClient.getGeneration(jobId);
+          setActiveJob(job);
+
+          const elapsedMs = Date.now() - pollStartTimeRef.current;
+          const checkResult = shouldContinuePollingJob({
+            status: job.status,
+            elapsedMs,
+          });
+
+          if (job.status === "done") {
+            stopPolling();
+            setRegenerating(false);
+            // Refresh content from GET /api/content
+            const contentRes = await fetch("/api/content");
+            if (contentRes.ok) {
+              const contentJson = (await contentRes.json()) as { html?: string };
+              if (contentJson.html) {
+                setHtml(contentJson.html);
+                onRegenerated(contentJson.html);
+              }
+            }
+            setStatus({ kind: "ok", msg: "Portfolio regenerated from your latest instructions." });
+            return;
+          }
+
+          if (job.status === "failed") {
+            stopPolling();
+            setRegenerating(false);
+            return;
+          }
+
+          if (!checkResult.shouldContinue && checkResult.isTimedOut) {
+            stopPolling();
+            setRegenerating(false);
+            setActiveJob((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    message: "Generation is taking longer than usual. Please check back in a moment or refresh.",
+                  }
+                : null
+            );
+          }
+        } catch (err: unknown) {
+          if ((err as { isNotFound?: boolean })?.isNotFound) {
+            stopPolling();
+            setRegenerating(false);
+            setActiveJob({
+              id: jobId,
+              source: "gemini",
+              status: "failed",
+              message: "Generation endpoint coming soon.",
+              error: { code: "not_found", message: "Generation endpoint coming soon." },
+              retryAt: null,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        }
+      };
+
+      void check();
+      pollingTimerRef.current = setInterval(check, 2000);
+    },
+    [onRegenerated, stopPolling]
+  );
+
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, [stopPolling]);
+
+  // Task D: Regenerate uses POST /api/generations + JobProgressView
   async function regenerate() {
     if (!resumeUploadId) {
       setStatus({ kind: "err", msg: "No resume on file — upload one from the wizard first." });
@@ -170,47 +271,35 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
     setRegenerating(true);
     setStatus(null);
+    setActiveJob(null);
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          provider: "google",
-          resumeUploadId,
-          instructions: instructions.trim() || undefined,
-        }),
+      const created = await apiClient.createGeneration({
+        source: "gemini",
+        resumeUploadId,
+        instructions: instructions.trim() || undefined,
       });
 
-      const json = (await res.json().catch(() => ({}))) as {
-        html?: string;
-        error?: { code?: string; message?: string; details?: string[] };
-      };
-
-      if (!res.ok || !json.html) {
-        const errorTitle =
-          json.error?.code === "generation_unsupported_claims"
-            ? "Some facts aren't in your resume"
-            : json.error?.code === "generation_invalid_output"
-            ? "The page didn't pass our checks"
-            : undefined;
-
-        setStatus({
-          kind: "err",
-          title: errorTitle,
-          msg: json.error?.message ?? `Regeneration failed (${res.status})`,
-          details: Array.isArray(json.error?.details) ? json.error.details : undefined,
-        });
-        return;
-      }
-
-      setHtml(json.html);
-      onRegenerated(json.html);
-      setStatus({ kind: "ok", msg: "Portfolio regenerated from your latest instructions." });
-    } catch (e: unknown) {
-      setStatus({ kind: "err", msg: e instanceof Error ? e.message : String(e) });
-    } finally {
+      pollJob(created.jobId);
+    } catch (err: unknown) {
       setRegenerating(false);
+      const isNotFound = (err as { isNotFound?: boolean })?.isNotFound;
+      setActiveJob({
+        id: "temp",
+        source: "gemini",
+        status: "failed",
+        message: isNotFound ? "Generation endpoint coming soon." : "Failed to start regeneration",
+        error: {
+          code: isNotFound ? "not_found" : "error",
+          message: isNotFound
+            ? "Generation endpoint coming soon."
+            : err instanceof Error
+            ? err.message
+            : "Failed to connect to generation endpoint.",
+        },
+        retryAt: null,
+        updatedAt: new Date().toISOString(),
+      });
     }
   }
 
@@ -271,26 +360,6 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
   }
 
-  async function handleDownloadClick(format: "zip" | "html" = "zip") {
-    if (downloadUnlocked) {
-      if (format === "zip") await downloadZip();
-      else await downloadHtml();
-      return;
-    }
-    setCheckingOut(true);
-    try {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
-      const json = (await res.json().catch(() => ({}))) as { checkoutUrl?: string };
-      if (!res.ok || !json.checkoutUrl) {
-        setStatus({ kind: "err", msg: "Could not start checkout. Try again from Settings." });
-        return;
-      }
-      window.location.href = json.checkoutUrl;
-    } finally {
-      setCheckingOut(false);
-    }
-  }
-
   async function copyHtmlToClipboard() {
     try {
       await navigator.clipboard.writeText(html);
@@ -305,6 +374,37 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       });
     }
   }
+
+  async function handleUpgradeClick() {
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ returnTo: "studio" }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { checkoutUrl?: string };
+      if (!res.ok || !json.checkoutUrl) {
+        setStatus({ kind: "err", msg: "Could not start checkout. Try again from Settings." });
+        return;
+      }
+      window.location.href = json.checkoutUrl;
+    } catch {
+      setStatus({ kind: "err", msg: "Checkout redirect failed." });
+    }
+  }
+
+  // Derive default slug candidate from document title if available
+  const extractDefaultSlug = () => {
+    try {
+      const match = html.match(/<title>([^<]+)<\/title>/i);
+      if (match && match[1]) {
+        return match[1].split("-")[0]?.split("|")[0]?.trim() || "";
+      }
+    } catch {
+      // ignore
+    }
+    return "";
+  };
 
   return (
     <div className="space-y-6 pb-10">
@@ -324,62 +424,31 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               size="sm"
               onClick={handleOpenVersions}
               className="gap-1.5 text-xs"
-              title="View and restore saved portfolio versions"
+              title="View and restore saved portfolio versions (⌘/Ctrl+Shift+H)"
             >
               <History className="size-3.5" />
               Version History
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void copyHtmlToClipboard()}
-              className="gap-1.5 text-xs"
-              title="Copy raw HTML to clipboard"
-            >
-              {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
-              {copied ? "Copied!" : "Copy HTML"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void handleDownloadClick("html")}
-              disabled={checkingOut || downloadingHtml || downloadingZip}
-              className="gap-1.5 text-xs"
-              title={downloadUnlocked ? "Download single standalone HTML file" : "Pay now to unlock exports"}
-            >
-              {downloadingHtml ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : downloadUnlocked ? (
-                <FileCode className="size-3.5" />
-              ) : (
-                <Lock className="size-3.5" />
-              )}
-              {downloadUnlocked ? (downloadingHtml ? "Preparing…" : "HTML") : "HTML"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void handleDownloadClick("zip")}
-              disabled={checkingOut || downloadingZip || downloadingHtml}
-              className="gap-1.5 text-xs"
-              title={downloadUnlocked ? "Download standalone website zip with bundled assets" : "Pay now to deploy and download your portfolio"}
-            >
-              {checkingOut || downloadingZip ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : downloadUnlocked ? (
-                <Download className="size-3.5" />
-              ) : (
-                <Lock className="size-3.5" />
-              )}
-              {downloadUnlocked ? (downloadingZip ? "Packaging…" : "Zip Archive") : "Unlock Exports"}
-            </Button>
           </div>
         </div>
 
-        <PublishToolbar onPublishStarted={() => {}} />
+        {/* Task D: Unified Studio Toolbar */}
+        <StudioToolbar
+          hasPaidAccess={downloadUnlocked}
+          onUpgradeRequired={() => void handleUpgradeClick()}
+          onDownloadZip={downloadZip}
+          onDownloadHtml={downloadHtml}
+          onCopyHtml={copyHtmlToClipboard}
+          downloadingZip={downloadingZip}
+          downloadingHtml={downloadingHtml}
+          copiedHtml={copied}
+          onConnectVercel={() => {
+            window.location.href = "/api/vercel/oauth/start";
+          }}
+          vercelConnected={vercelStatus.connected}
+          vercelUsername={vercelStatus.vercelUsername}
+          defaultSlug={extractDefaultSlug()}
+        />
       </div>
 
       {status && (
@@ -403,27 +472,31 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
 
       {/* Main Studio Viewport */}
       <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <div className="h-fit space-y-3 rounded-xl border border-border bg-card p-4 sm:p-5">
-          <p className="flex items-center gap-1.5 text-sm font-semibold">
-            <Sparkles className="size-4 text-accent" />
-            Regenerate with new instructions
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Describe what to change — design direction, sections to emphasize, tone. Auto-saved as you type.
-          </p>
+        <div className="h-fit space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
+          <div className="space-y-1">
+            <p className="flex items-center gap-1.5 text-sm font-semibold">
+              <Sparkles className="size-4 text-accent" />
+              Regenerate with new instructions
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Describe what to change — design direction, sections to emphasize, tone. Auto-saved as you type.
+            </p>
+          </div>
+
           <Textarea
             value={instructions}
             onChange={(e) => handleInstructionsChange(e.target.value)}
             rows={5}
             placeholder="e.g. Make it more minimal and light-themed. Emphasize the machine learning projects. (Press ⌘+Enter to regenerate)"
             disabled={regenerating}
-            className="bg-background/60"
+            className="bg-background/60 text-xs"
           />
+
           <Button
             type="button"
             onClick={() => setConfirmOpen(true)}
             disabled={regenerating}
-            className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98]"
+            className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98] text-xs font-semibold"
           >
             {regenerating ? (
               <>
@@ -437,6 +510,24 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               </>
             )}
           </Button>
+
+          {/* Task D: Progress & Failure UI for Studio Regeneration (reusing JobProgressView) */}
+          {(regenerating || activeJob) && (
+            <div className="pt-2">
+              <JobProgressView
+                job={activeJob}
+                generating={regenerating}
+                onTryAgain={() => void regenerate()}
+                onEditDetails={() => {
+                  setActiveJob(null);
+                }}
+                onUseAnotherMethod={() => {
+                  setActiveJob(null);
+                }}
+                fallbackMessage="Polishing your updated portfolio with your new instructions…"
+              />
+            </div>
+          )}
         </div>
 
         <div className="h-[80vh] min-h-[500px]">
@@ -452,8 +543,8 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               Regenerate and overwrite your current draft?
             </DialogTitle>
             <DialogDescription>
-              This calls your connected Gemini API key again and uses more of your available quota. Your
-              current draft will be updated, but your past snapshot is automatically saved to Version History so you can restore it anytime.
+              This calls background generation with your latest instructions. Your current draft will be updated,
+              and your past version snapshot is automatically saved to Version History so you can restore it anytime.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -461,7 +552,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               Cancel
             </Button>
             <Button
-              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
               onClick={() => {
                 setConfirmOpen(false);
                 void regenerate();
@@ -483,7 +574,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               Version History
             </DialogTitle>
             <DialogDescription>
-              Shipfolio preserves up to 20 past versions of your portfolio. You can restore any past version to replace your current draft. (Shortcut: ⌘+H)
+              Shipfolio preserves up to 20 past versions of your portfolio. You can restore any past version to replace your current draft. (Shortcut: ⌘/Ctrl+Shift+H)
             </DialogDescription>
           </DialogHeader>
 
