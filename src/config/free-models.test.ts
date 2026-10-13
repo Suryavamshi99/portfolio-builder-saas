@@ -80,7 +80,7 @@ describe("getFreeProviderChain", () => {
     const partialEnv: NodeJS.ProcessEnv = {
       // openrouter-a: has key and model -> kept
       OPENROUTER_API_KEY: "sk-or-test",
-      FREE_MODEL_OPENROUTER_A: "model-a",
+      FREE_MODEL_OPENROUTER_A: "model-a:free",
       // openrouter-b: key exists (shares OPENROUTER_API_KEY), but model is missing -> omitted
       // groq: model exists, but key is missing -> omitted
       FREE_MODEL_GROQ: "groq-model",
@@ -134,5 +134,17 @@ describe("getFreeProviderChain", () => {
     expect(chain[0]?.maxOutputTokens).toBe(12000);
     const groq = chain.find((p) => p.id === "groq");
     expect(groq?.dailyRequestBudget).toBe(200);
+  });
+});
+
+describe("free tier only", () => {
+  const base = { OPENROUTER_API_KEY: "k" } as NodeJS.ProcessEnv;
+  it("never uses an OpenRouter model that is not a :free variant", () => {
+    const chain = getFreeProviderChain({
+      ...base,
+      FREE_MODEL_OPENROUTER_A: "google/gemma-4-31b-it",
+      FREE_MODEL_OPENROUTER_B: "nvidia/nemotron-3-super-120b-a12b:free",
+    });
+    expect(chain.map((p) => p.id)).toEqual(["openrouter-b"]);
   });
 });
