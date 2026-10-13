@@ -111,6 +111,10 @@ export function slugFromTitle(title: string): string {
  * Env is read inside handler/function, not at module scope.
  */
 export function siteUrl(slug: string): string {
+  // When SITES_BASE_URL is set (e.g. https://www.shipfolio.xyz/s) sites live at <base>/<slug>
+  // instead of <slug>.<SITES_DOMAIN>.
+  const base = process.env["SITES_BASE_URL"];
+  if (base) return `${base.replace(/\/+$/, "")}/${slug}`;
   const domain = process.env["SITES_DOMAIN"] ?? "";
   return `https://${slug}.${domain}`;
 }

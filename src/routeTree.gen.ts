@@ -31,6 +31,7 @@ import { Route as ApiResetRouteImport } from './routes/api/reset'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
+import { Route as SSplatRouteImport } from './routes/s.$'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
 import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
@@ -178,6 +179,11 @@ const ApiVercelRoute = ApiVercelRouteImport.update({
 const ApiWaitlistRoute = ApiWaitlistRouteImport.update({
   id: '/api/waitlist',
   path: '/api/waitlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SSplatRoute = SSplatRouteImport.update({
+  id: '/s/$',
+  path: '/s/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
@@ -387,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
+  '/s/$': typeof SSplatRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
@@ -447,6 +454,7 @@ export interface FileRoutesByTo {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
+  '/s/$': typeof SSplatRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
@@ -508,6 +516,7 @@ export interface FileRoutesById {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
+  '/s/$': typeof SSplatRoute
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
@@ -570,6 +579,7 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
+    | '/s/$'
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/session'
@@ -630,6 +640,7 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
+    | '/s/$'
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/session'
@@ -690,6 +701,7 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
+    | '/s/$'
     | '/api/admin/login'
     | '/api/admin/logout'
     | '/api/admin/session'
@@ -751,6 +763,7 @@ export interface RootRouteChildren {
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
   ApiWaitlistRoute: typeof ApiWaitlistRoute
+  SSplatRoute: typeof SSplatRoute
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
   ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
@@ -933,6 +946,13 @@ declare module '@tanstack/react-router' {
       path: '/api/waitlist'
       fullPath: '/api/waitlist'
       preLoaderRoute: typeof ApiWaitlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$': {
+      id: '/s/$'
+      path: '/s/$'
+      fullPath: '/s/$'
+      preLoaderRoute: typeof SSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/login': {
@@ -1304,6 +1324,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
   ApiWaitlistRoute: ApiWaitlistRoute,
+  SSplatRoute: SSplatRoute,
   ApiAdminLoginRoute: ApiAdminLoginRoute,
   ApiAdminLogoutRoute: ApiAdminLogoutRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
