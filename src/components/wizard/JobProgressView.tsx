@@ -40,14 +40,14 @@ export function JobProgressView({
   const isQueuedWithRetry = job?.status === "queued" && Boolean(job.retryAt);
 
   // Failure UI with the 3 required action buttons
-  if (isFailed && job?.error) {
-    const error = job.error;
+  if (isFailed) {
+    const error = job?.error ?? { code: "generation_failed", message: job?.message ?? "" };
     const title =
       error.code === "generation_unsupported_claims"
         ? "Some facts aren't in your resume"
         : error.code === "generation_invalid_output"
         ? "The page didn't pass our checks"
-        : error.code === "provider_rate_limited"
+        : error.code === "provider_rate_limited" || error.code === "free_models_busy"
         ? "The AI model is busy right now"
         : "Generation Failed";
 

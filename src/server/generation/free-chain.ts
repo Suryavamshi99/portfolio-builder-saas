@@ -18,7 +18,7 @@ export type ChainOutcome =
   | { ok: false; reason: "failed"; code: "generation_invalid_output" | "generation_unsupported_claims"; details: string[] };
 
 const COOLDOWN_RATE_LIMIT_FALLBACK_S = 300;
-const COOLDOWN_PROVIDER_ERROR_S = 120;
+const COOLDOWN_PROVIDER_ERROR_S = 60;
 const COOLDOWN_AUTH_ERROR_S = 3600;
 
 /**
