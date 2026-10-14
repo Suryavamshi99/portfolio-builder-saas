@@ -24,8 +24,8 @@ describe("MCP Connection and Next Steps Instructions", () => {
     it("renders non-connected state with CTA link to /connect", () => {
       vi.spyOn(apiClient, "getMcpStatus").mockResolvedValue({
         connected: false,
-        clients: [],
         connections: [],
+        latestJob: null,
       });
 
       const html = renderToString(<McpWaitingPanel />);
@@ -42,8 +42,8 @@ describe("MCP Connection and Next Steps Instructions", () => {
         <McpWaitingPanel
           initialStatus={{
             connected: true,
-            clients: ["Claude"],
             connections: [],
+            latestJob: null,
           }}
         />
       );
@@ -62,8 +62,8 @@ describe("MCP Connection and Next Steps Instructions", () => {
         <ConnectContent
           initialStatus={{
             connected: false,
-            clients: [],
             connections: [],
+            latestJob: null,
           }}
         />
       );
@@ -82,8 +82,8 @@ describe("MCP Connection and Next Steps Instructions", () => {
         <ConnectContent
           initialStatus={{
             connected: true,
-            clients: ["Claude"],
             connections: [],
+            latestJob: null,
           }}
         />
       );
