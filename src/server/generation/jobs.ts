@@ -57,6 +57,19 @@ export async function createJob(
   admin: SupabaseClient,
   job: { userId: string; source: JobSource; resumeUploadId: string; instructions?: string | undefined },
 ): Promise<{ ok: true; job: JobRow } | { ok: false; activeJobId: string | null }> {
+  // A job parked in the queue (waiting for free capacity) must never block a new build, from any source.
+  await admin
+    .from("generation_jobs")
+    .update({
+      status: "failed",
+      message: "Replaced by a newer build.",
+      error: { code: "superseded", message: "Replaced by a newer build." },
+      retry_at: null,
+      finished_at: new Date().toISOString(),
+    })
+    .eq("user_id", job.userId)
+    .eq("status", "queued");
+
   const { data, error } = await admin
     .from("generation_jobs")
     .insert({

@@ -40,6 +40,11 @@ describe("runFreeChain", () => {
     expect(await run({ providers: [] })).toEqual({ ok: false, reason: "exhausted" });
   });
 
+  it("reports busy (not exhausted) when every claimed provider errors out", async () => {
+    const call = vi.fn().mockRejectedValue(new LlmProviderError("timed out"));
+    expect(await run({ providers: [P("a"), P("b")], call })).toEqual({ ok: false, reason: "busy" });
+  });
+
   it("cools down and moves on after a rate limit, a provider error and a bad key", async () => {
     const cooldown = vi.fn().mockResolvedValue(undefined);
     const call = vi
