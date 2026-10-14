@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { adminMiddleware } from "@/server/admin-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { removeSiteFiles } from "@/server/sites-storage";
 import type { Plan } from "@/config/plans";
 
 const UPLOADS_BUCKET = "uploads";
@@ -87,6 +88,26 @@ export const Route = createFileRoute("/api/admin/users/$id")({
 
       DELETE: async ({ params }) => {
         const admin = createSupabaseAdminClient();
+
+        // Hosted site files in the sites bucket aren't foreign-keyed to auth.users,
+        // so look up their site and remove files before cascade deletion.
+        try {
+          const { data: site } = await admin
+            .from("sites")
+            .select("slug")
+            .eq("user_id", params.id)
+            .maybeSingle();
+
+          if (site?.slug) {
+            try {
+              await removeSiteFiles(admin, site.slug);
+            } catch {
+              console.warn(`Could not remove site files for slug: ${site.slug}`);
+            }
+          }
+        } catch {
+          // Failure to lookup site must not block user deletion
+        }
 
         // Storage objects aren't foreign-keyed to auth.users, so the table
         // cascade (on delete cascade, see supabase/migrations/0001_init.sql)

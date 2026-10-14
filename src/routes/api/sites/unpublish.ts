@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-
-const SITES_BUCKET = "sites";
+import { removeSiteFiles } from "@/server/sites-storage";
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -43,31 +42,7 @@ export const Route = createFileRoute("/api/sites/unpublish")({
         }
 
         // Delete {slug}/... files from the sites bucket
-        // 1. Files in {slug} root (like index.html)
-        const { data: rootFiles } = await admin.storage.from(SITES_BUCKET).list(slug);
-        const filesToRemove: string[] = [];
-        if (rootFiles) {
-          for (const f of rootFiles) {
-            if (f.name && f.id) {
-              // It's a file, not a folder
-              filesToRemove.push(`${slug}/${f.name}`);
-            }
-          }
-        }
-
-        // 2. Files in {slug}/images
-        const { data: imageFiles } = await admin.storage.from(SITES_BUCKET).list(`${slug}/images`);
-        if (imageFiles) {
-          for (const f of imageFiles) {
-            if (f.name) {
-              filesToRemove.push(`${slug}/images/${f.name}`);
-            }
-          }
-        }
-
-        if (filesToRemove.length > 0) {
-          await admin.storage.from(SITES_BUCKET).remove(filesToRemove);
-        }
+        await removeSiteFiles(admin, slug);
 
         return Response.json({ ok: true });
       },

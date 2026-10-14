@@ -82,7 +82,11 @@ export const Route = createFileRoute("/api/reset")({
           );
         }
 
-        return Response.json({ ok: true, updatedAt });
+        return Response.json({
+          ok: true,
+          updatedAt,
+          notes: ["Your published site stays live until you unpublish it."],
+        });
       },
     },
   },
