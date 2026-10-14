@@ -1,7 +1,7 @@
 # Shipfolio — AI Developer Portfolio Builder SaaS
 
 Turn a resume into a bespoke, model-written HTML portfolio website in minutes.
-Free preview with watermarked studio inspection; paid unlocks everything: clean HTML, zip export, GitHub push, Vercel deployment, and subdomain hosting.
+Free preview with watermarked studio inspection; paid unlocks everything: clean HTML, zip export, GitHub push, Vercel deployment, subdomain/path hosting, and custom domains.
 No fixed templates or JSON steps — each portfolio is an individual, self-contained HTML/CSS document written by an LLM following strict guardrail rules and verified by automated fact checking.
 
 ---
@@ -26,8 +26,8 @@ No fixed templates or JSON steps — each portfolio is an individual, self-conta
    ```
    Fill in your Supabase credentials (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`), a 32-byte base64 `ENCRYPTION_KEY`, and `APP_ORIGIN` (e.g. `http://localhost:3000`).
 
-3. **Run database migrations:**
-   Apply migrations in order from `supabase/migrations/` (0001 through 0012) using the Supabase CLI (`supabase db push`) or the Supabase SQL Editor.
+3. **Database migrations:**
+   Migrations live in `supabase/migrations/` (0001 through 0018). In local development, apply them via the Supabase CLI (`supabase db push`) or SQL editor. See [Deploying](#deploying) for strict production migration rules.
 
 4. **Start the local development server:**
    ```sh
@@ -70,6 +70,92 @@ npm run build
 
 ---
 
+## Environment Variables
+
+All variables are read inside handlers/functions at runtime, never at module scope.
+
+| Variable | Required | Purpose & Rules |
+|---|---|---|
+| `SUPABASE_URL` | Yes | Supabase project URL (server-side) |
+| `SUPABASE_ANON_KEY` | Yes | Supabase anonymous API key (server-side) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service-role admin key (privileged server-side operations) |
+| `VITE_SUPABASE_URL` | Yes | Supabase project URL exposed to the browser for Auth SDK |
+| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anonymous API key exposed to the browser for Auth SDK |
+| `ENCRYPTION_KEY` | Yes | 32 random bytes, base64-encoded. Used for envelope encryption (AES-256-GCM) of BYOK Gemini keys and Vercel OAuth access tokens |
+| `APP_ORIGIN` | Yes | Primary public URL of the application (e.g. `https://your-app.vercel.app` or `https://www.shipfolio.xyz`). Used for CSRF Origin checks and OAuth callback URLs |
+| `APP_EXTRA_ORIGINS` | No | Comma-separated list of additional permitted request origins (e.g. `https://www.shipfolio.xyz`) when `APP_ORIGIN` holds the Vercel app domain |
+| `SITES_DOMAIN` | No | Shared base domain for user-hosted portfolio sites (e.g. `shipfolio.xyz`). Subdomain sites resolve at `https://{slug}.${SITES_DOMAIN}` |
+| `SITES_BASE_URL` | No | Path-based hosting base URL (e.g. `https://www.shipfolio.xyz/s`). When set, `siteUrl()` builds `<base>/<slug>` instead of `<slug>.<SITES_DOMAIN>`, serving portfolios from `/s/<slug>` on the main domain when wildcard DNS is unavailable |
+| `CRON_SECRET` | Yes | Bearer token secret expected in the `Authorization: Bearer <CRON_SECRET>` header for Vercel Cron routes (`/api/cron/free-queue`, `/api/cron/domains`) |
+| `OPENROUTER_API_KEY` | For Free tier | API key for OpenRouter models in Path A (Free chain) |
+| `FREE_MODEL_OPENROUTER_A..D` | For Free tier | OpenRouter model IDs for fallback slots A through D. **Strict Rule:** Every OpenRouter model ID **MUST end with `:free`** (e.g. `nvidia/nemotron-3-super:free`). Enforced in code (`src/config/free-models.ts`): any model without the `:free` suffix is automatically skipped so it can never bill the OpenRouter account |
+| `GROQ_API_KEY`, `FREE_MODEL_GROQ` | No | Optional secondary free provider key and model ID |
+| `CEREBRAS_API_KEY`, `FREE_MODEL_CEREBRAS` | No | Optional tertiary free provider key and model ID |
+| `GITHUB_APP_ID` | For GitHub export | GitHub App numeric ID |
+| `GITHUB_APP_SLUG` | For GitHub export | GitHub App slug name (e.g. `shipfolio-ai-export`) |
+| `GITHUB_APP_PRIVATE_KEY` | For GitHub export | GitHub App private key PEM with newlines escaped as `\n` in a single line |
+| `GITHUB_APP_CLIENT_ID` | For GitHub export | GitHub App OAuth client ID (required to verify user installation ownership) |
+| `GITHUB_APP_CLIENT_SECRET` | For GitHub export | GitHub App OAuth client secret |
+| `VERCEL_API_TOKEN` | For Custom domains | Vercel REST API token with domain management permissions |
+| `SITES_PROJECT_ID` | For Custom domains | Vercel Project ID of the `shipfolio-sites` deployment |
+| `VERCEL_TEAM_ID` | No | Vercel Team ID if the `shipfolio-sites` project belongs to a team |
+| `OAUTH_VERCEL_CLIENT_ID` | For Vercel deploy | Vercel OAuth app client ID (for deploying to user's personal Vercel account) |
+| `OAUTH_VERCEL_CLIENT_SECRET` | For Vercel deploy | Vercel OAuth app client secret |
+| `PAYMENTS_ENABLED` | No | Gate for paid features (`true` by default). Set to `false` to make all features free for testing or launch promotions |
+| `DODO_ENVIRONMENT` | Yes | Dodo Payments environment (`test_mode` or `live_mode`) |
+| `DODO_PAYMENTS_API_KEY` | Yes | Dodo Payments secret API key |
+| `DODO_PRODUCT_ID_PRO` | Yes | Dodo product ID for the one-time $19 Pro unlock |
+| `DODO_WEBHOOK_SECRET` | Yes | Dodo webhook signing secret (`whsec_...`) |
+| `PAYMENT_TEST_MODE` | No | Dev-only dummy checkout bypass (`PAYMENT_TEST_MODE=dummy`). Automatically disabled in production |
+| `ADMIN_USERNAME` | Yes | Superuser username for the standalone `/admin` dashboard |
+| `ADMIN_PASSWORD_HASH` | Yes | Scrypt hash of admin password generated via `node scripts/hash-admin-password.mjs` |
+| `ADMIN_SESSION_SECRET` | Yes | 32-byte base64 random secret for signing admin session cookies |
+| `VITE_LAUNCH_MODE` | No | `live` (default) or `waitlist` (swaps CTAs for pre-launch email capture form) |
+| `WAITLIST_WEBHOOK_URL` | If waitlist mode | Google Apps Script Web App URL to receive waitlist email rows |
+| `WAITLIST_WEBHOOK_SECRET` | If waitlist mode | Secret shared with Google Apps Script to verify inbound requests |
+
+---
+
+## Deploying
+
+Shipfolio runs on Vercel with a paired Supabase backend. Production deployment spans two Vercel projects, scheduled cron triggers, and strict database migration rules.
+
+### 1. Main App Project
+- **Project Root:** Repository root (`.`).
+- **Framework:** TanStack Start (SSR built with Vite and Nitro).
+- **Domain:** Main app domain (e.g. `https://www.shipfolio.xyz` or `https://your-app.vercel.app`).
+- **Functions:** Handles all application routes (`src/routes/**`), user authentication, Studio editing, background generation jobs, OAuth endpoints (`/authorize`, `/token`, `/register`), MCP Streamable HTTP (`/mcp`), and path-based portfolio serving at `/s/<slug>`.
+
+### 2. The `shipfolio-sites` Project
+- **Project Root:** `sites-app/`.
+- **Framework Preset:** Other / Serverless Function.
+- **Rewrites:** Configured in `sites-app/vercel.json` to route all incoming requests `/(.*)` to `/api/serve`.
+- **Domain & Purpose:** Custom domains only (e.g. `janedoe.com`). When a user attaches their custom domain and passes DNS TXT verification, the domain is added to this Vercel project via the Vercel REST API (`addDomain`).
+- **Serving Isolation:** Serves HTML and images directly from the Supabase `sites` storage bucket with an opaque-origin Content Security Policy (`sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox`), preventing user scripts from interacting with app credentials.
+
+### 3. Cron Jobs
+- **Vercel Cron (`vercel.json`):**
+  - `/api/cron/free-queue` (scheduled at `10 0 * * *`): Processes queued free generations once daily provider budgets reset.
+  - `/api/cron/domains` (scheduled at `20 0 * * *`): Cleans up unverified pending custom domain claims older than 14 days.
+  - Both routes verify the `Authorization: Bearer <CRON_SECRET>` header.
+- **Supabase `pg_cron` & Edge Functions:**
+  - `purge-post-generation-uploads` (hourly): Deletes raw resumes and visual references 48 hours after generation.
+  - `purge-stale-draft-uploads` (daily at 03:00): Deletes photos and project images for drafts inactive after 30 days.
+  - `queue-stale-draft-warnings` (daily at 04:00): Flags warning notifications at day 27–28.
+
+### 4. Database Migrations & The Golden Deployment Rule
+
+> [!CAUTION]
+> **Database migrations are NEVER applied automatically by developers or CI pipelines.**
+
+1. **Review First:** Every migration script in `supabase/migrations/` is reviewed line-by-line, explained, and approved before execution.
+2. **The Golden Rule:**
+   > **After every push, check production serves the new code before applying a migration.**
+   - *Rationale:* A Vercel build marked "Production" may not immediately receive live traffic until domain promotion completes. On 2026-10-12, migration 0010 was applied while production was still serving older code, causing Studio ("Could not load content") failures for active users until promoted.
+   - *Verification Step:* Before applying any migration, curl or probe an endpoint or behavior unique to the newly pushed code on the production domain to confirm the new code is actively serving traffic.
+
+---
+
 ## Folder Map
 
 ```
@@ -81,6 +167,10 @@ portfolio-builder-saas/
 ├── scripts/                  # Operational utility scripts
 │   ├── hash-admin-password.mjs   # Generate scrypt hash for ADMIN_PASSWORD_HASH
 │   └── setup-retention-cron.mjs  # Provision storage purge Edge Function & secrets
+├── sites-app/                # Standalone Vercel project for user custom domains
+│   ├── api/serve.ts          # Edge server serving sandboxed custom domain portfolios
+│   ├── lib/                  # Shared domain & CSP verification logic
+│   └── vercel.json           # Rewrite rules for custom domain routing
 ├── src/
 │   ├── components/           # UI components (shadcn/radix primitives, studio, wizard, layout)
 │   │   ├── auth/             # Authentication guards and forms
@@ -88,34 +178,48 @@ portfolio-builder-saas/
 │   │   ├── hero/             # Landing page hero, video, and visual showcase
 │   │   ├── layout/           # Navbar, footer, logos, shell layouts
 │   │   ├── preview/          # Sandboxed iframe portfolio preview
-│   │   ├── publish/          # Publish toolbar and dialogs
+│   │   ├── publish/          # Publish toolbar, domain settings, and dialogs
+│   │   ├── settings/         # Account, connector, and custom domain settings
 │   │   ├── ui/               # Base design system primitives (button, dialog, card, badge)
 │   │   ├── upload/           # Drag-and-drop file uploaders with progress
 │   │   └── waitlist/         # Pre-launch email capture components
-│   ├── config/               # Static configuration (plans, llm, vercel, payment-test)
+│   ├── config/               # Static configuration (plans, free-models, vercel, payment-test)
 │   ├── lib/                  # Browser & client utilities (supabase client, crypto, origin)
 │   ├── routes/               # TanStack Start file-based routing
 │   │   ├── -studio/          # Studio workspace UI (Editor.tsx, preview, shortcuts)
-│   │   ├── api/              # Server route endpoints (auth, uploads, generate, publish, exports)
+│   │   ├── api/              # Server route endpoints (auth, uploads, generations, sites, domains, mcp, export)
+│   │   ├── [.]well-known.*   # OAuth 2.1 authorization-server and protected-resource discovery
 │   │   ├── admin.tsx         # Standalone admin dashboard
+│   │   ├── authorize.ts      # OAuth 2.1 consent & authorization screen
+│   │   ├── connect.tsx       # External chat app connector view
 │   │   ├── index.tsx         # Marketing landing page
 │   │   ├── login.tsx         # User authentication
-│   │   ├── onboarding.tsx    # 6-step portfolio creation wizard
-│   │   ├── settings.tsx      # User settings, key management, danger zone
-│   │   └── studio.tsx        # Studio route shell
+│   │   ├── mcp.ts            # Streamable HTTP Model Context Protocol endpoint
+│   │   ├── onboarding.tsx    # Multi-step portfolio creation wizard
+│   │   ├── register.ts       # RFC 7591 dynamic client registration
+│   │   ├── s.$.ts            # Public sandboxed portfolio serving (/s/<slug>)
+│   │   ├── settings.tsx      # User settings, key management, connectors & danger zone
+│   │   ├── studio.tsx        # Studio route shell
+│   │   └── token.ts          # OAuth 2.1 token grant & refresh endpoint
 │   ├── server/               # Backend business logic & security infrastructure
 │   │   ├── dodo/             # Dodo Payments checkout & webhook processing
-│   │   ├── llm/              # LLM adapters (Google, Anthropic, OpenAI) & guardrail prompts
+│   │   ├── generation/       # Background jobs, free provider harness, queue & runner
+│   │   ├── github/           # GitHub App installation token & Git Data API commit push
+│   │   ├── llm/              # LLM adapters (Google Gemini, OpenAI-compatible) & guardrail prompts
+│   │   ├── mcp/              # MCP JSON-RPC protocol, tool registry, and OAuth token store
 │   │   ├── template/         # HTML image embedding and string escape utilities
-│   │   ├── vercel/           # Vercel OAuth client and deployment pipeline
+│   │   ├── vercel/           # Vercel REST API client for domain registration & status checks
 │   │   ├── auth-middleware.ts      # Session validation & AuthedContext extraction
 │   │   ├── checked-generation.ts   # Guardrail generation + numeric fact check pipeline
+│   │   ├── domains.ts              # Domain validation, TXT verification formatting & tokens
 │   │   ├── fact-check.ts           # Fact-checking numbers, %, currency, and years
 │   │   ├── finalize-html.ts        # Output verification, link sanitization, mXSS defense
 │   │   ├── portfolio-inputs.ts     # Wizard inputs persistence
 │   │   ├── portfolio-versions.ts   # Portfolio version history management
 │   │   ├── rate-limit.ts           # Rolling-hour rate limiting
 │   │   ├── resume-texts.ts         # Extracted resume text storage (service-role only)
+│   │   ├── sites-serve.ts          # Core logic for sandboxed /s/<slug> response rendering
+│   │   ├── sites.ts                # Site slug validation, routing, and reservations
 │   │   ├── storage-markers.ts      # URL marker translation for persistent HTML
 │   │   ├── users.ts                # User entitlements & server-side hasPaidAccess()
 │   │   └── watermark.ts            # Server-side watermark injection for free tier
@@ -124,7 +228,7 @@ portfolio-builder-saas/
 │   └── start.ts              # TanStack Start server entry point & CSRF origin check
 ├── supabase/
 │   ├── functions/            # Supabase Edge Functions (purge-storage-objects)
-│   └── migrations/           # Postgres migrations (0001 through 0012)
+│   └── migrations/           # Postgres migrations (0001 through 0018)
 ├── API.md                    # Canonical API contract for all endpoints
 ├── DESIGN.md                 # Design system tokens, color calibration & taste standards
 └── version2memory.md         # Source of truth for product architecture & decision history
