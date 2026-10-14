@@ -88,7 +88,19 @@ export function CustomDomainSection({
 
   const handleCopy = async (key: string, text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
     } catch {
@@ -98,7 +110,11 @@ export function CustomDomainSection({
 
   const handleAddDomain = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = hostnameInput.trim().toLowerCase();
+    const trimmed = hostnameInput
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/+$/, "");
     if (!trimmed) return;
 
     setAddingDomain(true);

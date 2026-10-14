@@ -70,7 +70,7 @@ export function PublishDialog({
         if ((err as { isNotFound?: boolean })?.isNotFound) {
           // Fallback if endpoint 404
           setStatus("available");
-          setPreviewUrl(`https://${trimmed}.shipfolio.site`);
+          setPreviewUrl(`https://www.shipfolio.xyz/s/${trimmed}`);
         } else {
           setStatus("invalid");
         }
@@ -116,16 +116,19 @@ export function PublishDialog({
             Publish your portfolio
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Choose a subdomain on Shipfolio. Your site will be hosted and available worldwide. Once published, your address is locked.
+            Choose a unique address for your portfolio. Your site will be hosted and available worldwide. Once published, your address is locked.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <label htmlFor="publish-slug" className="text-xs font-semibold text-foreground">
-              Subdomain name
+              Portfolio address name
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-xs font-mono text-muted-foreground shrink-0 select-none">
+                shipfolio.xyz/s/
+              </span>
               <Input
                 id="publish-slug"
                 value={slug}
@@ -133,9 +136,8 @@ export function PublishDialog({
                 placeholder="your-name"
                 disabled={isPublishing}
                 maxLength={40}
-                className="font-mono text-xs h-9 bg-background/60"
+                className="font-mono text-xs h-9 bg-background/60 flex-1"
               />
-              <span className="text-xs font-mono text-muted-foreground shrink-0">.shipfolio.site</span>
             </div>
 
             {/* Address preview */}

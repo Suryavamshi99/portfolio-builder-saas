@@ -116,7 +116,7 @@ export function McpWaitingPanel({ onPortfolioReady, className }: McpWaitingPanel
           )}
         </div>
         <CardDescription className="text-xs">
-          Generate using Claude 3.5 Sonnet or GPT-4o through our official custom connector.
+          Generate using Claude or ChatGPT directly through our official custom connector.
         </CardDescription>
       </CardHeader>
 

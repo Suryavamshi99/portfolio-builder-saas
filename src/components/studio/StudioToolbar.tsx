@@ -2,6 +2,14 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Globe,
   UploadCloud,
   Loader2,
@@ -161,23 +169,23 @@ export function StudioToolbar({
               )}
             </div>
 
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[260px] sm:max-w-none">
               {liveUrl ? (
-                <span className="inline-flex items-center gap-1.5 text-success">
+                <span className="inline-flex items-center gap-1.5 text-success truncate max-w-full">
                   Live at{" "}
                   <a
                     href={liveUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="underline font-mono inline-flex items-center gap-0.5"
+                    className="underline font-mono inline-flex items-center gap-0.5 truncate max-w-[190px] sm:max-w-none"
                   >
-                    {liveUrl} <ExternalLink className="size-2.5" />
+                    <span className="truncate">{liveUrl}</span> <ExternalLink className="size-2.5 shrink-0" />
                   </a>
                 </span>
               ) : !hasPaidAccess ? (
                 "Upgrade to unlock high-speed custom hosting"
               ) : (
-                "Publish your site to your own custom subdomain"
+                "Publish your site to your own public address"
               )}
             </p>
           </div>
@@ -275,38 +283,38 @@ export function StudioToolbar({
         vercelUsername={vercelUsername}
       />
 
-      {/* Unpublish confirmation modal */}
-      {confirmUnpublishOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-5 space-y-4 shadow-xl">
-            <h4 className="font-semibold text-sm text-foreground">Unpublish your live website?</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Your site at <span className="font-mono text-foreground">{liveUrl}</span> will no longer be publicly accessible. You can republish anytime.
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setConfirmUnpublishOpen(false)}
-                disabled={unpublishing}
-                className="text-xs"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => void handleUnpublish()}
-                disabled={unpublishing}
-                className="text-xs gap-1.5"
-              >
-                {unpublishing ? <Loader2 className="size-3 animate-spin" /> : null}
-                Yes, unpublish
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Unpublish confirmation dialog */}
+      <Dialog open={confirmUnpublishOpen} onOpenChange={setConfirmUnpublishOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold">Unpublish your live website?</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Your site at <span className="font-mono text-foreground break-all">{liveUrl}</span> will no longer be publicly accessible. You can republish anytime.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 pt-2 sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmUnpublishOpen(false)}
+              disabled={unpublishing}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => void handleUnpublish()}
+              disabled={unpublishing}
+              className="text-xs gap-1.5"
+            >
+              {unpublishing ? <Loader2 className="size-3 animate-spin" /> : null}
+              Yes, unpublish
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
