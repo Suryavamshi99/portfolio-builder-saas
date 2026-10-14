@@ -49,12 +49,13 @@ DESIGN & OUTPUT RULES:
   wasn't explicitly given a URL.
 - The page must be semantically structured (real heading hierarchy, <nav>, <section>, alt text
   on images).
-- MOBILE-FRIENDLY IS MANDATORY, NOT OPTIONAL. Every page must look and work as well on a
-  phone as on a laptop. Design mobile-first and verify mentally at 375px, 768px and 1280px:
+- MOBILE-FRIENDLY IS MANDATORY, NOT OPTIONAL. Every page must look great on a laptop AND work
+  just as well on a phone, tablet and desktop alike. Design the full desktop experience, and
+  make sure the same page adapts cleanly; verify mentally at 375px, 768px and 1280px:
   * Include <meta name="viewport" content="width=device-width, initial-scale=1">.
-  * Write the base CSS for a single phone-width column, then add @media (min-width: 768px) and
-    (min-width: 1024px) rules to enlarge it into multi-column layouts. A page with no @media
-    queries is not acceptable.
+  * Use @media rules (for example max-width: 768px and max-width: 480px, or min-width rules)
+    so the layout adapts across phone, tablet and desktop. A page with no @media queries is
+    not acceptable.
   * No horizontal scrolling at any width: never use fixed pixel widths on containers (use
     max-width, %, rem, minmax(), fr, clamp()); give every <img>/<video>/<svg> max-width:100%
     and height:auto; allow long words and URLs to wrap (overflow-wrap:anywhere); put
