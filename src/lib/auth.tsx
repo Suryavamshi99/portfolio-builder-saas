@@ -17,6 +17,9 @@ interface AuthContextType {
   hasPaidAccess: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
+  sendPasswordReset: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -145,6 +148,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error, user: data.user };
   };
 
+  const notConfigured = () => new Error("Supabase is not configured yet. Check environment variables.");
+
+  const signInWithGoogle = async () => {
+    if (!client) return { error: notConfigured() };
+    const { error } = await client.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/login` },
+    });
+    return { error };
+  };
+
+  const sendPasswordReset = async (email: string) => {
+    if (!client) return { error: notConfigured() };
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => {
+    if (!client) return { error: notConfigured() };
+    const { error } = await client.auth.updateUser({ password });
+    return { error };
+  };
+
   const signOut = async () => {
     if (!client) return;
     await client.auth.signOut();
@@ -172,6 +200,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasPaidAccess,
         signInWithPassword,
         signUp,
+        signInWithGoogle,
+        sendPasswordReset,
+        updatePassword,
         signOut,
         refreshSession,
       }}

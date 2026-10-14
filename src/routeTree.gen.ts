@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as TokenRouteImport } from './routes/token'
@@ -107,6 +108,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -379,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/token': typeof TokenRoute
@@ -440,6 +447,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/token': typeof TokenRoute
@@ -502,6 +510,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/token': typeof TokenRoute
@@ -565,6 +574,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/onboarding'
     | '/register'
+    | '/reset-password'
     | '/settings'
     | '/studio'
     | '/token'
@@ -626,6 +636,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/onboarding'
     | '/register'
+    | '/reset-password'
     | '/settings'
     | '/studio'
     | '/token'
@@ -687,6 +698,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/onboarding'
     | '/register'
+    | '/reset-password'
     | '/settings'
     | '/studio'
     | '/token'
@@ -749,6 +761,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   StudioRoute: typeof StudioRoute
   TokenRoute: typeof TokenRoute
@@ -848,6 +861,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -1308,6 +1328,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   StudioRoute: StudioRoute,
   TokenRoute: TokenRoute,

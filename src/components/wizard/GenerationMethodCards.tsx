@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ByokManager, type LLMProvider } from "@/components/byok/ByokManager";
-import { Zap, Bot, KeyRound, AlertCircle } from "lucide-react";
+import { Zap, KeyRound, AlertCircle } from "lucide-react";
+import { ClaudeLogo, ChatGPTLogo } from "@/components/wizard/BrandLogos";
 import type { FreeStatusResponse } from "@/lib/api-client";
 
 export type GenerationMethod = "free" | "mcp" | "gemini";
@@ -66,7 +67,7 @@ export function GenerationMethodCards({
               </Badge>
             )}
           </div>
-          <div className="font-semibold text-sm text-foreground">⚡ Free</div>
+          <div className="font-semibold text-sm text-foreground">Free</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             No setup.{" "}
             {freeLoading ? (
@@ -96,7 +97,8 @@ export function GenerationMethodCards({
         >
           <div className="flex items-center justify-between w-full mb-2">
             <div className="flex size-8 items-center justify-center rounded-lg bg-accent/15 text-accent">
-              <Bot className="size-4" />
+              <ClaudeLogo className="size-4" />
+              <ChatGPTLogo className="ml-1 size-4 text-foreground" />
             </div>
             {selectedMethod === "mcp" && (
               <Badge variant="accent" className="text-[10px] py-0 px-1.5 font-mono">
@@ -104,7 +106,7 @@ export function GenerationMethodCards({
               </Badge>
             )}
           </div>
-          <div className="font-semibold text-sm text-foreground">🤖 Claude or ChatGPT</div>
+          <div className="font-semibold text-sm text-foreground">Claude or ChatGPT</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             Best quality, uses your subscription plan via custom connector.
           </p>
@@ -130,7 +132,7 @@ export function GenerationMethodCards({
               </Badge>
             )}
           </div>
-          <div className="font-semibold text-sm text-foreground">🔑 My Gemini key</div>
+          <div className="font-semibold text-sm text-foreground">My Gemini key</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             Free key from Google. We store it securely and never bill for inference.
           </p>
