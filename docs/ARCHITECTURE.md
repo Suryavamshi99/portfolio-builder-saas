@@ -265,7 +265,7 @@ sequenceDiagram
 
 ---
 
-## 7. Database Privilege Lockdown & Table Inventory (Migrations 0001–0018)
+## 7. Database Privilege Lockdown & Table Inventory (Migrations 0001–0020)
 
 ### The Table Privilege Rule
 Column-level `REVOKE` statements in PostgreSQL are ineffective if table-wide privileges are granted to `anon` or `authenticated`. Therefore, **every table must enforce complete privilege revocation**:
@@ -302,3 +302,8 @@ revoke all on public.<table_name> from anon, authenticated;
 | `0016_mcp_oauth.sql` | `mcp_clients`, `mcp_tokens` | Dynamic clients and SHA-256 hashed OAuth tokens. RLS enabled, privileges revoked. |
 | `0017_custom_domains.sql` | `custom_domains` | Custom domain hostnames, TXT tokens, and verification statuses. RLS enabled, privileges revoked. |
 | `0018_retention_new_tables.sql` | Retention extensions | Cascade rules and cleanup triggers across generation jobs and site storage. |
+| `0019_admin_audit_log.sql` | `admin_audit_log` | Append-only record of admin actions and sign-ins. RLS enabled, privileges revoked. |
+| `0020_admin_security.sql` | `admin_security`, `admin_login_attempts` | Admin 2FA secret (encrypted), recovery hashes, session epoch, login lockout attempts. RLS enabled, privileges revoked. |
+
+## 8. Admin console security
+Admin identity is separate from user auth: env credentials + TOTP 2FA, 8 h / 30 min-idle `__Host-` cookie with a DB epoch for sign-out-everywhere, 5-minute step-up (password + code) for destructive actions, DB-backed lockout, reasons and an append-only audit log, no impersonation, user HTML only in an empty-sandbox iframe. Details: [`ADMIN.md`](./ADMIN.md).

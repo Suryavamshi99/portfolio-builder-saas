@@ -208,13 +208,7 @@ Enables users to connect their own Claude.ai or ChatGPT subscription to Shipfoli
 
 | Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
 |---|---|---|---|---|---|---|
-| `POST` | `/api/admin/login` | None | No | `{ username: string, password: string }` | `{ ok: true }` (sets `admin_session` httpOnly cookie) | `400 invalid_json`, `401 invalid_credentials`, `429 rate_limited` |
-| `POST` | `/api/admin/logout` | None | No | None | `{ ok: true }` (clears cookie) | None |
-| `GET` | `/api/admin/session` | Admin Cookie | No | None | `{ authenticated: boolean, username: string \| null }` | None |
-| `GET` | `/api/admin/users` | Admin Cookie | No | None (query: `?page=1&limit=50&search=`) | `{ users: Array<object>, total: number, page: number, limit: number }` | `401 unauthorized`, `500 internal_error` |
-| `GET` | `/api/admin/users/:id` | Admin Cookie | No | None | `{ user: object, portfolio: object \| null, uploads: Array<object>, generations: Array<object>, publications: Array<object>, purchases: Array<object> }` | `401 unauthorized`, `404 user_not_found`, `500 internal_error` |
-| `PATCH` | `/api/admin/users/:id` | Admin Cookie | No | `{ plan?: "free" \| "pro", isAdmin?: boolean, html?: string }` | `{ ok: true, user: object }` | `400 invalid_body`, `401 unauthorized`, `404 user_not_found`, `500 internal_error` |
-| `DELETE` | `/api/admin/users/:id` | Admin Cookie | No | None | `{ ok: true }` | `401 unauthorized`, `404 user_not_found`, `500 internal_error` |
+| — | `/api/admin/*` | Admin Cookie | No | See [`docs/ADMIN.md`](./docs/ADMIN.md) for the full admin API (sign-in with 2FA, step-up, paginated users/sites/jobs/audit, overview, system, destructive actions with reasons) | `{ error: { code, message } }` on failure | `401 unauthorized`, `403 step_up_required`, `429 locked`, `400 reason_required`, `400 confirm_mismatch`, `409 last_admin` |
 | `POST` | `/api/waitlist` | None | No | `{ email: string, source?: string }` | `{ ok: true, duplicate?: boolean }` | `400 invalid_json`, `400 invalid_email`, `502 waitlist_webhook_unreachable`, `502 waitlist_webhook_failed` |
 
 ---
