@@ -146,3 +146,16 @@ In accordance with [`DESIGN.md`](./DESIGN.md) and modern UI standards, the entir
    - Implemented a responsive mobile navigation drawer in [`src/components/layout/Navbar.tsx`](./src/components/layout/Navbar.tsx) with a touch-friendly hamburger toggle (`Menu` / `X`).
    - Added `.no-scrollbar` utility for frictionless touch scrolling across tab strips and demo selectors.
    - Refined Real Portfolios grid to fluid breakpoints: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`.
+
+---
+
+## October 2026 update: new product screens
+
+All of these call the server endpoints listed in [`API.md`](./API.md); no business rule lives in the browser.
+
+1. **Wizard step "How should we generate it?"** (`src/routes/onboarding.tsx`, `src/components/wizard/`): three cards (Free, Claude/ChatGPT, own Gemini key), the consent tick on the Free card, real progress from `/api/generations/:id`, a queued state with Cancel, a failure screen that lists the plain-language reasons with Try again / Edit my details / Use another method, and a Claude/ChatGPT waiting panel.
+2. **`/connect`** (`src/routes/connect.tsx`): connector URL with copy button, Claude and ChatGPT steps, connection status.
+3. **Studio** (`src/routes/-studio/`, `src/components/studio/`): one primary Publish / Update site button with the live address (`/s/<name>`), a Publish dialog with a debounced name check, an Export menu (zip, HTML, copy, GitHub, own Vercel), Version history with restore, regenerate with instructions, shortcuts (`Ctrl/Cmd+Enter`, `Ctrl/Cmd+Shift+H`).
+4. **Settings** (`src/routes/settings.tsx`, `src/components/settings/`): Connected apps with Disconnect, GitHub connection, Custom domain (TXT proof, DNS records, status).
+5. **Consent page** for connecting an app is server-rendered (`src/routes/authorize.ts`): shows an "Unverified app" warning for anything that isn't Claude/ChatGPT, the signed-in email and the return address.
+6. **Visual QA pass (handoff 07d)** fixed 10 issues: stale subdomain wording in the Publish dialog, an unpublish popup without Escape/focus handling, 390 px overflow on the toolbar, Export menu, Connect page and Settings tabs, copy buttons with no fallback on non-secure pages, raw model ids in Version history, stale model names in the Claude/ChatGPT panel. Screenshots: `docs/handoffs/07d-screens/`.

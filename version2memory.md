@@ -1,6 +1,6 @@
 # version2memory.md: Project context and decisions (Shipfolio AI)
 
-**Last updated:** 2026-10-12
+**Last updated:** 2026-10-14
 **Purpose:** the single source of truth to resume work after the session is compacted. Read this before doing anything on this project. It holds everything decided and discovered so far.
 
 **Precedence:** this file replaces the earlier uncommitted `memory.md`. Where this file and `userflow.md` disagree, **this file wins.** `userflow.md` still describes the removed copy-paste path and the dropped JSON/template design (see section 3).
@@ -14,10 +14,10 @@
 - **Agreed direction:**
   1. **Three ways to generate:** (A) free models through a harness the owner runs, (B) the user's own Claude or ChatGPT subscription through an MCP server on the owner's domain, (D) the user's own Gemini key (already built). ~~(C) copy-paste prompt~~ has been **REMOVED** (decision 2026-10-11).
   2. **The output is always a complete `.html` file written by the model for each user, following the guardrail prompt rules.** No templates or JSON step. A shared `finalizeHtml()` checks the rules, cleans it for safety and checks facts against the resume.
-  3. **Hosting moves to the owner's domain:** `name.<sites-domain>`, plus an optional custom domain the user brings.
+  3. **Hosting on the owner's domain:** built as `www.shipfolio.xyz/s/<name>` (the owner can't change GoDaddy nameservers, so no wildcard DNS), plus an optional custom domain the user brings (served by the separate `shipfolio-sites` project).
   4. **Free = preview only (watermarked). Paid = everything:** HTML/zip download, GitHub push, deploy to their own Vercel ($19 one-time), plus hosting and custom domain through a **yearly hosting add-on** (decided 2026-10-11).
   5. **Payments: Dodo Payments only, everywhere** (decision 2026-10-11). No other payment provider in any country or for any product.
-- **Nothing in the proposed design has been built yet.** It's all design so far.
+- **Status (2026-10-14): everything in the proposed design is built and deployed except payments** (Dodo hosting add-on, refunds, watermark/paywall check; production still runs `PAYMENTS_ENABLED=false`). Section 6 is kept as the design record; the decision log (section 1, newest first) says where the build deviated (notably: hosting is at `www.shipfolio.xyz/s/<name>`, not `<name>.<domain>`; GitHub push needs an existing repo; the fact check covers numbers only). Production: https://www.shipfolio.xyz. Pending owner steps: try the real Claude connector, try Push to GitHub, answer the Dodo setup questions.
 - **Key point from the history:** the product **started** with "structured JSON → one fixed template" and **moved to "the model writes custom HTML" on 2026-09-25 (`fe465ac`)**. On 2026-10-11 the owner confirmed HTML stays: the aim is always to create `.html` files following the rules in the prompt.
 - **Sections:** 0.5 history from the first commit → 1 decision log → 2 owner preferences → 3 files from this session → 4 tech stack, env vars, database → 5 current flow in detail + known problems → 6 proposed design → 7 open questions.
 
@@ -91,8 +91,9 @@ An earlier draft of the proposal went back to "structured JSON → templates". T
 
 | Date | Decision | Notes |
 |---|---|---|
+| 2026-10-14 | **Antigravity handoffs 07d (visual QA), 07e (account clean-up), 07f (docs refresh) reviewed, fixed where needed, merged and deployed (`8e49c18`).** | 07d fixed 10 UI problems (Publish dialog still showed the old subdomain address, unpublish popup had no Escape/focus handling, phone layouts, copy-button fallback, stale model names in the Connect panel). 07e: `removeSiteFiles()` (`src/server/sites-storage.ts`) now deletes a site's files on unpublish, takedown and account deletion (this closes the gap noted on 2026-10-13); reset answers with `notes`. Claude changed unpublish/takedown so a file clean-up failure is logged, not turned into an error (the status flips first, so nothing is served). 07f docs were spot-checked against the code (52/52 routes, 38/38 env names exist). **Open:** while testing, Antigravity created two QA accounts on production (`shipqa1791949801962@maxxspace.com` with 1 upload/portfolio/job, and an unconfirmed `qa-user-1791949729212@gmail.com`); deletion is awaiting the owner's approval. Rule added to `docs/handoffs/_rules.md`: no production accounts without approval. |
 | 2026-10-14 | **Security review of the Claude/ChatGPT connector done; fixes shipped (`08a1677`), 32/32 live checks.** | Sound: PKCE S256 only, single-use codes, hashed tokens, rotating refresh tokens, exact redirect URIs, user-scoped queries, RLS. Fixed: (F1) apps could register a name like "Claude" and phish a consent, so names that imitate Claude/ChatGPT/Shipfolio are refused unless the redirect host is claude.ai/claude.com/chatgpt.com/openai.com, all other apps show an "Unverified app" warning with the signed-in email, invisible/bidi characters are stripped; (F3) registrations capped 300/h with unused ones swept; (F4) a refresh token reused within 10 s is refused without revoking (retry), later reuse revokes the chain; (F5) Content-Length check on /mcp. Not changed: (F6) scopes are advertised but not enforced (one resource only); per-user rate limit on failed saves (F5 rest). The reviewer's F2 (scripts on the app origin at /s/*) was already covered by the CSP sandbox, verified live. VERCEL_API_TOKEN added; custom-domain flow live-tested 11/11 except the real DNS proof (needs a domain the owner controls). GitHub App `shipfolio-ai-export` created; its connect protections verified, real push to a repo not yet tried by the owner. |
-| 2026-10-13 | **Hosted portfolios live at `www.shipfolio.xyz/s/<name>` (supersedes the `<name>.shipfolio.xyz` wildcard plan).** | The owner can't change GoDaddy nameservers, so no wildcard DNS. `src/routes/s.$.ts` + `src/server/sites-serve.ts` serve published pages from the app, with the CSP `sandbox` (no `allow-same-origin`) on EVERY response so a page gets an opaque origin: verified live that its script runs but `document.cookie` for the app domain throws `SecurityError`. Image paths are rewritten to `/s/<slug>/images/...`. `SITES_BASE_URL=https://www.shipfolio.xyz/s` switches `siteUrl()`; unset it to go back to subdomains. Shared cache is 20 s (no stale reuse) so unpublish/takedown is near-immediate. `sites-app/` (project `shipfolio-sites`) stays for custom domains only. Live-tested 20/20. **Known gap:** deleting an account leaves its `sites/<slug>/` files in storage (the 30-day cron only handles unpublished rows) - add storage cleanup to the account-deletion path. |
+| 2026-10-13 | **Hosted portfolios live at `www.shipfolio.xyz/s/<name>` (supersedes the `<name>.shipfolio.xyz` wildcard plan).** | The owner can't change GoDaddy nameservers, so no wildcard DNS. `src/routes/s.$.ts` + `src/server/sites-serve.ts` serve published pages from the app, with the CSP `sandbox` (no `allow-same-origin`) on EVERY response so a page gets an opaque origin: verified live that its script runs but `document.cookie` for the app domain throws `SecurityError`. Image paths are rewritten to `/s/<slug>/images/...`. `SITES_BASE_URL=https://www.shipfolio.xyz/s` switches `siteUrl()`; unset it to go back to subdomains. Shared cache is 20 s (no stale reuse) so unpublish/takedown is near-immediate. `sites-app/` (project `shipfolio-sites`) stays for custom domains only. Live-tested 20/20. **Known gap (fixed 2026-10-14 in handoff 07e):** deleting an account used to leave its `sites/<slug>/` files in storage. |
 | 2026-10-13 | **Everything except payments built and deployed for the 15th deadline (migrations 0013-0018 applied).** | Shipped: background generation jobs + free-model chain (`/api/generations`, daily budgets, cooldowns, queue + cron), MCP server + OAuth for Claude/ChatGPT (`/mcp`, `/authorize`, `/token`, `/register`; live-tested 26/27), GitHub App push (installation ownership verified via the user's own installation list), hosting on `slug.shipfolio.xyz` (`sites-app/`, separate Vercel project `shipfolio-sites`, sandboxed CSP on every response), custom domains with TXT ownership proof (pending claims never block or serve), settings UI, retention cron jobs, wizard/Studio UI (Antigravity 06a-06f, 07a, 07c; Claude reviewed each and fixed the issues). **Decisions:** (1) no second domain: user sites live on `*.shipfolio.xyz`, protected by the CSP `sandbox` directive (opaque origin, no cookie tossing) - needs the domain on Vercel nameservers for the wildcard certificate; (2) **only `:free` OpenRouter models**, enforced in code (`free-models.ts` drops any other); chain order (env `FREE_MODEL_OPENROUTER_A..D`): nemotron-3-super, laguna-s-2.1, north-mini-code, nemotron-3-ultra (slow, last); Groq/Cerebras not used; (3) `APP_EXTRA_ORIGINS` allows the branded domain in the Origin check while `APP_ORIGIN` stays the vercel.app address (OAuth redirects). **Known:** free models write plain but accurate pages (~5 KB); Gemma 4 is often rate-limited upstream; real `/api/generations` runs ~40-60 s. **Open for the owner:** GoDaddy nameservers to Vercel (then attach `*.shipfolio.xyz` to `shipfolio-sites`), GitHub App values, `VERCEL_API_TOKEN`, Supabase Auth redirect URL for www.shipfolio.xyz, payments + watermark check. |
 | 2026-10-13 | **Handoff 04 + 04a + Antigravity's feat/05 shipped (`997a875`, migration 0012 applied, 10/10 live checks).** | Numeric fact check (numbers/%/money/years; employers and certification names deferred) with one repair round (`fact-check.ts`, `checked-generation.ts`); resume text saved once at upload in `resume_texts` (service-role only, cascades with the upload); generation shows the reasons in the wizard and Studio. Antigravity added zip/HTML export, version history + restore, and Studio shortcuts. Known v1 limits: values match across units ($6M passes if the resume says "team of 6"), numbers written as words aren't checked, a failed repair call loses that generation. Minor: Studio's ⌘+H shortcut clashes with the Mac "Hide" shortcut. **Next: handoff 05** (background generation jobs). |
 | 2026-10-12 | **Handoff 03 shipped: `finalizeHtml()`, storage markers, `portfolio_versions` (migration 0011).** | Spec reviewed with ce-doc-review and amended before building; code reviewed with ce-code-review (6 reviewers + validator). Claude fixed the P1/P2s (`<noscript>` removed, clean-until-stable against nested-form mXSS, SVG `href` animations, version-save rollback/prune), Antigravity did the rest as handoff 03b; then a hardening pass (shared marker pattern, strict path characters, mailto cc/bcc stripped). 74 tests. Spec amendment B9 records the behaviour changes. Live-checked on production with a temporary user (deleted): version table refused to users, old photo links re-signed, preview shows photo. |
@@ -137,7 +138,9 @@ An earlier draft of the proposal went back to "structured JSON → templates". T
 | `userflow.md` | Branch **`docs/userflow`**, pushed. https://github.com/Suryavamshi99/portfolio-builder-saas/blob/docs/userflow/userflow.md | Part 1 = current flow in detail, Part 2 = proposed flow, plus 10 Mermaid diagrams (all checked with Mermaid 11.4.1's parser). **Not merged into `main`.** ⚠️ **Out of date in two ways:** it still describes Path C (copy-paste) with a diagram, and its Part 2 is built on the dropped "structured JSON + templates" idea. Rewrite Part 2 from section 6 of this file if it's updated. |
 | `version2memory.md` (this file) | Project root, committed on `main` | Replaces the earlier uncommitted `memory.md` (renamed). |
 | `docs/handoffs/01-save-inputs-and-watermark.md`, `docs/handoffs/02-lock-down-db-privileges.md` | `main` | Handoff specs + the other LLM's reports. Both merged, migrations 0009 and 0010 applied. |
-| Claude's private memory | `~/.claude/projects/-Users-suryavamshi-portfolio-builder-saas/memory/ai-generation-and-paid-tier-strategy.md` + `MEMORY.md` index | Short summary of the strategy; points to this file. |
+| `docs/handoffs/` (`_rules.md`, `01`-`07f`) | `main` | Every handoff spec with the other LLM's report (Antigravity). `_rules.md` holds the rules every handoff follows (own worktree, no migrations applied, no pushes, no production accounts). Reports can be wrong: verify against the code. |
+| `docs/ARCHITECTURE.md`, `API.md`, `README.md`, `userflow.md` | `main` | Refreshed 2026-10-14 (handoff 07f) to match what shipped. Where they disagree with this file, this file's decision log wins. |
+| Claude's private memory | `~/.claude/projects/-Users-suryavamshi-portfolio-builder-saas/memory/` (`project-state-2026-10-14.md`, `working-agreements.md`, others) + `MEMORY.md` index | Short summary of the strategy; points to this file. |
 
 **Local git state when this was written:** branch `main` at `62e3c3f`. The working tree also has other uncommitted files that aren't part of this work. **Don't touch or commit them.**
 
@@ -172,10 +175,18 @@ An earlier draft of the proposal went back to "structured JSON → templates". T
 | `OAUTH_VERCEL_CLIENT_ID`, `OAUTH_VERCEL_CLIENT_SECRET` (`src/config/vercel.ts`) | Deploy to the user's own Vercel (the `VERCEL_` prefix is reserved by Vercel) |
 | `WAITLIST_WEBHOOK_URL`, `WAITLIST_WEBHOOK_SECRET` (`src/config/waitlist.ts`) | Google Apps Script → Google Sheet |
 | `CRON_SECRET` (Supabase secret) + `app_config` rows `purge_edge_function_url`, `purge_cron_secret` | Storage purge Edge Function |
+| `APP_EXTRA_ORIGINS` | Extra allowed origins for the Origin check (the branded domain `www.shipfolio.xyz`); `APP_ORIGIN` stays the vercel.app address used for OAuth redirects |
+| `CRON_SECRET` (Vercel, different from the Supabase one above) | Bearer secret for the Vercel Cron routes `/api/cron/free-queue` and `/api/cron/domains` |
+| `OPENROUTER_API_KEY`, `FREE_MODEL_OPENROUTER_A`..`D` (+ optional `FREE_IMAGES_*`, `FREE_BUDGET_*`, `FREE_MAX_OUTPUT_TOKENS`) | Free-model chain. **Only `:free` model ids are accepted** (enforced in `src/config/free-models.ts`). Order today: nemotron-3-super, laguna-s-2.1, north-mini-code, nemotron-3-ultra |
+| `SITES_DOMAIN`, `SITES_BASE_URL` | Hosting: `SITES_BASE_URL=https://www.shipfolio.xyz/s` makes published addresses `/s/<name>`; unset it to use `<name>.<SITES_DOMAIN>` |
+| `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` | GitHub App `shipfolio-ai-export` (push to the user's own repo; the app needs "Request user authorization during installation" on) |
+| `VERCEL_API_TOKEN`, `SITES_PROJECT_ID`, `VERCEL_TEAM_ID` | Custom domains: adding/removing domains on the `shipfolio-sites` project |
 
-### Database tables today (migrations 0001–0008)
+### Database tables today (migrations 0001–0018)
 
 `users` (id, plan `free|pro`, is_admin, created_at; users can only write their row's `id`, so they **can't** set `plan` or `is_admin`, per migration 0010; 0006 was ineffective), `portfolios` (user_id primary key = **one portfolio per user**, `generated_html`, updated_at; **no direct access for users** since 0010, every read/write goes through server routes with the service-role client scoped to the session's user id), `uploads` (kind `resume|visual_reference|photo|project_image`, storage_path, filename, size_bytes, mime_type, published), `generations` (user_id, resume_upload_id, status `succeeded|failed`, created_at), `byok_keys` (user_id + provider, encrypted_key, nonce), `vercel_connections` (encrypted_access_token, nonce, vercel_username, team_id), `publications` (vercel_deployment_id, status, url, finished_at), `purchases` (dodo_payment_id unique, amount, currency), `upload_deletion_warnings`, `app_config`.
+
+**Added since (2026-10-11 → 2026-10-14), all server-only (no access for `anon`/`authenticated`):** `portfolio_inputs` (0009), `portfolio_versions` (0011, newest 20 per user), `resume_texts` (0012, cascades with the resume upload), `generation_jobs` + `provider_budgets` + function `claim_provider_budget` (0013), `github_connections` + `exports` (0014), `sites` + private storage bucket `sites` (0015), `mcp_clients` + `mcp_tokens` (0016, hashes only), `custom_domains` (0017), and five clean-up cron jobs (0018).
 
 ### Plan limits (`src/config/plans.ts`)
 
@@ -191,6 +202,8 @@ Upload limits per kind: resume (single, PDF/DOCX, 5 MB), photo (single, PNG/JPEG
 ---
 
 ## 5. Current flow (as built): detailed
+
+> **Note (2026-10-14):** this section describes the flow as it was on 2026-10-11, before handoffs 01-07. The current flow is in `userflow.md` Part 1 and `docs/ARCHITECTURE.md`.
 
 ### Stage 0: Landing `/`
 - `getLaunchMode()`: in waitlist mode, calls to action become an email form → `POST /api/waitlist` (zod email check) → forwards with a shared secret to a Google Apps Script → Google Sheet. In live mode, calls to action → `/login?redirect=/onboarding`.
@@ -246,23 +259,25 @@ On load it calls `GET /api/uploads?kind=resume` and `GET /api/byok-keys` so retu
 - The SQL jobs → `notify_storage_purge` → `pg_net` → Edge Function (bearer `CRON_SECRET`) → files deleted from Storage.
 - `POST /api/reset`: deletes all uploads + clears the portfolio. Keeps Gemini keys, the Vercel connection, generations, publications and purchases.
 
-### Known problems in the current code (fix whichever direction is taken)
+### Known problems in the current code (all fixed as of 2026-10-14)
 
-| # | Problem |
-|---|---|
-| 1 | Links and specifics are never saved (lost on refresh; Studio regenerate drops all links) |
-| 2 | Studio regenerate doesn't send `designIntensity`, so Bold resets to Minimal |
-| 3 | The resume is deleted 48 h after generation, so Studio regenerate breaks after 2 days |
-| 4 | The downloaded HTML contains a 7-day signed photo URL, so the photo breaks after a week (publish is fine, because it bundles images) |
-| 5 | The download paywall is UI-only; `/api/content` gives the HTML to free users |
-| 6 | The preview sandbox blocks scripts, so the preview can differ from the deployed site |
-| 7 | Generated HTML isn't sanitised (model scripts go live) |
-| 8 | Progress messages are timers, not real progress |
-| 9 | The 422 error text in the UI still says "Schema Validation" (left over from the old JSON design) |
+| # | Problem | Status |
+|---|---|---|
+| 1 | Links and specifics are never saved | Fixed: `portfolio_inputs` (handoff 01) |
+| 2 | Studio regenerate doesn't send `designIntensity` | Fixed (handoff 01) |
+| 3 | The resume is deleted 48 h after generation, so regenerate breaks | Mitigated: the text is saved in `resume_texts` (0012) and deleted with the resume; revise-from-HTML mode is not built |
+| 4 | The downloaded HTML contains a 7-day signed photo URL | Fixed: pages store storage markers; exports bundle the images |
+| 5 | The download paywall is UI-only | Fixed: server-side watermark and `hasPaidAccess()` on every export |
+| 6 | The preview sandbox blocks scripts | Fixed: `sandbox="allow-scripts"` (no same-origin) |
+| 7 | Generated HTML isn't sanitised | Fixed: `finalizeHtml()` + `sanitizeHtmlForServing()` + CSP |
+| 8 | Progress messages are timers | Fixed: background jobs with real statuses |
+| 9 | The 422 error text says "Schema Validation" | Fixed: shows the plain-language reasons |
 
 ---
 
-## 6. Proposed design (agreed direction, not built)
+## 6. Design record (agreed direction; built as of 2026-10-14 except payments)
+
+> **Status and deviations:** the build follows this design with these differences. (a) Hosting serves `www.shipfolio.xyz/s/<name>` from the app (CSP `sandbox`, 20 s shared cache), not `<name>.<domain>`; `sites-app/` serves custom domains only. (b) GitHub push needs an existing repo the app is installed on (it cannot create repos); no Pages toggle, no pull requests. (c) The fact check covers numbers, percentages, money and dates only (employers/certifications deferred). (d) No email is sent for queued free jobs (no email provider chosen); a daily cron runs them. (e) The MCP save runs `finalizeHtml` + the numeric check but no repair round (the chat fixes what is listed). (f) Payments (6.7) are not built yet.
 
 **Ground rule (owner decision, 2026-10-11): the output is always a complete `.html` file, written by the model for each user, following the rules in the guardrail prompt** (`src/server/llm/guardrail-prompt.ts`: the CORE RULE that the resume is the only source of facts, plus the DESIGN & OUTPUT RULES). There are no templates, no theme system and no JSON content step. Every generation path produces the same kind of HTML file that `/api/generate` produces today.
 
@@ -421,6 +436,8 @@ Reset also clears `portfolio_versions`, `portfolio_inputs` and `resume_texts`, a
 ---
 
 ## 7. Open questions and things to check before building
+
+**Answered by the build (2026-10-14):** the sites domain (reuse `shipfolio.xyz`, path hosting `/s/<name>`; the CSP `sandbox` replaces the separate-domain isolation); which free models work (OpenRouter `:free` models; Gemma 4 is often rate-limited upstream, Nemotron Super/Laguna/North Mini Code/Nemotron Ultra answered; Groq and Cerebras were not needed); how strict the fact check is (numbers only for v1); whether Supabase Auth's OAuth server fits MCP (no: a small sign-in server inside the app, `src/server/mcp/`); Vercel's domain limits and a wildcard (not needed). **Still open:** Dodo product setup and the hosting add-on price/lapse behaviour; which email service (none yet); Claude.ai/ChatGPT connector plan rules (the real connector flow is untested by Claude: owner to try it).
 
 - **Deferred live check (owner, 2026-10-12):** verify the free-plan watermark and paywall on production after the payment work (Dodo add-on + refund webhook) is built, then switch `PAYMENTS_ENABLED` on. Until then production runs with payments off and no watermark.
 

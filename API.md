@@ -44,11 +44,11 @@ All endpoints return JSON responses unless otherwise noted (such as binary downl
 | `PUT` | `/api/portfolio/inputs` | Session Cookie | No | `{ links?: { linkedin?: string, github?: string, projectLinks?: string[], otherLinks?: string[] }, specifics?: string, designIntensity?: "minimal" \| "bold", preferredSource?: string }` | `{ ok: true, inputs: object }` | `400 invalid_json`, `400 invalid_links`, `401 unauthorized`, `500 internal_error` |
 | `GET` | `/api/portfolio/versions` | Session Cookie | No | None | `{ versions: Array<{ id: string, source: string, model: string \| null, warnings: string[], createdAt: string }> }` | `401 unauthorized`, `500 internal_error` |
 | `POST` | `/api/portfolio/versions/:id/restore` | Session Cookie | No | None | `{ ok: true, versionId: string, restoredAt: string }` | `400 invalid_request`, `404 version_not_found`, `401 unauthorized`, `500 internal_error` |
-| `POST` | `/api/reset` | Session Cookie | No | None | `{ ok: true, resetAt: string }` | `401 unauthorized`, `500 internal_error` |
+| `POST` | `/api/reset` | Session Cookie | No | None | `{ ok: true, updatedAt: string, notes: string[] }` | `401 unauthorized`, `500 internal_error` |
 
 *Security & Watermarking:*
 - `GET /api/content`: Free users receive watermarked HTML with `data-shipfolio-watermark`. Paid users receive clean, unwatermarked HTML.
-- `POST /api/reset`: Wipes all uploads from storage, deletes `portfolio_inputs`, `resume_texts`, `portfolio_versions`, and resets `portfolios.generated_html = null`. Preserves purchases, generations history, BYOK keys, and Vercel connections.
+- `POST /api/reset`: Wipes all uploads from storage, deletes `portfolio_inputs`, `resume_texts`, `portfolio_versions`, and resets `portfolios.generated_html = null`. Preserves purchases, generations history, BYOK keys, and Vercel connections. A published site is **not** unpublished: `notes` says "Your published site stays live until you unpublish it." Deleting a whole account (admin) removes the site's hosted files first (`removeSiteFiles`).
 
 ---
 

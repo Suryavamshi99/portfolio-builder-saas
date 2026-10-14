@@ -1,3 +1,5 @@
+> **Note (2026-10-14):** this is Antigravity's own working log from 2026-10-12. It is partly inaccurate (for example it names database columns that don't exist). The reliable record is the "Handoff report" at the end of each `docs/handoffs/*.md` file and `version2memory.md`.
+
 # Antigravity Agent Development Log (Agydevelpoedagent.md)
 
 **Branch:** `feat/05-studio-improvements`  

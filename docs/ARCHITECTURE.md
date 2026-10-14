@@ -176,6 +176,9 @@ Cache-Control: public, max-age=0, s-maxage=20
 ```
 This enables fast edge-caching on Vercel's CDN while ensuring that unpublishing or admin takedowns take effect globally within 20 seconds.
 
+### Removing a site's files
+`removeSiteFiles(admin, slug)` (`src/server/sites-storage.ts`) deletes everything under `sites/{slug}/` in Storage. It validates the slug first and never leaves that folder. It runs on a user's unpublish, an admin takedown, and before an account is deleted. On unpublish and takedown the site status flips first (so nothing is served immediately) and a clean-up failure is only logged; a daily job deletes sites that have been unpublished for 30 days together with any leftover files.
+
 ---
 
 ## 5. Custom Domain Verification & Ownership Proof
