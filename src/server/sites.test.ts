@@ -20,6 +20,13 @@ import * as usersModule from "@/server/users";
 import * as imagesModule from "@/server/template/images";
 import * as finalizeModule from "@/server/finalize-html";
 
+// Step-up is covered in admin-middleware.test.ts; these tests exercise route behavior behind a valid step-up.
+vi.mock("@/server/admin-middleware", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/admin-middleware")>()),
+  requireStepUp: () => null,
+}));
+
+
 type RouteHandler = (args: any) => Promise<Response>;
 
 describe("src/server/sites.ts pure helpers", () => {

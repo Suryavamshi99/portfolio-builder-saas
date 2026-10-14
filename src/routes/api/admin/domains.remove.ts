@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/admin/domains/remove")({
   server: {
     middleware: [adminMiddleware],
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request, context }) => {
         let body: { hostname?: unknown; reason?: unknown } = {};
         try {
           body = ((await request.json()) ?? {}) as { hostname?: unknown; reason?: unknown };
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/admin/domains/remove")({
           // Empty or non-JSON body
         }
 
-        const stepUpError = await requireStepUp(request);
+        const stepUpError = requireStepUp(context);
         if (stepUpError) return stepUpError;
 
         const reasonResult = validateReason(body.reason);

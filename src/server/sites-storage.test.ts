@@ -6,6 +6,13 @@ import { Route as resetRoute } from "../routes/api/reset";
 import * as adminModule from "@/lib/supabase/admin";
 import * as sitesStorageModule from "./sites-storage";
 
+// Step-up is covered in admin-middleware.test.ts; these tests exercise route behavior behind a valid step-up.
+vi.mock("@/server/admin-middleware", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/admin-middleware")>()),
+  requireStepUp: () => null,
+}));
+
+
 type RouteHandler = (args: any) => Promise<Response>;
 
 describe("src/server/sites-storage.ts", () => {

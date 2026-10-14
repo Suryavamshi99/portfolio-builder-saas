@@ -129,7 +129,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
         });
       },
 
-      PATCH: async ({ request, params }) => {
+      PATCH: async ({ request, params, context }) => {
         const admin = createSupabaseAdminClient();
 
         let body: unknown;
@@ -156,7 +156,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
             const reasonResult = validateReason(bodyObj.reason);
             if (!reasonResult.ok) return reasonResult.response;
 
-            const stepUpError = await requireStepUp(request);
+            const stepUpError = requireStepUp(context);
             if (stepUpError) return stepUpError;
 
             const { error } = await admin.from("users").update({ plan: plan as Plan }).eq("id", params.id);
@@ -185,7 +185,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
             const reasonResult = validateReason(bodyObj.reason);
             if (!reasonResult.ok) return reasonResult.response;
 
-            const stepUpError = await requireStepUp(request);
+            const stepUpError = requireStepUp(context);
             if (stepUpError) return stepUpError;
 
             if (currentIsAdmin && !isAdmin) {
@@ -242,7 +242,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
         return Response.json({ ok: true });
       },
 
-      DELETE: async ({ request, params }) => {
+      DELETE: async ({ request, params, context }) => {
         const admin = createSupabaseAdminClient();
 
         let bodyObj: { confirmEmail?: unknown; reason?: unknown } = {};
@@ -252,7 +252,7 @@ export const Route = createFileRoute("/api/admin/users/$id")({
           // Empty or non-JSON body
         }
 
-        const stepUpError = await requireStepUp(request);
+        const stepUpError = requireStepUp(context);
         if (stepUpError) return stepUpError;
 
         const reasonResult = validateReason(bodyObj.reason);

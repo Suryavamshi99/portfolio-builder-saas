@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/admin/sites/$slug/unpublish")({
   server: {
     middleware: [adminMiddleware],
     handlers: {
-      POST: async ({ request, params }) => {
+      POST: async ({ request, params, context }) => {
         const slug = params.slug;
         if (!slug || typeof slug !== "string") {
           return errorResponse(400, "invalid_slug", "Slug parameter is required");
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/admin/sites/$slug/unpublish")({
           // Empty or non-JSON body
         }
 
-        const stepUpError = await requireStepUp(request);
+        const stepUpError = requireStepUp(context);
         if (stepUpError) return stepUpError;
 
         const reasonResult = validateReason(body.reason);

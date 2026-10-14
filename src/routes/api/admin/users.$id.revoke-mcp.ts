@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/admin/users/$id/revoke-mcp")({
   server: {
     middleware: [adminMiddleware],
     handlers: {
-      POST: async ({ request, params }) => {
+      POST: async ({ request, params, context }) => {
         let body: { reason?: unknown } = {};
         try {
           body = ((await request.json()) ?? {}) as { reason?: unknown };
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/admin/users/$id/revoke-mcp")({
           // Empty or non-JSON body
         }
 
-        const stepUpError = await requireStepUp(request);
+        const stepUpError = requireStepUp(context);
         if (stepUpError) return stepUpError;
 
         const reasonResult = validateReason(body.reason);

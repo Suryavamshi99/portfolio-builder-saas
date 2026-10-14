@@ -1,26 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { serialize as serializeCookie } from "cookie";
 import { getRequestHeader, setResponseHeader } from "@tanstack/react-start/server";
 
 import { getAdminEnv } from "@/lib/admin/env";
-import { verifyPassword } from "@/lib/admin/password";
-import { ADMIN_SESSION_COOKIE, createAdminSessionToken } from "@/lib/admin/session";
-import { checkAdminLoginRateLimit } from "@/server/admin-rate-limit";
+import { DUMMY_SCRYPT_HASH, verifyPassword } from "@/lib/admin/password";
+import {
+  createAdminPendingToken,
+  isHttpsRequest,
+  serializeAdminPendingCookie,
+} from "@/lib/admin/session";
+import { getAdminSecurity } from "@/lib/admin/security-store";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { logAdminAction } from "@/server/admin-audit";
+import {
+  checkAdminLoginRateLimit,
+  checkAdminLockout,
+  computeAdminKeyHash,
+  recordAdminAttempt,
+} from "@/server/admin-rate-limit";
 
-function badRequest(message: string, status = 400) {
-  return Response.json({ error: { message } }, { status });
+function errorResponse(status: number, code: string, message: string, extra: Record<string, unknown> = {}) {
+  return Response.json({ error: { code, message, ...extra } }, { status });
 }
 
 export const Route = createFileRoute("/api/admin/login")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const ip = getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-        const rateLimit = checkAdminLoginRateLimit(ip);
-        if (rateLimit.limited) {
+        const admin = createSupabaseAdminClient();
+        const clientIp = getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+        // Keep existing in-memory per-IP limiter as defense-in-depth
+        const ipRateLimit = checkAdminLoginRateLimit(clientIp);
+        if (ipRateLimit.limited) {
           return Response.json(
-            { error: { message: "Too many attempts. Try again later." } },
-            { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } },
+            { error: { code: "locked", message: "Too many attempts. Try again later." }, retryAfterSeconds: ipRateLimit.retryAfterSeconds },
+            { status: 429, headers: { "retry-after": String(ipRateLimit.retryAfterSeconds) } },
           );
         }
 
@@ -28,38 +42,74 @@ export const Route = createFileRoute("/api/admin/login")({
         try {
           body = await request.json();
         } catch {
-          return badRequest("Invalid request body");
+          return errorResponse(400, "invalid_body", "Invalid request body");
         }
-        if (typeof body !== "object" || body === null) return badRequest("Invalid request body");
+        if (typeof body !== "object" || body === null) {
+          return errorResponse(400, "invalid_body", "Invalid request body");
+        }
         const { username, password } = body as { username?: unknown; password?: unknown };
         if (typeof username !== "string" || typeof password !== "string") {
-          return badRequest("username and password are required");
+          return errorResponse(400, "invalid_body", "username and password are required");
         }
 
         const { username: expectedUsername, passwordHash, sessionSecret } = getAdminEnv();
+        const keyHash = computeAdminKeyHash(clientIp, username, sessionSecret);
 
-        // Both checks always run (no early-return on username mismatch) so a
-        // wrong username can't be timed against a wrong password.
+        // Lockout check before verifying credentials
+        const lockout = await checkAdminLockout(admin, keyHash, "password");
+        if (lockout.locked) {
+          await logAdminAction(admin, {
+            action: "admin.login_locked",
+            targetType: "system",
+            detail: { stage: "password" },
+            request,
+          });
+          return Response.json(
+            {
+              error: { code: "locked", message: "Too many failed attempts. Try again later." },
+              retryAfterSeconds: lockout.retryAfterSeconds,
+            },
+            { status: 429, headers: { "retry-after": String(lockout.retryAfterSeconds) } },
+          );
+        }
+
+        // Timing-safe comparison: if username mismatches, run scrypt against dummy hash
         const usernameOk = username === expectedUsername;
-        const passwordOk = verifyPassword(password, passwordHash);
-        if (!usernameOk || !passwordOk) return badRequest("Invalid credentials", 401);
+        let passwordOk = false;
+        if (usernameOk) {
+          passwordOk = verifyPassword(password, passwordHash);
+        } else {
+          verifyPassword(password, DUMMY_SCRYPT_HASH);
+        }
 
-        const token = createAdminSessionToken(sessionSecret);
-        setResponseHeader(
-          "set-cookie",
-          serializeCookie(ADMIN_SESSION_COOKIE, token, {
-            httpOnly: true,
-            // `secure` requires HTTPS, which local `vite dev` (http://localhost)
-            // doesn't have — browsers silently refuse to set/send the cookie
-            // otherwise, breaking admin login in dev.
-            secure: process.env["NODE_ENV"] === "production",
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24,
-          }),
-        );
+        if (!usernameOk || !passwordOk) {
+          await recordAdminAttempt(admin, keyHash, "password", false);
+          await logAdminAction(admin, {
+            action: "admin.login_fail",
+            targetType: "system",
+            detail: { stage: "password" },
+            request,
+          });
+          return errorResponse(401, "invalid_credentials", "Invalid credentials");
+        }
 
-        return Response.json({ ok: true });
+        // Password passed
+        await recordAdminAttempt(admin, keyHash, "password", true);
+
+        // Check if 2FA is enrolled
+        const security = await getAdminSecurity(admin);
+        const twoFactorEnrolled = security.totp_enabled_at !== null;
+
+        // Issue 5-minute admin_pending cookie
+        const isHttps = isHttpsRequest(request, getRequestHeader("x-forwarded-proto"));
+        const pendingToken = createAdminPendingToken(username, sessionSecret);
+        setResponseHeader("set-cookie", serializeAdminPendingCookie(pendingToken, isHttps));
+
+        if (!twoFactorEnrolled) {
+          return Response.json({ step: "enroll" });
+        }
+
+        return Response.json({ step: "totp" });
       },
     },
   },

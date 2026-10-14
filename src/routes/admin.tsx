@@ -1,7 +1,6 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +13,9 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ShieldAlert, LogOut, Trash2, Pencil, Loader2, KeyRound, Globe, HardDrive } from "lucide-react";
+import { LogOut, Trash2, Pencil, Loader2, KeyRound, Globe, HardDrive } from "lucide-react";
 import type { AdminUserSummary } from "@/server/admin-users";
+import { SignIn } from "@/components/admin/SignIn";
 
 // No link to this route exists anywhere in the app's UI, by design — see
 // the conversation that introduced it. Reaching it means knowing the URL.
@@ -50,8 +50,6 @@ type UserDetail = {
 
 function AdminPage() {
   const [phase, setPhase] = React.useState<"checking" | "login" | "dashboard">("checking");
-  const [loginError, setLoginError] = React.useState<string | null>(null);
-  const [loginLoading, setLoginLoading] = React.useState(false);
 
   const [users, setUsers] = React.useState<AdminUserSummary[] | null>(null);
   const [listError, setListError] = React.useState<string | null>(null);
@@ -85,29 +83,6 @@ function AdminPage() {
       }
     })();
   }, [loadUsers]);
-
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoginError(null);
-    setLoginLoading(true);
-    const form = new FormData(e.currentTarget);
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ username: form.get("username"), password: form.get("password") }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-        setLoginError(data?.error?.message ?? "Sign-in failed");
-        return;
-      }
-      setPhase("dashboard");
-      void loadUsers();
-    } finally {
-      setLoginLoading(false);
-    }
-  }
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -190,34 +165,12 @@ function AdminPage() {
 
   if (phase === "login") {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center space-y-6">
-        <div className="space-y-1 text-center">
-          <ShieldAlert className="mx-auto size-8 text-accent" />
-          <h1 className="text-xl font-bold text-foreground">Admin sign-in</h1>
-        </div>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="admin-username" className="text-xs font-medium text-muted-foreground">
-              Username
-            </label>
-            <Input id="admin-username" name="username" autoComplete="off" required />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="admin-password" className="text-xs font-medium text-muted-foreground">
-              Password
-            </label>
-            <Input id="admin-password" name="password" type="password" autoComplete="off" required />
-          </div>
-          {loginError && (
-            <Alert variant="destructive">
-              <AlertDescription>{loginError}</AlertDescription>
-            </Alert>
-          )}
-          <Button type="submit" className="w-full" disabled={loginLoading}>
-            {loginLoading ? <Loader2 className="size-4 animate-spin" /> : "Sign in"}
-          </Button>
-        </form>
-      </div>
+      <SignIn
+        onDone={() => {
+          setPhase("dashboard");
+          void loadUsers();
+        }}
+      />
     );
   }
 

@@ -9,6 +9,9 @@ export function hashPassword(password: string): string {
   return `scrypt:${salt.toString("hex")}:${hash.toString("hex")}`;
 }
 
+/** Precomputed dummy hash for constant-time failure when username doesn't match */
+export const DUMMY_SCRYPT_HASH = hashPassword("dummy-password-timing-oracle-defense");
+
 /** Constant-time compare — timing attacks are exactly what matter for a single, valuable admin credential. */
 export function verifyPassword(password: string, stored: string): boolean {
   const [scheme, saltHex, hashHex] = stored.split(":");

@@ -23,6 +23,13 @@ import { Route as clearCooldownRoute } from "../routes/api/admin/providers.clear
 import { Route as systemRoute } from "../routes/api/admin/system";
 import { Route as auditRoute } from "../routes/api/admin/audit";
 
+// Step-up is covered in admin-middleware.test.ts; these tests exercise route behavior behind a valid step-up.
+vi.mock("@/server/admin-middleware", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/admin-middleware")>()),
+  requireStepUp: () => null,
+}));
+
+
 type Handler = (args: any) => Promise<Response>;
 
 beforeEach(() => {
