@@ -3,6 +3,9 @@
 **Worktree / branch:** `/Users/suryavamshi/portfolio-builder-saas-08b` on `feat/08b-admin-ui`. **Rules:** `docs/handoffs/_rules.md` (read first, including the production rule: build and test against mocks; do not create accounts or data on production). UI only: `src/routes/admin.tsx`, new `src/components/admin/**`, new `src/lib/admin-api.ts`. No changes under `src/server/` or `src/routes/api/`, no migrations.
 **Companion:** handoff 08a builds the endpoints in parallel. Code to the contracts in `docs/handoffs/08a-admin-backend.md` (Task C) exactly. All calls go through one typed client `src/lib/admin-api.ts`. If an endpoint answers 404 (not deployed yet) show a neutral "Not available yet" panel, never crash. Tests mock `fetch`.
 
+## Plan and auth
+Context: `docs/plans/2026-10-14-admin-console-plan.md`. Sign-in, step-up and security UI come from handoff 08c (`src/components/admin/SignIn.tsx`, `StepUpDialog.tsx`, `SecurityPanel.tsx`, `requestStepUp()` in `src/lib/admin-stepup.ts`): import them; if missing, code to those names with temporary stubs marked `// replaced by 08c`. Add a seventh tab **Security** rendering `SecurityPanel`. A `403 step_up_required` from any destructive call opens the step-up dialog, then retries once. Replace the sign-in form with `<SignIn>`; keep the 401→sign-in behavior.
+
 ## Read first
 `src/routes/admin.tsx` (current single page, its sign-in form and `/api/admin/session` check), `src/components/ui/*` (use existing components: Dialog, Tabs, Badge, Button, Input), `src/routes/settings.tsx` (tab style).
 
