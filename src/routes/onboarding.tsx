@@ -469,6 +469,7 @@ function OnboardingWizard() {
               <button
                 key={s.step}
                 type="button"
+                disabled={s.step > 1 && !resumeUpload}
                 onClick={() => !generating && !uploadBusy && setCurrentStep(s.step as StepIndex)}
                 className={`flex flex-col items-center gap-1.5 rounded-lg p-2 text-center transition-all ${
                   isCurrent
@@ -941,7 +942,7 @@ function OnboardingWizard() {
                     <div className="rounded-xl border border-border bg-muted/20 p-3.5 text-xs space-y-1">
                       <span className="text-muted-foreground">Generation Method:</span>
                       <div className="font-semibold text-accent">
-                        {selectedMethod === "free" ? "⚡ Free Models" : "🔑 My Gemini Key"}
+                        {selectedMethod === "free" ? "Free Models" : "My Gemini Key"}
                       </div>
                     </div>
                   </div>
