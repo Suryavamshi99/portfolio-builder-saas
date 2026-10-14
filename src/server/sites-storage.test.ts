@@ -286,6 +286,23 @@ describe("Admin DELETE /api/admin/users/$id site cleanup", () => {
             }),
           };
         }
+        if (table === "users") {
+          return {
+            select: () => ({
+              eq: () => ({
+                maybeSingle: async () => ({
+                  data: { is_admin: false },
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === "admin_audit_log") {
+          return {
+            insert: async () => ({ error: null }),
+          };
+        }
         return {};
       }),
       storage: {
@@ -298,6 +315,10 @@ describe("Admin DELETE /api/admin/users/$id site cleanup", () => {
       },
       auth: {
         admin: {
+          getUserById: vi.fn(async (id: string) => ({
+            data: { user: { id, email: `${id}@example.com` } },
+            error: null,
+          })),
           deleteUser: vi.fn(async (id: string) => {
             deletedUserIds.push(id);
             return { error: null };
@@ -309,7 +330,14 @@ describe("Admin DELETE /api/admin/users/$id site cleanup", () => {
     vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(fakeAdmin as never);
 
     const handler = (adminUserRoute.options.server?.handlers as { DELETE: RouteHandler }).DELETE;
-    const response = await handler({ params: { id: "user-123" } });
+    const response = await handler({
+      params: { id: "user-123" },
+      request: new Request("http://localhost/api/admin/users/user-123", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ confirmEmail: "user-123@example.com", reason: "Account cleanup" }),
+      }),
+    });
 
     expect(response.status).toBe(204);
 
@@ -354,6 +382,23 @@ describe("Admin DELETE /api/admin/users/$id site cleanup", () => {
             }),
           };
         }
+        if (table === "users") {
+          return {
+            select: () => ({
+              eq: () => ({
+                maybeSingle: async () => ({
+                  data: { is_admin: false },
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === "admin_audit_log") {
+          return {
+            insert: async () => ({ error: null }),
+          };
+        }
         return {};
       }),
       storage: {
@@ -363,6 +408,10 @@ describe("Admin DELETE /api/admin/users/$id site cleanup", () => {
       },
       auth: {
         admin: {
+          getUserById: vi.fn(async (id: string) => ({
+            data: { user: { id, email: `${id}@example.com` } },
+            error: null,
+          })),
           deleteUser: vi.fn(async (id: string) => {
             deletedUserIds.push(id);
             return { error: null };
@@ -374,7 +423,14 @@ describe("Admin DELETE /api/admin/users/$id site cleanup", () => {
     vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(fakeAdmin as never);
 
     const handler = (adminUserRoute.options.server?.handlers as { DELETE: RouteHandler }).DELETE;
-    const response = await handler({ params: { id: "user-456" } });
+    const response = await handler({
+      params: { id: "user-456" },
+      request: new Request("http://localhost/api/admin/users/user-456", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ confirmEmail: "user-456@example.com", reason: "Account cleanup" }),
+      }),
+    });
 
     expect(response.status).toBe(204);
     expect(removeSiteFilesSpy).toHaveBeenCalledWith(expect.anything(), "success-site");

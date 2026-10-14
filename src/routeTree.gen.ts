@@ -32,9 +32,14 @@ import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
 import { Route as SSplatRouteImport } from './routes/s.$'
+import { Route as ApiAdminAuditRouteImport } from './routes/api/admin/audit'
+import { Route as ApiAdminJobsRouteImport } from './routes/api/admin/jobs'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
 import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
+import { Route as ApiAdminOverviewRouteImport } from './routes/api/admin/overview'
 import { Route as ApiAdminSessionRouteImport } from './routes/api/admin/session'
+import { Route as ApiAdminSitesRouteImport } from './routes/api/admin/sites'
+import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
@@ -62,11 +67,15 @@ import { Route as ApiSitesUnpublishRouteImport } from './routes/api/sites/unpubl
 import { Route as ApiUploadsIdRouteImport } from './routes/api/uploads.$id'
 import { Route as ApiVercelStatusRouteImport } from './routes/api/vercel/status'
 import { Route as ApiWebhooksDodoRouteImport } from './routes/api/webhooks/dodo'
+import { Route as ApiAdminDomainsRemoveRouteImport } from './routes/api/admin/domains.remove'
+import { Route as ApiAdminProvidersClearCooldownRouteImport } from './routes/api/admin/providers.clear-cooldown'
 import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
 import { Route as ApiMcpConnectionsClientIdRouteImport } from './routes/api/mcp.connections.$clientId'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
+import { Route as ApiAdminJobsIdCancelRouteImport } from './routes/api/admin/jobs.$id.cancel'
 import { Route as ApiAdminSitesSlugUnpublishRouteImport } from './routes/api/admin/sites.$slug.unpublish'
+import { Route as ApiAdminUsersIdRevokeMcpRouteImport } from './routes/api/admin/users.$id.revoke-mcp'
 import { Route as ApiPortfolioVersionsIdRestoreRouteImport } from './routes/api/portfolio/versions.$id.restore'
 
 const IndexRoute = IndexRouteImport.update({
@@ -186,6 +195,16 @@ const SSplatRoute = SSplatRouteImport.update({
   path: '/s/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminAuditRoute = ApiAdminAuditRouteImport.update({
+  id: '/api/admin/audit',
+  path: '/api/admin/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminJobsRoute = ApiAdminJobsRouteImport.update({
+  id: '/api/admin/jobs',
+  path: '/api/admin/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
   id: '/api/admin/login',
   path: '/api/admin/login',
@@ -196,9 +215,24 @@ const ApiAdminLogoutRoute = ApiAdminLogoutRouteImport.update({
   path: '/api/admin/logout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminOverviewRoute = ApiAdminOverviewRouteImport.update({
+  id: '/api/admin/overview',
+  path: '/api/admin/overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminSessionRoute = ApiAdminSessionRouteImport.update({
   id: '/api/admin/session',
   path: '/api/admin/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSitesRoute = ApiAdminSitesRouteImport.update({
+  id: '/api/admin/sites',
+  path: '/api/admin/sites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSystemRoute = ApiAdminSystemRouteImport.update({
+  id: '/api/admin/system',
+  path: '/api/admin/system',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
@@ -336,6 +370,17 @@ const ApiWebhooksDodoRoute = ApiWebhooksDodoRouteImport.update({
   path: '/api/webhooks/dodo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminDomainsRemoveRoute = ApiAdminDomainsRemoveRouteImport.update({
+  id: '/api/admin/domains/remove',
+  path: '/api/admin/domains/remove',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminProvidersClearCooldownRoute =
+  ApiAdminProvidersClearCooldownRouteImport.update({
+    id: '/api/admin/providers/clear-cooldown',
+    path: '/api/admin/providers/clear-cooldown',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAdminUsersIdRoute = ApiAdminUsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -357,11 +402,22 @@ const ApiVercelOauthStartRoute = ApiVercelOauthStartRouteImport.update({
   path: '/oauth/start',
   getParentRoute: () => ApiVercelRoute,
 } as any)
+const ApiAdminJobsIdCancelRoute = ApiAdminJobsIdCancelRouteImport.update({
+  id: '/$id/cancel',
+  path: '/$id/cancel',
+  getParentRoute: () => ApiAdminJobsRoute,
+} as any)
 const ApiAdminSitesSlugUnpublishRoute =
   ApiAdminSitesSlugUnpublishRouteImport.update({
-    id: '/api/admin/sites/$slug/unpublish',
-    path: '/api/admin/sites/$slug/unpublish',
-    getParentRoute: () => rootRouteImport,
+    id: '/$slug/unpublish',
+    path: '/$slug/unpublish',
+    getParentRoute: () => ApiAdminSitesRoute,
+  } as any)
+const ApiAdminUsersIdRevokeMcpRoute =
+  ApiAdminUsersIdRevokeMcpRouteImport.update({
+    id: '/revoke-mcp',
+    path: '/revoke-mcp',
+    getParentRoute: () => ApiAdminUsersIdRoute,
   } as any)
 const ApiPortfolioVersionsIdRestoreRoute =
   ApiPortfolioVersionsIdRestoreRouteImport.update({
@@ -394,9 +450,14 @@ export interface FileRoutesByFullPath {
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
   '/s/$': typeof SSplatRoute
+  '/api/admin/audit': typeof ApiAdminAuditRoute
+  '/api/admin/jobs': typeof ApiAdminJobsRouteWithChildren
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/overview': typeof ApiAdminOverviewRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/sites': typeof ApiAdminSitesRouteWithChildren
+  '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
@@ -424,11 +485,15 @@ export interface FileRoutesByFullPath {
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/domains/': typeof ApiDomainsIndexRoute
-  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
+  '/api/admin/domains/remove': typeof ApiAdminDomainsRemoveRoute
+  '/api/admin/providers/clear-cooldown': typeof ApiAdminProvidersClearCooldownRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRouteWithChildren
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/admin/jobs/$id/cancel': typeof ApiAdminJobsIdCancelRoute
   '/api/admin/sites/$slug/unpublish': typeof ApiAdminSitesSlugUnpublishRoute
+  '/api/admin/users/$id/revoke-mcp': typeof ApiAdminUsersIdRevokeMcpRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRoutesByTo {
@@ -455,9 +520,14 @@ export interface FileRoutesByTo {
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
   '/s/$': typeof SSplatRoute
+  '/api/admin/audit': typeof ApiAdminAuditRoute
+  '/api/admin/jobs': typeof ApiAdminJobsRouteWithChildren
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/overview': typeof ApiAdminOverviewRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/sites': typeof ApiAdminSitesRouteWithChildren
+  '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
@@ -485,11 +555,15 @@ export interface FileRoutesByTo {
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/domains': typeof ApiDomainsIndexRoute
-  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
+  '/api/admin/domains/remove': typeof ApiAdminDomainsRemoveRoute
+  '/api/admin/providers/clear-cooldown': typeof ApiAdminProvidersClearCooldownRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRouteWithChildren
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/admin/jobs/$id/cancel': typeof ApiAdminJobsIdCancelRoute
   '/api/admin/sites/$slug/unpublish': typeof ApiAdminSitesSlugUnpublishRoute
+  '/api/admin/users/$id/revoke-mcp': typeof ApiAdminUsersIdRevokeMcpRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRoutesById {
@@ -517,9 +591,14 @@ export interface FileRoutesById {
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
   '/s/$': typeof SSplatRoute
+  '/api/admin/audit': typeof ApiAdminAuditRoute
+  '/api/admin/jobs': typeof ApiAdminJobsRouteWithChildren
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/overview': typeof ApiAdminOverviewRoute
   '/api/admin/session': typeof ApiAdminSessionRoute
+  '/api/admin/sites': typeof ApiAdminSitesRouteWithChildren
+  '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
@@ -547,11 +626,15 @@ export interface FileRoutesById {
   '/api/vercel/status': typeof ApiVercelStatusRoute
   '/api/webhooks/dodo': typeof ApiWebhooksDodoRoute
   '/api/domains/': typeof ApiDomainsIndexRoute
-  '/api/admin/users/$id': typeof ApiAdminUsersIdRoute
+  '/api/admin/domains/remove': typeof ApiAdminDomainsRemoveRoute
+  '/api/admin/providers/clear-cooldown': typeof ApiAdminProvidersClearCooldownRoute
+  '/api/admin/users/$id': typeof ApiAdminUsersIdRouteWithChildren
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
+  '/api/admin/jobs/$id/cancel': typeof ApiAdminJobsIdCancelRoute
   '/api/admin/sites/$slug/unpublish': typeof ApiAdminSitesSlugUnpublishRoute
+  '/api/admin/users/$id/revoke-mcp': typeof ApiAdminUsersIdRevokeMcpRoute
   '/api/portfolio/versions/$id/restore': typeof ApiPortfolioVersionsIdRestoreRoute
 }
 export interface FileRouteTypes {
@@ -580,9 +663,14 @@ export interface FileRouteTypes {
     | '/api/vercel'
     | '/api/waitlist'
     | '/s/$'
+    | '/api/admin/audit'
+    | '/api/admin/jobs'
     | '/api/admin/login'
     | '/api/admin/logout'
+    | '/api/admin/overview'
     | '/api/admin/session'
+    | '/api/admin/sites'
+    | '/api/admin/system'
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
@@ -610,11 +698,15 @@ export interface FileRouteTypes {
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
     | '/api/domains/'
+    | '/api/admin/domains/remove'
+    | '/api/admin/providers/clear-cooldown'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/admin/jobs/$id/cancel'
     | '/api/admin/sites/$slug/unpublish'
+    | '/api/admin/users/$id/revoke-mcp'
     | '/api/portfolio/versions/$id/restore'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -641,9 +733,14 @@ export interface FileRouteTypes {
     | '/api/vercel'
     | '/api/waitlist'
     | '/s/$'
+    | '/api/admin/audit'
+    | '/api/admin/jobs'
     | '/api/admin/login'
     | '/api/admin/logout'
+    | '/api/admin/overview'
     | '/api/admin/session'
+    | '/api/admin/sites'
+    | '/api/admin/system'
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
@@ -671,11 +768,15 @@ export interface FileRouteTypes {
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
     | '/api/domains'
+    | '/api/admin/domains/remove'
+    | '/api/admin/providers/clear-cooldown'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/admin/jobs/$id/cancel'
     | '/api/admin/sites/$slug/unpublish'
+    | '/api/admin/users/$id/revoke-mcp'
     | '/api/portfolio/versions/$id/restore'
   id:
     | '__root__'
@@ -702,9 +803,14 @@ export interface FileRouteTypes {
     | '/api/vercel'
     | '/api/waitlist'
     | '/s/$'
+    | '/api/admin/audit'
+    | '/api/admin/jobs'
     | '/api/admin/login'
     | '/api/admin/logout'
+    | '/api/admin/overview'
     | '/api/admin/session'
+    | '/api/admin/sites'
+    | '/api/admin/system'
     | '/api/admin/users'
     | '/api/billing/checkout'
     | '/api/byok-keys/$provider'
@@ -732,11 +838,15 @@ export interface FileRouteTypes {
     | '/api/vercel/status'
     | '/api/webhooks/dodo'
     | '/api/domains/'
+    | '/api/admin/domains/remove'
+    | '/api/admin/providers/clear-cooldown'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
+    | '/api/admin/jobs/$id/cancel'
     | '/api/admin/sites/$slug/unpublish'
+    | '/api/admin/users/$id/revoke-mcp'
     | '/api/portfolio/versions/$id/restore'
   fileRoutesById: FileRoutesById
 }
@@ -764,9 +874,14 @@ export interface RootRouteChildren {
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
   ApiWaitlistRoute: typeof ApiWaitlistRoute
   SSplatRoute: typeof SSplatRoute
+  ApiAdminAuditRoute: typeof ApiAdminAuditRoute
+  ApiAdminJobsRoute: typeof ApiAdminJobsRouteWithChildren
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
   ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
+  ApiAdminOverviewRoute: typeof ApiAdminOverviewRoute
   ApiAdminSessionRoute: typeof ApiAdminSessionRoute
+  ApiAdminSitesRoute: typeof ApiAdminSitesRouteWithChildren
+  ApiAdminSystemRoute: typeof ApiAdminSystemRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiCronDomainsRoute: typeof ApiCronDomainsRoute
@@ -788,8 +903,9 @@ export interface RootRouteChildren {
   ApiSitesUnpublishRoute: typeof ApiSitesUnpublishRoute
   ApiWebhooksDodoRoute: typeof ApiWebhooksDodoRoute
   ApiDomainsIndexRoute: typeof ApiDomainsIndexRoute
+  ApiAdminDomainsRemoveRoute: typeof ApiAdminDomainsRemoveRoute
+  ApiAdminProvidersClearCooldownRoute: typeof ApiAdminProvidersClearCooldownRoute
   ApiMcpConnectionsClientIdRoute: typeof ApiMcpConnectionsClientIdRoute
-  ApiAdminSitesSlugUnpublishRoute: typeof ApiAdminSitesSlugUnpublishRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -955,6 +1071,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/audit': {
+      id: '/api/admin/audit'
+      path: '/api/admin/audit'
+      fullPath: '/api/admin/audit'
+      preLoaderRoute: typeof ApiAdminAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/jobs': {
+      id: '/api/admin/jobs'
+      path: '/api/admin/jobs'
+      fullPath: '/api/admin/jobs'
+      preLoaderRoute: typeof ApiAdminJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/login': {
       id: '/api/admin/login'
       path: '/api/admin/login'
@@ -969,11 +1099,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminLogoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/overview': {
+      id: '/api/admin/overview'
+      path: '/api/admin/overview'
+      fullPath: '/api/admin/overview'
+      preLoaderRoute: typeof ApiAdminOverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/session': {
       id: '/api/admin/session'
       path: '/api/admin/session'
       fullPath: '/api/admin/session'
       preLoaderRoute: typeof ApiAdminSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/sites': {
+      id: '/api/admin/sites'
+      path: '/api/admin/sites'
+      fullPath: '/api/admin/sites'
+      preLoaderRoute: typeof ApiAdminSitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/system': {
+      id: '/api/admin/system'
+      path: '/api/admin/system'
+      fullPath: '/api/admin/system'
+      preLoaderRoute: typeof ApiAdminSystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/users': {
@@ -1165,6 +1316,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksDodoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/domains/remove': {
+      id: '/api/admin/domains/remove'
+      path: '/api/admin/domains/remove'
+      fullPath: '/api/admin/domains/remove'
+      preLoaderRoute: typeof ApiAdminDomainsRemoveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/providers/clear-cooldown': {
+      id: '/api/admin/providers/clear-cooldown'
+      path: '/api/admin/providers/clear-cooldown'
+      fullPath: '/api/admin/providers/clear-cooldown'
+      preLoaderRoute: typeof ApiAdminProvidersClearCooldownRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/users/$id': {
       id: '/api/admin/users/$id'
       path: '/$id'
@@ -1193,12 +1358,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVercelOauthStartRouteImport
       parentRoute: typeof ApiVercelRoute
     }
+    '/api/admin/jobs/$id/cancel': {
+      id: '/api/admin/jobs/$id/cancel'
+      path: '/$id/cancel'
+      fullPath: '/api/admin/jobs/$id/cancel'
+      preLoaderRoute: typeof ApiAdminJobsIdCancelRouteImport
+      parentRoute: typeof ApiAdminJobsRoute
+    }
     '/api/admin/sites/$slug/unpublish': {
       id: '/api/admin/sites/$slug/unpublish'
-      path: '/api/admin/sites/$slug/unpublish'
+      path: '/$slug/unpublish'
       fullPath: '/api/admin/sites/$slug/unpublish'
       preLoaderRoute: typeof ApiAdminSitesSlugUnpublishRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiAdminSitesRoute
+    }
+    '/api/admin/users/$id/revoke-mcp': {
+      id: '/api/admin/users/$id/revoke-mcp'
+      path: '/revoke-mcp'
+      fullPath: '/api/admin/users/$id/revoke-mcp'
+      preLoaderRoute: typeof ApiAdminUsersIdRevokeMcpRouteImport
+      parentRoute: typeof ApiAdminUsersIdRoute
     }
     '/api/portfolio/versions/$id/restore': {
       id: '/api/portfolio/versions/$id/restore'
@@ -1276,12 +1455,48 @@ const ApiVercelRouteWithChildren = ApiVercelRoute._addFileChildren(
   ApiVercelRouteChildren,
 )
 
+interface ApiAdminJobsRouteChildren {
+  ApiAdminJobsIdCancelRoute: typeof ApiAdminJobsIdCancelRoute
+}
+
+const ApiAdminJobsRouteChildren: ApiAdminJobsRouteChildren = {
+  ApiAdminJobsIdCancelRoute: ApiAdminJobsIdCancelRoute,
+}
+
+const ApiAdminJobsRouteWithChildren = ApiAdminJobsRoute._addFileChildren(
+  ApiAdminJobsRouteChildren,
+)
+
+interface ApiAdminSitesRouteChildren {
+  ApiAdminSitesSlugUnpublishRoute: typeof ApiAdminSitesSlugUnpublishRoute
+}
+
+const ApiAdminSitesRouteChildren: ApiAdminSitesRouteChildren = {
+  ApiAdminSitesSlugUnpublishRoute: ApiAdminSitesSlugUnpublishRoute,
+}
+
+const ApiAdminSitesRouteWithChildren = ApiAdminSitesRoute._addFileChildren(
+  ApiAdminSitesRouteChildren,
+)
+
+interface ApiAdminUsersIdRouteChildren {
+  ApiAdminUsersIdRevokeMcpRoute: typeof ApiAdminUsersIdRevokeMcpRoute
+}
+
+const ApiAdminUsersIdRouteChildren: ApiAdminUsersIdRouteChildren = {
+  ApiAdminUsersIdRevokeMcpRoute: ApiAdminUsersIdRevokeMcpRoute,
+}
+
+const ApiAdminUsersIdRouteWithChildren = ApiAdminUsersIdRoute._addFileChildren(
+  ApiAdminUsersIdRouteChildren,
+)
+
 interface ApiAdminUsersRouteChildren {
-  ApiAdminUsersIdRoute: typeof ApiAdminUsersIdRoute
+  ApiAdminUsersIdRoute: typeof ApiAdminUsersIdRouteWithChildren
 }
 
 const ApiAdminUsersRouteChildren: ApiAdminUsersRouteChildren = {
-  ApiAdminUsersIdRoute: ApiAdminUsersIdRoute,
+  ApiAdminUsersIdRoute: ApiAdminUsersIdRouteWithChildren,
 }
 
 const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
@@ -1325,9 +1540,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVercelRoute: ApiVercelRouteWithChildren,
   ApiWaitlistRoute: ApiWaitlistRoute,
   SSplatRoute: SSplatRoute,
+  ApiAdminAuditRoute: ApiAdminAuditRoute,
+  ApiAdminJobsRoute: ApiAdminJobsRouteWithChildren,
   ApiAdminLoginRoute: ApiAdminLoginRoute,
   ApiAdminLogoutRoute: ApiAdminLogoutRoute,
+  ApiAdminOverviewRoute: ApiAdminOverviewRoute,
   ApiAdminSessionRoute: ApiAdminSessionRoute,
+  ApiAdminSitesRoute: ApiAdminSitesRouteWithChildren,
+  ApiAdminSystemRoute: ApiAdminSystemRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiCronDomainsRoute: ApiCronDomainsRoute,
@@ -1349,8 +1569,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSitesUnpublishRoute: ApiSitesUnpublishRoute,
   ApiWebhooksDodoRoute: ApiWebhooksDodoRoute,
   ApiDomainsIndexRoute: ApiDomainsIndexRoute,
+  ApiAdminDomainsRemoveRoute: ApiAdminDomainsRemoveRoute,
+  ApiAdminProvidersClearCooldownRoute: ApiAdminProvidersClearCooldownRoute,
   ApiMcpConnectionsClientIdRoute: ApiMcpConnectionsClientIdRoute,
-  ApiAdminSitesSlugUnpublishRoute: ApiAdminSitesSlugUnpublishRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

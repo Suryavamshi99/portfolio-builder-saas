@@ -26,3 +26,9 @@ export const adminMiddleware = createMiddleware().server(async ({ next }) => {
 
   return next();
 });
+
+// replaced by 08c
+export async function requireStepUp(_request?: Request): Promise<Response | null | void> {
+  // Always passes until 08c merges
+}
+
