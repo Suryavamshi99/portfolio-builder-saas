@@ -61,8 +61,9 @@ async function latestResumeId(admin: SupabaseClient, userId: string): Promise<st
 
 /** The user's running MCP job (kept alive while their chat works), or a new one; null if another kind is running. */
 async function ensureMcpJob(admin: SupabaseClient, userId: string, resumeId: string): Promise<string | null> {
-  const { data: active } = await admin.from("generation_jobs").select("id, source").eq("user_id", userId).in("status", ACTIVE).maybeSingle();
-  if (active) {
+  const { data: active } = await admin.from("generation_jobs").select("id, source, status").eq("user_id", userId).in("status", ACTIVE).maybeSingle();
+  // A job parked in the queue (waiting for free capacity) doesn't block: createJob() replaces it.
+  if (active && active.status !== "queued") {
     if (active.source !== "mcp") return null;
     await admin.from("generation_jobs").update({ error: null }).eq("id", active.id);
     await setStatus(admin, active.id, "writing");
