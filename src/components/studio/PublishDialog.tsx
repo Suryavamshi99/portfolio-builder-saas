@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "@tanstack/react-router";
 import { Globe, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { apiClient, type SiteCheckStatus } from "@/lib/api-client";
 import { sanitizeSlug, getSlugFeedback } from "@/lib/studio-helpers";
@@ -178,6 +179,14 @@ export function PublishDialog({
               )}
             </div>
           </div>
+
+          <p className="text-[11px] text-muted-foreground">
+            Want your own address, like <span className="font-mono">yourname.com</span>?{" "}
+            <Link to="/settings" search={{ tab: "domains" }} className="text-accent underline underline-offset-2">
+              Connect your own domain
+            </Link>{" "}
+            after publishing.
+          </p>
 
           {publishError && (
             <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive">

@@ -292,6 +292,8 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
               ) : (
                 "Deploy your portfolio to your own Vercel account"
               )}
+              {" "}
+              <a href="/settings?tab=domains" className="underline">Use your own domain</a>
             </p>
           </div>
         </div>

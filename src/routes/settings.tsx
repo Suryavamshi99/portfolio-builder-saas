@@ -34,6 +34,7 @@ import {
 interface SettingsSearch {
   upgrade?: "pending" | "failed" | undefined;
   github?: string | undefined;
+  tab?: string | undefined;
   github_error?: string | undefined;
 }
 
@@ -42,6 +43,9 @@ export const Route = createFileRoute("/settings")({
     const res: SettingsSearch = {};
     if (search["upgrade"] === "pending" || search["upgrade"] === "failed") {
       res.upgrade = search["upgrade"];
+    }
+    if (typeof search["tab"] === "string" && ["byok", "domains", "github", "apps", "vercel", "storage", "danger"].includes(search["tab"])) {
+      res.tab = search["tab"];
     }
     if (typeof search["github"] === "string") {
       res.github = search["github"];
@@ -82,9 +86,9 @@ interface VercelStatus {
 
 function SettingsContent() {
   const navigate = useNavigate();
-  const { upgrade } = Route.useSearch();
+  const { upgrade, tab } = Route.useSearch();
   const { refreshPortfolioStatus } = useAuth();
-  const [activeTab, setActiveTab] = React.useState("byok");
+  const [activeTab, setActiveTab] = React.useState(tab ?? "byok");
   const [userRecord, setUserRecord] = React.useState<UserRecord | null>(null);
   const [vercelStatus, setVercelStatus] = React.useState<VercelStatus | null>(null);
   const [disconnectingVercel, setDisconnectingVercel] = React.useState(false);
