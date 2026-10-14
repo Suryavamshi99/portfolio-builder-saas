@@ -72,7 +72,19 @@ function ConnectContent() {
   const copyUrl = async () => {
     if (!connectorUrl) return;
     try {
-      await navigator.clipboard.writeText(connectorUrl);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(connectorUrl);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = connectorUrl;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -138,8 +150,8 @@ function ConnectContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-lg border border-border bg-muted/40 px-3 py-2 font-mono text-xs text-foreground select-all truncate">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="flex-1 rounded-lg border border-border bg-muted/40 px-3 py-2 font-mono text-xs text-foreground select-all break-all sm:truncate">
               {connectorUrl || "Loading…"}
             </div>
             <Button
@@ -147,7 +159,7 @@ function ConnectContent() {
               variant="outline"
               size="sm"
               onClick={() => void copyUrl()}
-              className="h-9 gap-1.5 text-xs shrink-0"
+              className="h-9 gap-1.5 text-xs shrink-0 w-full sm:w-auto justify-center"
               disabled={!connectorUrl}
             >
               {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
@@ -242,8 +254,8 @@ function ConnectContent() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between pt-2">
-        <Button asChild variant="outline" size="sm" className="gap-2 text-xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2">
+        <Button asChild variant="outline" size="sm" className="gap-2 text-xs w-full sm:w-auto justify-center">
           <Link to="/onboarding">
             <ArrowLeft className="size-3.5" />
             Back to Wizard
@@ -254,7 +266,7 @@ function ConnectContent() {
           variant="ghost"
           size="sm"
           onClick={() => void checkStatus()}
-          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground w-full sm:w-auto justify-center"
         >
           <RefreshCw className="size-3.5" />
           Refresh Connection Status

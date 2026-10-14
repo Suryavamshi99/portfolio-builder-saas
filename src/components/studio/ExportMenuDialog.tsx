@@ -160,23 +160,25 @@ export function ExportMenuDialog({
 
         <div className="space-y-4 py-2">
           {/* Quick downloads & copy */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => void handleAction(onDownloadZip)}
               disabled={downloadingZip}
-              className="flex flex-col items-center justify-center h-20 gap-1.5 p-2 text-center"
+              className="flex sm:flex-col items-center justify-start sm:justify-center h-12 sm:h-20 gap-2 sm:gap-1.5 p-3 sm:p-2 text-left sm:text-center"
             >
               {downloadingZip ? (
-                <Loader2 className="size-4 animate-spin text-accent" />
+                <Loader2 className="size-4 animate-spin text-accent shrink-0" />
               ) : !hasPaidAccess ? (
-                <Lock className="size-4 text-muted-foreground" />
+                <Lock className="size-4 text-muted-foreground shrink-0" />
               ) : (
-                <Download className="size-4 text-accent" />
+                <Download className="size-4 text-accent shrink-0" />
               )}
-              <span className="text-xs font-semibold">Download Zip</span>
-              <span className="text-[10px] text-muted-foreground">Bundled assets</span>
+              <div className="flex flex-col sm:items-center">
+                <span className="text-xs font-semibold">Download Zip</span>
+                <span className="text-[10px] text-muted-foreground">Bundled assets</span>
+              </div>
             </Button>
 
             <Button
@@ -184,32 +186,36 @@ export function ExportMenuDialog({
               variant="outline"
               onClick={() => void handleAction(onDownloadHtml)}
               disabled={downloadingHtml}
-              className="flex flex-col items-center justify-center h-20 gap-1.5 p-2 text-center"
+              className="flex sm:flex-col items-center justify-start sm:justify-center h-12 sm:h-20 gap-2 sm:gap-1.5 p-3 sm:p-2 text-left sm:text-center"
             >
               {downloadingHtml ? (
-                <Loader2 className="size-4 animate-spin text-accent" />
+                <Loader2 className="size-4 animate-spin text-accent shrink-0" />
               ) : !hasPaidAccess ? (
-                <Lock className="size-4 text-muted-foreground" />
+                <Lock className="size-4 text-muted-foreground shrink-0" />
               ) : (
-                <FileCode className="size-4 text-accent" />
+                <FileCode className="size-4 text-accent shrink-0" />
               )}
-              <span className="text-xs font-semibold">Download HTML</span>
-              <span className="text-[10px] text-muted-foreground">Single file</span>
+              <div className="flex flex-col sm:items-center">
+                <span className="text-xs font-semibold">Download HTML</span>
+                <span className="text-[10px] text-muted-foreground">Single file</span>
+              </div>
             </Button>
 
             <Button
               type="button"
               variant="outline"
               onClick={() => void onCopyHtml()}
-              className="flex flex-col items-center justify-center h-20 gap-1.5 p-2 text-center"
+              className="flex sm:flex-col items-center justify-start sm:justify-center h-12 sm:h-20 gap-2 sm:gap-1.5 p-3 sm:p-2 text-left sm:text-center"
             >
               {copiedHtml ? (
-                <Check className="size-4 text-success" />
+                <Check className="size-4 text-success shrink-0" />
               ) : (
-                <Copy className="size-4 text-accent" />
+                <Copy className="size-4 text-accent shrink-0" />
               )}
-              <span className="text-xs font-semibold">{copiedHtml ? "Copied!" : "Copy HTML"}</span>
-              <span className="text-[10px] text-muted-foreground">To clipboard</span>
+              <div className="flex flex-col sm:items-center">
+                <span className="text-xs font-semibold">{copiedHtml ? "Copied!" : "Copy HTML"}</span>
+                <span className="text-[10px] text-muted-foreground">To clipboard</span>
+              </div>
             </Button>
           </div>
 

@@ -40,6 +40,20 @@ interface VersionItem {
   createdAt: string;
 }
 
+function formatModelName(model: string | null): string {
+  if (!model) return "";
+  if (
+    model.includes(":free") ||
+    model.startsWith("nvidia/") ||
+    model.startsWith("google/gemma") ||
+    model.includes("free-chain")
+  ) {
+    return "Free Model";
+  }
+  const base = model.split("/").pop() ?? model;
+  return base.replace(/:free$/, "");
+}
+
 export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const { hasPaidAccess: downloadUnlocked } = useAuth();
   const [html, setHtml] = useState(initialHtml);
@@ -362,7 +376,19 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
 
   async function copyHtmlToClipboard() {
     try {
-      await navigator.clipboard.writeText(html);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(html);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = html;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       setStatus({ kind: "ok", msg: "HTML copied to clipboard!" });
@@ -613,8 +639,11 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
                           {ver.source}
                         </Badge>
                         {ver.model && (
-                          <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
-                            {ver.model}
+                          <span
+                            className="text-[11px] text-muted-foreground truncate max-w-[140px]"
+                            title={ver.model}
+                          >
+                            {formatModelName(ver.model)}
                           </span>
                         )}
                       </div>

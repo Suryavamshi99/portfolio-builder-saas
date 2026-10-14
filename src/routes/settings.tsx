@@ -285,7 +285,7 @@ function SettingsContent() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 gap-1 h-auto p-1.5">
           <TabsTrigger value="byok" className="gap-1.5 text-xs">
             <KeyRound className="size-3.5" />
             BYOK Keys

@@ -516,7 +516,7 @@ function OnboardingWizard() {
                 onBusyChange={setUploadBusy}
               />
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-border/60 pt-4">
+            <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 border-t border-border/60 pt-4">
               <span className="text-xs text-muted-foreground">
                 {uploadBusy
                   ? "Uploading…"
@@ -528,7 +528,7 @@ function OnboardingWizard() {
                 type="button"
                 disabled={!resumeUpload || uploadBusy}
                 onClick={() => setCurrentStep(2)}
-                className="gap-2"
+                className="gap-2 w-full sm:w-auto justify-center"
               >
                 Next: Visual Style
                 <ArrowRight className="size-4" />
@@ -892,7 +892,7 @@ function OnboardingWizard() {
                     Publishing is a separate, explicit step
                   </div>
                   <p className="leading-relaxed">
-                    Editing and saving in Studio never goes live on its own. When you're happy with it, publish directly to your custom subdomain or export your site package.
+                    Editing and saving in Studio never goes live on its own. When you're happy with it, publish directly to your custom address or export your site package.
                   </p>
                 </div>
 
