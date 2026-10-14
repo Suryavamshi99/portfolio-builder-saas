@@ -1,158 +1,104 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { LogOut, Trash2, Pencil, Loader2, KeyRound, Globe, HardDrive } from "lucide-react";
-import type { AdminUserSummary } from "@/server/admin-users";
+  LogOut,
+  Loader2,
+  Users,
+  Globe,
+  Briefcase,
+  Shield,
+  Server,
+  Lock,
+  LayoutDashboard,
+} from "lucide-react";
+import { adminApi } from "@/lib/admin-api";
 import { SignIn } from "@/components/admin/SignIn";
+import { StepUpDialog } from "@/components/admin/StepUpDialog";
+import { SecurityPanel } from "@/components/admin/SecurityPanel";
+import { OverviewTab } from "@/components/admin/OverviewTab";
+import { UsersTab } from "@/components/admin/UsersTab";
+import { SitesTab } from "@/components/admin/SitesTab";
+import { JobsTab } from "@/components/admin/JobsTab";
+import { AuditTab } from "@/components/admin/AuditTab";
+import { SystemTab } from "@/components/admin/SystemTab";
+import { AdminToast, ToastMessage } from "@/components/admin/AdminToast";
 
-// No link to this route exists anywhere in the app's UI, by design — see
-// the conversation that introduced it. Reaching it means knowing the URL.
+export type AdminTab = "overview" | "users" | "sites" | "jobs" | "audit" | "system" | "security";
+
+interface AdminSearch {
+  tab?: AdminTab;
+}
+
+const VALID_TABS: AdminTab[] = ["overview", "users", "sites", "jobs", "audit", "system", "security"];
+
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Shipfolio" }] }),
+  validateSearch: (search: Record<string, unknown>): AdminSearch => {
+    const rawTab = search["tab"];
+    if (typeof rawTab === "string" && (VALID_TABS as readonly string[]).includes(rawTab)) {
+      return { tab: rawTab as AdminTab };
+    }
+    return { tab: "overview" };
+  },
+  head: () => ({ meta: [{ title: "Admin Console — Shipfolio" }] }),
   component: AdminPage,
 });
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  const units = ["KB", "MB", "GB"];
-  let value = bytes / 1024;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex += 1;
-  }
-  return `${value.toFixed(1)} ${units[unitIndex]}`;
-}
-
-type UserDetail = {
-  id: string;
-  email: string | null;
-  createdAt: string;
-  plan: "free" | "pro";
-  isAdmin: boolean;
-  portfolio: { html: string | null; updatedAt: string } | null;
-  uploads: { id: string; kind: string; filename: string; size_bytes: number; created_at: string }[];
-  byokProviders: { provider: string; created_at: string }[];
-  vercelConnection: { vercel_username: string | null; connected_at: string } | null;
-};
-
 function AdminPage() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const activeTab: AdminTab = search.tab ?? "overview";
+
   const [phase, setPhase] = React.useState<"checking" | "login" | "dashboard">("checking");
 
-  const [users, setUsers] = React.useState<AdminUserSummary[] | null>(null);
-  const [listError, setListError] = React.useState<string | null>(null);
+  // Step-up modal coordination
 
-  const [selected, setSelected] = React.useState<UserDetail | null>(null);
-  const [contentDraft, setContentDraft] = React.useState("");
-  const [contentError, setContentError] = React.useState<string | null>(null);
-  const [saving, setSaving] = React.useState(false);
-  const [pendingDelete, setPendingDelete] = React.useState<AdminUserSummary | null>(null);
-  const [deleting, setDeleting] = React.useState(false);
+  // Toast notifications
+  const [toasts, setToasts] = React.useState<ToastMessage[]>([]);
 
-  const loadUsers = React.useCallback(async () => {
-    setListError(null);
-    const res = await fetch("/api/admin/users");
-    if (!res.ok) {
-      setListError("Could not load users.");
-      return;
-    }
-    const data = (await res.json()) as { users: AdminUserSummary[] };
-    setUsers(data.users);
+  const showToast = React.useCallback((message: string, type: "success" | "error" = "success") => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 5000);
   }, []);
 
-  React.useEffect(() => {
-    void (async () => {
-      const res = await fetch("/api/admin/session");
-      if (res.ok) {
+  const dismissToast = React.useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  // Check admin session on mount
+  const checkSession = React.useCallback(async () => {
+    setPhase("checking");
+    try {
+      const session = await adminApi.getSession();
+      if (session.authenticated) {
         setPhase("dashboard");
-        void loadUsers();
       } else {
         setPhase("login");
       }
-    })();
-  }, [loadUsers]);
+    } catch {
+      setPhase("login");
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
 
   async function handleLogout() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    setUsers(null);
+    await adminApi.logout();
     setPhase("login");
   }
 
-  async function openUser(userId: string) {
-    const res = await fetch(`/api/admin/users/${userId}`);
-    if (!res.ok) return;
-    const detail = (await res.json()) as UserDetail;
-    setSelected(detail);
-    setContentDraft(detail.portfolio?.html ?? "");
-    setContentError(null);
-  }
-
-  async function saveSelected(planOverride?: "free" | "pro") {
-    if (!selected) return;
-    setContentError(null);
-
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/admin/users/${selected.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ plan: planOverride ?? selected.plan, html: contentDraft }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-        setContentError(data?.error?.message ?? "Save failed");
-        return;
-      }
-      if (planOverride) setSelected({ ...selected, plan: planOverride });
-      void loadUsers();
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function toggleAdmin(next: boolean) {
-    if (!selected) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/admin/users/${selected.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ isAdmin: next }),
-      });
-      if (res.ok) {
-        setSelected({ ...selected, isAdmin: next });
-        void loadUsers();
-      }
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function confirmDelete() {
-    if (!pendingDelete) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/admin/users/${pendingDelete.id}`, { method: "DELETE" });
-      if (res.ok) {
-        setPendingDelete(null);
-        setSelected(null);
-        void loadUsers();
-      }
-    } finally {
-      setDeleting(false);
-    }
+  function handleTabChange(tabValue: string) {
+    void navigate({
+      to: "/admin",
+      search: { tab: tabValue as AdminTab },
+      replace: true,
+    });
   }
 
   if (phase === "checking") {
@@ -165,193 +111,115 @@ function AdminPage() {
 
   if (phase === "login") {
     return (
-      <SignIn
-        onDone={() => {
-          setPhase("dashboard");
-          void loadUsers();
-        }}
-      />
+      <div className="py-8">
+        <SignIn onDone={() => void checkSession()} />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-6xl space-y-6 py-4 px-2 sm:px-4">
+      {/* Console Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Admin</h1>
-          <p className="text-sm text-muted-foreground">{users?.length ?? 0} accounts</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Shield className="size-5 text-accent" />
+            Admin Console
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Founder console for operations, moderation, health inspection, and audit.
+          </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => void handleLogout()} className="gap-1.5">
-          <LogOut className="size-3.5" />
-          Sign out
-        </Button>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleLogout()}
+            className="gap-1.5 text-xs h-8"
+          >
+            <LogOut className="size-3.5" />
+            Sign out
+          </Button>
+        </div>
       </div>
 
-      {listError && (
-        <Alert variant="destructive">
-          <AlertDescription>{listError}</AlertDescription>
-        </Alert>
-      )}
-
-      {!users ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      {/* Main Tabs Navigation */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="flex w-max min-w-full sm:grid sm:grid-cols-7 gap-1 h-auto p-1.5 bg-muted/60">
+            <TabsTrigger value="overview" className="gap-1.5 text-xs py-2 px-3">
+              <LayoutDashboard className="size-3.5 shrink-0" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-1.5 text-xs py-2 px-3">
+              <Users className="size-3.5 shrink-0" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="sites" className="gap-1.5 text-xs py-2 px-3">
+              <Globe className="size-3.5 shrink-0" />
+              Sites & domains
+            </TabsTrigger>
+            <TabsTrigger value="jobs" className="gap-1.5 text-xs py-2 px-3">
+              <Briefcase className="size-3.5 shrink-0" />
+              Jobs & providers
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="gap-1.5 text-xs py-2 px-3">
+              <Shield className="size-3.5 shrink-0" />
+              Audit log
+            </TabsTrigger>
+            <TabsTrigger value="system" className="gap-1.5 text-xs py-2 px-3">
+              <Server className="size-3.5 shrink-0" />
+              System
+            </TabsTrigger>
+            <TabsTrigger value="security" className="gap-1.5 text-xs py-2 px-3">
+              <Lock className="size-3.5 shrink-0" />
+              Security
+            </TabsTrigger>
+          </TabsList>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {users.map((u) => (
-            <Card key={u.id} className="border-border/80">
-              <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-                <div className="min-w-0 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">{u.email ?? u.id}</span>
-                    <Badge variant={u.plan === "pro" ? "default" : "secondary"} className="text-[10px] uppercase">
-                      {u.plan}
-                    </Badge>
-                    {u.isAdmin && (
-                      <Badge variant="accent" className="text-[10px] uppercase">
-                        admin
-                      </Badge>
-                    )}
-                    {u.hasPortfolioContent && (
-                      <Badge variant="outline" className="text-[10px]">
-                        has portfolio
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                    <span>Joined {new Date(u.createdAt).toLocaleDateString()}</span>
-                    <span className="inline-flex items-center gap-1">
-                      <HardDrive className="size-3" />
-                      {formatBytes(u.storageUsedBytes)}
-                    </span>
-                    {u.vercelConnected && (
-                      <span className="inline-flex items-center gap-1">
-                        <Globe className="size-3" />
-                        Vercel connected
-                      </span>
-                    )}
-                    {u.byokProviders.length > 0 && (
-                      <span className="inline-flex items-center gap-1">
-                        <KeyRound className="size-3" />
-                        {u.byokProviders.join(", ")}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => void openUser(u.id)} className="gap-1.5">
-                    <Pencil className="size-3.5" />
-                    View / Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPendingDelete(u)}
-                    className="gap-1.5 text-destructive hover:border-destructive/40 hover:bg-destructive/10"
-                  >
-                    <Trash2 className="size-3.5" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
-      <Dialog open={selected != null} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-          {selected && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{selected.email ?? selected.id}</DialogTitle>
-                <DialogDescription>
-                  Joined {new Date(selected.createdAt).toLocaleString()} · {selected.uploads.length} upload(s)
-                  {selected.vercelConnection ? ` · Vercel: ${selected.vercelConnection.vercel_username ?? "connected"}` : ""}
-                  {selected.byokProviders.length > 0
-                    ? ` · BYOK: ${selected.byokProviders.map((k) => k.provider).join(", ")}`
-                    : ""}
-                </DialogDescription>
-              </DialogHeader>
+        {/* Tab 1: Overview */}
+        <TabsContent value="overview">
+          <OverviewTab />
+        </TabsContent>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">Plan</span>
-                  <Button
-                    size="sm"
-                    variant={selected.plan === "free" ? "default" : "outline"}
-                    onClick={() => void saveSelected("free")}
-                    disabled={saving}
-                  >
-                    Free
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={selected.plan === "pro" ? "default" : "outline"}
-                    onClick={() => void saveSelected("pro")}
-                    disabled={saving}
-                  >
-                    Pro
-                  </Button>
-                </div>
+        {/* Tab 2: Users */}
+        <TabsContent value="users">
+          <UsersTab showToast={showToast} />
+        </TabsContent>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">Admin</span>
-                  <Button
-                    size="sm"
-                    variant={selected.isAdmin ? "default" : "outline"}
-                    onClick={() => void toggleAdmin(!selected.isAdmin)}
-                    disabled={saving}
-                  >
-                    {selected.isAdmin ? "Admin — Studio unlocked, never pays" : "Grant admin"}
-                  </Button>
-                </div>
+        {/* Tab 3: Sites & domains */}
+        <TabsContent value="sites">
+          <SitesTab showToast={showToast} />
+        </TabsContent>
 
-                <div className="space-y-1.5">
-                  <span className="text-xs font-medium text-muted-foreground">Portfolio HTML (raw)</span>
-                  <Textarea
-                    value={contentDraft}
-                    onChange={(e) => setContentDraft(e.target.value)}
-                    className="h-64 font-mono text-xs"
-                    spellCheck={false}
-                  />
-                  {contentError && <p className="text-xs text-destructive">{contentError}</p>}
-                </div>
-              </div>
+        {/* Tab 4: Jobs & providers */}
+        <TabsContent value="jobs">
+          <JobsTab showToast={showToast} />
+        </TabsContent>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelected(null)}>
-                  Close
-                </Button>
-                <Button onClick={() => void saveSelected()} disabled={saving}>
-                  {saving ? <Loader2 className="size-4 animate-spin" /> : "Save content"}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        {/* Tab 5: Audit log */}
+        <TabsContent value="audit">
+          <AuditTab />
+        </TabsContent>
 
-      <Dialog open={pendingDelete != null} onOpenChange={(open) => !open && setPendingDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete this account?</DialogTitle>
-            <DialogDescription>
-              This permanently deletes {pendingDelete?.email ?? pendingDelete?.id} — their auth account, portfolio,
-              uploads (including storage files), BYOK keys, and Vercel connection. This cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPendingDelete(null)} disabled={deleting}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={() => void confirmDelete()} disabled={deleting}>
-              {deleting ? <Loader2 className="size-4 animate-spin" /> : "Delete permanently"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {/* Tab 6: System */}
+        <TabsContent value="system">
+          <SystemTab />
+        </TabsContent>
+
+        {/* Tab 7: Security */}
+        <TabsContent value="security">
+          <SecurityPanel />
+        </TabsContent>
+      </Tabs>
+
+      {/* Step-up re-confirmation: registers itself for requestStepUp() */}
+      <StepUpDialog />
+
+      {/* Global Toast */}
+      <AdminToast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
