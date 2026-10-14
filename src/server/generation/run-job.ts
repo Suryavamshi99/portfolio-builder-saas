@@ -145,8 +145,16 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
       },
     });
     if (!outcome.ok && outcome.reason === "exhausted") {
-      // Nothing was spent on this user; try again when the budgets reset.
-      return queueJob(admin, job.id, nextBudgetReset());
+      // Queue for tomorrow only when every budget is genuinely spent. If some provider still has budget left
+      // and is just cooling down after an error, the models are busy: let the user retry in a few minutes.
+      const { data: rows } = await admin.from("provider_budgets").select("provider, used").eq("day", day);
+      const used = new Map((rows ?? []).map((r) => [r.provider as string, r.used as number]));
+      const someBudgetLeft = providers.some((p) => (used.get(p.id) ?? 0) < p.dailyRequestBudget);
+      if (!someBudgetLeft) return queueJob(admin, job.id, nextBudgetReset());
+      return failJob(admin, job.id, {
+        code: "free_models_busy",
+        message: "The free AI models are busy right now. Please try again in a few minutes.",
+      });
     }
     if (!outcome.ok && outcome.reason === "busy") {
       // Upstream timeouts / rate limits: not the user's fault, so it doesn't count against their free runs.

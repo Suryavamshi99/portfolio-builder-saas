@@ -45,6 +45,16 @@ describe("runFreeChain", () => {
     expect(await run({ providers: [P("a"), P("b")], call })).toEqual({ ok: false, reason: "busy" });
   });
 
+  it("moves on to the next provider when a page is cut off at the length limit", async () => {
+    const call = vi
+      .fn()
+      .mockResolvedValueOnce({ text: GOOD.slice(0, 60), finishReason: "length" })
+      .mockResolvedValueOnce(reply(GOOD));
+    const res = await run({ providers: [P("a"), P("b")], call });
+    expect(res).toMatchObject({ ok: true, providerId: "b" });
+    expect(call).toHaveBeenCalledTimes(2); // no repair spent on the cut-off page
+  });
+
   it("cools down and moves on after a rate limit, a provider error and a bad key", async () => {
     const cooldown = vi.fn().mockResolvedValue(undefined);
     const call = vi
@@ -55,7 +65,7 @@ describe("runFreeChain", () => {
       .mockResolvedValueOnce(reply(GOOD));
     const res = await run({ providers: [P("a"), P("b"), P("c"), P("d")], call, cooldown });
     expect(res).toMatchObject({ ok: true, providerId: "d" });
-    expect(cooldown.mock.calls.map((c) => [c[0].id, c[1]])).toEqual([["a", 90], ["b", 120], ["c", 3600]]);
+    expect(cooldown.mock.calls.map((c) => [c[0].id, c[1]])).toEqual([["a", 90], ["b", 60], ["c", 3600]]);
   });
 
   it("repairs once on the same provider before moving on", async () => {
