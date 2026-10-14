@@ -61,6 +61,10 @@ export const Route = createFileRoute("/api/admin/2fa/enroll/confirm")({
         }
 
         const security = await getAdminSecurity(admin);
+        // Once 2FA is on, this route must never act as a second login door (no lockout, no replay guard here).
+        if (security.totp_enabled_at) {
+          return errorResponse(400, "already_enrolled", "Two-factor authentication is already enrolled");
+        }
         if (!security.totp_secret_enc) {
           return errorResponse(400, "no_pending_secret", "Enrollment must be started before confirming");
         }

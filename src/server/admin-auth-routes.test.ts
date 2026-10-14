@@ -255,6 +255,24 @@ describe("Admin authentication API route contracts", () => {
     expect(mockSecurityRow.recovery_hashes).toHaveLength(8);
   });
 
+  it("POST /2fa/enroll/confirm is refused once 2FA is enabled (it must not be a second login door)", async () => {
+    const rawSecret = "JBSWY3DPEHPK3PXP";
+    mockSecurityRow.totp_enabled_at = new Date().toISOString();
+    mockSecurityRow.totp_secret_enc = encryptTotpSecret(rawSecret);
+    mockRequestHeaders["cookie"] = `admin_pending=${createAdminPendingToken(testUsername, testSessionSecret)}`;
+
+    const postConfirm = (EnrollConfirmRoute.options.server as any).handlers.POST;
+    const res = await postConfirm({
+      request: new Request("http://localhost/api/admin/2fa/enroll/confirm", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code: generateTotpCodeForStep(rawSecret, getTotpStep()) }),
+      }),
+    });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error.code).toBe("already_enrolled");
+  });
+
   it("POST /login/totp accepts valid 6-digit TOTP code and prevents replay", async () => {
     const rawSecret = "JBSWY3DPEHPK3PXP";
     mockSecurityRow.totp_enabled_at = new Date().toISOString();
