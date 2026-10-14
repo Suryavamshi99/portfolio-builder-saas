@@ -29,7 +29,7 @@ export const Route = createFileRoute("/login")({
 function LoginRoute() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  const { user, signInWithPassword, signUp, signInWithGoogle, sendPasswordReset, supabaseConfigured, refreshPortfolioStatus } = useAuth();
+  const { user, loading: authLoading, signInWithPassword, signUp, signInWithGoogle, sendPasswordReset, supabaseConfigured, refreshPortfolioStatus } = useAuth();
 
   const [activeTab, setActiveTab] = React.useState<"signin" | "signup">("signin");
   const [email, setEmail] = React.useState("");
@@ -119,6 +119,16 @@ function LoginRoute() {
       setLoading(false);
     }
   };
+
+  // Returning from Google (or already signed in): the session is still being read or we are about to
+  // redirect, so show a spinner instead of flashing the sign-in form.
+  if (authLoading || user) {
+    return (
+      <div className="flex min-h-[80vh] items-center justify-center" role="status" aria-label="Signing you in">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative mx-auto flex min-h-[80vh] w-full max-w-md flex-col justify-center px-4 py-12">
