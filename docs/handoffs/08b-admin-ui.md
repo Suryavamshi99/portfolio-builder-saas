@@ -34,3 +34,89 @@ Vitest for `admin-api.ts` (URL, query string, body, 404 → "not available", 401
 Anything on the server, the user-facing app screens, payments, changing the admin sign-in mechanism.
 
 ## Handoff report
+
+### Summary of Changes
+Implemented the full-featured, hardened Admin Console UI across seven tabs with server-side pagination, search, responsive desktop (1280px) and mobile (390px) viewports, and audit-reason confirmation dialogs.
+
+### Files Created and Changed
+- `src/routes/admin.tsx`: Replaced single-page interface with tabbed console shell (`?tab=overview|users|sites|jobs|audit|system|security`), URL search param synchronization, session check, 401 unauthenticated redirect to `<SignIn>`, 7 tab panels, `<StepUpDialog>` hook registration, and `<AdminToast>` notification manager.
+- `src/lib/admin-api.ts`: Typed client matching 08a Task C and 08c contracts, `AdminApiError` class with `isUnauthorized`, `isNotAvailable` (404), and `isStepUpRequired` (403), step-up retry execution wrapper `executeWithStepUp`, and pure helpers:
+  - `validateReason(reason)`: Validates 3–300 trimmed characters.
+  - `validateConfirmEmail(email, confirmEmail)`: Case-insensitive match for account deletion.
+  - `formatRelativeTime(dateInput, now)`: Clean relative times ("3 hours ago", "just now").
+  - `formatExactTime(dateInput)`: Formatted locale timestamps for tooltips.
+  - `formatBytes(bytes)`: Formats bytes to B, KB, MB, GB, TB.
+  - `calculatePagination(total, page, pageSize)`: Computes page limits and navigation bounds.
+  - `formatErrorMessage(err)`: Translates backend codes (`last_admin`, `confirm_mismatch`, `reason_required`, `step_up_required`, `job_finished`, `domain_not_found`) to plain-language user messages.
+- `src/lib/admin-stepup.ts`: Temporary stub marked `// replaced by 08c` exporting `requestStepUp(): Promise<boolean>` and listener registration.
+- `src/lib/admin-api.test.ts`: Vitest test suite with 43 tests covering pure helpers, URL/query parameter serialization, 401 signed-out signaling, 404 not-available detection, error translation, and step-up retry flows.
+- `src/components/admin/SignIn.tsx`: Authentication screen stub marked `// replaced by 08c`.
+- `src/components/admin/StepUpDialog.tsx`: Step-up re-authentication modal stub marked `// replaced by 08c`.
+- `src/components/admin/SecurityPanel.tsx`: Security tab panel stub marked `// replaced by 08c`.
+- `src/components/admin/DestructiveConfirmDialog.tsx`: Reusable destructive action dialog adhering to UX/safety rules:
+  - Plain-language title and impact description
+  - Reason textarea with character count (3–300 chars, trimmed)
+  - Optional `requiredConfirmEmail` requiring exact email typing to enable confirmation
+  - Default focus on Cancel button
+  - Escape closes, focus trapped via Radix Dialog
+  - Backend error display formatted in plain words
+- `src/components/admin/StatusBadge.tsx`: Color-coded badges for jobs, sites, domains, plans, and roles.
+- `src/components/admin/NotAvailablePanel.tsx`: Neutral panel displayed when backend routes return 404.
+- `src/components/admin/EmptyState.tsx`: Empty state component for lists with zero results.
+- `src/components/admin/ErrorState.tsx`: Error alert banner with a Retry button.
+- `src/components/admin/AdminToast.tsx`: Toast notification stack for mutation success and error feedback.
+- `src/components/admin/OverviewTab.tsx`: Primary health overview with stat cards (users total/new 7d/pro/admins, content, sites/domains, system/mcp), capacity warning banner when `oldestQueuedRetryAt` is set, Top Errors (24h) list, and Free Models Today table with usage progress bars and cooldown status.
+- `src/components/admin/UsersTab.tsx`: Users management tab with 400ms debounced email search, plan/admin/site filters, server pagination, desktop table and mobile stacked cards, and row selection.
+- `src/components/admin/UserDetailDrawer.tsx`: User detail view with uploads list, version history, recent jobs (status, source, provider, error code/message), site & custom domain info, connections (GitHub, Vercel, MCP), raw HTML editor with reason field, portfolio preview in an `<iframe sandbox="" srcDoc=...>`, and audited actions (plan change, admin toggle, MCP revoke, unpublish site, delete account).
+- `src/components/admin/SitesTab.tsx`: Sites & custom domains tab with search by slug/owner, status filter, server pagination, desktop table, mobile stacked cards, Unpublish site dialog, and Remove custom domain dialog.
+- `src/components/admin/JobsTab.tsx`: Generation jobs tab with status and source filters, server pagination, desktop table, mobile stacked cards, Cancel job action, and Free Model Providers capacity card with Clear Cooldown action.
+- `src/components/admin/AuditTab.tsx`: Read-only audit trail with action and target type filters, server pagination, and compact key-value detail tags.
+- `src/components/admin/SystemTab.tsx`: System info tab displaying commit revision (first 7 chars), app origin, sites base URL, payments badge, and environment settings checklist with plain-language feature descriptions (never exposing secrets).
+- `docs/handoffs/08b-screens/`: Exactly 14 captured screenshots (PNG, all < 120 KB):
+  1. `01-overview-1280.png` — Overview tab desktop (1280px)
+  2. `02-overview-390.png` — Overview tab mobile (390px)
+  3. `03-users-1280.png` — Users tab desktop table (1280px)
+  4. `04-users-390.png` — Users tab mobile stacked cards (390px)
+  5. `05-user-detail-drawer-1280.png` — User detail drawer with preview & uploads (1280px)
+  6. `06-sites-1280.png` — Sites & domains tab desktop (1280px)
+  7. `07-sites-390.png` — Sites & domains tab mobile (390px)
+  8. `08-jobs-1280.png` — Jobs & providers tab desktop (1280px)
+  9. `09-jobs-390.png` — Jobs & providers tab mobile (390px)
+  10. `10-audit-1280.png` — Audit log tab desktop (1280px)
+  11. `11-audit-390.png` — Audit log tab mobile (390px)
+  12. `12-system-1280.png` — System tab desktop (1280px)
+  13. `13-security-1280.png` — Security tab desktop (1280px)
+  14. `14-destructive-dialog-1280.png` — Destructive account deletion confirmation dialog (1280px)
+
+### Security & Safety Verification
+- **Empty-sandbox iframe**: User-supplied portfolio HTML is only ever rendered inside an empty sandbox iframe:
+  ```tsx
+  <iframe
+    title="Portfolio Preview"
+    sandbox=""
+    srcDoc={detail.portfolio.html}
+    className="w-full h-72 border-0 bg-background"
+  />
+  ```
+  `dangerouslySetInnerHTML` is never used.
+- **Confirmation dialogs & reasons**: Every destructive action (user delete, takedown, domain removal, plan change, admin toggle, MCP revoke, job cancel, cooldown clear) requires a 3–300 character trimmed reason.
+- **Account deletion guard**: Deleting a user requires typing the user's exact email address:
+  ```ts
+  export function validateConfirmEmail(email: string, confirmEmail: string): boolean {
+    return email.trim().toLowerCase() === confirmEmail.trim().toLowerCase();
+  }
+  ```
+  The confirm button remains disabled until the email matches and a valid reason is entered.
+- **Step-up re-authentication**: Destructive calls automatically catch `403 step_up_required`, open the `<StepUpDialog>` via `requestStepUp()`, and retry the operation once upon successful verification.
+- **No secrets in client or system tab**: The system tab only displays boolean `set` status for environment variables, with no secret values ever returned or rendered. No tokens or sessions are stored in `localStorage`.
+
+### Test Verification
+- `npx tsc --noEmit -p .`: Passed with 0 errors (`exactOptionalPropertyTypes: true` satisfied).
+- `npm run lint`: Passed with 0 errors (0 warnings on new admin files).
+- `npx vitest run`: Passed with 31 test files and 357 tests (including 43 tests in `src/lib/admin-api.test.ts`).
+- `npm run build`: Passed cleanly in 1.14s.
+- `git diff main --stat`: Confined strictly to listed UI files, components, tests, screens, and documentation.
+
+### Open Questions / Companion Integration Notes
+- Handoff 08c stubs in `src/components/admin/{SignIn,StepUpDialog,SecurityPanel}.tsx` and `src/lib/admin-stepup.ts` are marked `// replaced by 08c` for clean replacement upon merging 08c.
+- Backend endpoints from 08a Task C are coded to the contract; if any endpoint returns 404 before 08a deployment, the UI displays `<NotAvailablePanel>` rather than failing.
