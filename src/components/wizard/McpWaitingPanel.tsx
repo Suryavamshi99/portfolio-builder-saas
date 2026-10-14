@@ -14,18 +14,20 @@ import {
   AlertTriangle,
   ArrowRight,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { apiClient, type GenerationJob, type McpStatusResponse } from "@/lib/api-client";
 
 interface McpWaitingPanelProps {
   onPortfolioReady?: () => void;
   className?: string;
+  initialStatus?: McpStatusResponse;
 }
 
-export function McpWaitingPanel({ onPortfolioReady, className }: McpWaitingPanelProps) {
+export function McpWaitingPanel({ onPortfolioReady, className, initialStatus }: McpWaitingPanelProps) {
   const [copied, setCopied] = React.useState(false);
-  const [mcpStatus, setMcpStatus] = React.useState<McpStatusResponse | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [mcpStatus, setMcpStatus] = React.useState<McpStatusResponse | null>(initialStatus ?? null);
+  const [loading, setLoading] = React.useState(!initialStatus);
   const [comingSoon, setComingSoon] = React.useState(false);
 
   const CHAT_PROMPT = "Build my Shipfolio portfolio";
@@ -136,10 +138,34 @@ export function McpWaitingPanel({ onPortfolioReady, className }: McpWaitingPanel
         ) : (
           /* State (b) & (c): Connected & Live polling status */
           <div className="space-y-4">
-            <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 space-y-2">
-              <div className="text-xs font-medium text-foreground">
-                Now say this in your chat:
+            <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                  <Sparkles className="size-3.5 text-accent" />
+                  <span>Next Steps in Claude</span>
+                </div>
+                <a
+                  href="https://claude.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                >
+                  Open Claude.ai <ExternalLink className="size-3" />
+                </a>
               </div>
+
+              <ol className="space-y-2 text-xs text-muted-foreground list-decimal pl-4 leading-relaxed">
+                <li>
+                  <strong className="text-foreground">Start a new chat</strong> in Claude (tools initialize in fresh chats).
+                </li>
+                <li>
+                  Verify the <strong className="text-foreground">Shipfolio tool</strong> is active in your chat input bar.
+                </li>
+                <li>
+                  Paste and send this prompt:
+                </li>
+              </ol>
+
               <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2.5">
                 <span className="font-mono text-xs font-semibold text-accent truncate">
                   {CHAT_PROMPT}
@@ -154,6 +180,10 @@ export function McpWaitingPanel({ onPortfolioReady, className }: McpWaitingPanel
                   {copied ? <Check className="size-3 text-success" /> : <Copy className="size-3" />}
                   {copied ? "Copied" : "Copy"}
                 </Button>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground">
+                Claude will use the connector to craft your site and stream updates directly below.
               </div>
             </div>
 
