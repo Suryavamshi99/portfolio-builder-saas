@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { json, preflight } from "@/server/mcp/http";
-import { isValidRedirectUri } from "@/server/mcp/oauth";
+import { IMITATES_KNOWN_APP, cleanClientName, isTrustedClient, isValidRedirectUri } from "@/server/mcp/oauth";
 import { registerClient } from "@/server/mcp/store";
 
 const bad = (description: string) => json({ error: "invalid_client_metadata", error_description: description }, 400);
@@ -23,8 +23,10 @@ export const Route = createFileRoute("/register")({
         if (!Array.isArray(uris) || uris.length < 1 || uris.length > 5 || !uris.every((u) => typeof u === "string" && isValidRedirectUri(u))) {
           return bad("redirect_uris must be 1-5 https (or loopback http) URLs");
         }
-        const rawName = typeof body["client_name"] === "string" ? body["client_name"] : "";
-        const name = [...rawName].filter((c) => c.charCodeAt(0) >= 32 && c !== "<" && c !== ">").join("").trim().slice(0, 100) || "Unnamed app";
+        const name = cleanClientName(typeof body["client_name"] === "string" ? body["client_name"] : "") || "Unnamed app";
+        if (IMITATES_KNOWN_APP.test(name) && !isTrustedClient(uris as string[])) {
+          return bad("client_name can't imitate a known app unless it returns to that app's own address");
+        }
 
         const created = await registerClient(createSupabaseAdminClient(), { name, redirectUris: uris as string[] });
         if (!created) return json({ error: "server_error", error_description: "Registration is unavailable" }, 503);

@@ -10,7 +10,9 @@ import {
   verifyPkce,
 } from "./oauth";
 
-const MAX_CLIENTS = 5000;
+// Registration is open to anyone, so it is capped per hour (it heals itself) and unused entries are swept.
+const MAX_REGISTRATIONS_PER_HOUR = 300;
+const REFRESH_RETRY_GRACE_MS = 10_000;
 const inSeconds = (s: number) => new Date(Date.now() + s * 1000).toISOString();
 
 export interface TokenSet {
@@ -26,8 +28,18 @@ export async function registerClient(
   admin: SupabaseClient,
   client: { name: string; redirectUris: string[] },
 ): Promise<{ clientId: string } | null> {
-  const { count } = await admin.from("mcp_clients").select("client_id", { count: "exact", head: true });
-  if ((count ?? 0) >= MAX_CLIENTS) return null;
+  const hourAgo = new Date(Date.now() - 3_600_000).toISOString();
+  // Sweep registrations that never produced a token.
+  const { data: old } = await admin.from("mcp_clients").select("client_id").lt("created_at", hourAgo).limit(500);
+  if (old && old.length > 0) {
+    const ids = old.map((c) => c.client_id);
+    const { data: used } = await admin.from("mcp_tokens").select("client_id").in("client_id", ids);
+    const inUse = new Set((used ?? []).map((t) => t.client_id));
+    const unused = ids.filter((id) => !inUse.has(id));
+    if (unused.length > 0) await admin.from("mcp_clients").delete().in("client_id", unused);
+  }
+  const { count } = await admin.from("mcp_clients").select("client_id", { count: "exact", head: true }).gte("created_at", hourAgo);
+  if ((count ?? 0) >= MAX_REGISTRATIONS_PER_HOUR) return null;
   const clientId = newSecret(18);
   const { error } = await admin
     .from("mcp_clients")
@@ -127,7 +139,11 @@ export async function refreshTokens(admin: SupabaseClient, a: { refreshToken: st
   const row = data as TokenRow | null;
   if (!row) {
     const { data: prior } = await admin.from("mcp_tokens").select("family_id, used_at").eq("token_hash", hash).eq("kind", "refresh").maybeSingle();
-    if (prior?.used_at) await revokeFamily(admin, prior.family_id);
+    // A second use right after the first is a client retry or a double request, not theft: refuse it
+    // but keep the new tokens. A use later than that means a stolen copy: revoke the whole chain.
+    if (prior?.used_at && Date.now() - new Date(prior.used_at).getTime() > REFRESH_RETRY_GRACE_MS) {
+      await revokeFamily(admin, prior.family_id);
+    }
     return { ok: false, error: "invalid_grant" };
   }
   return { ok: true, tokens: await issueTokens(admin, { userId: row.user_id, clientId: row.client_id, familyId: row.family_id }) };

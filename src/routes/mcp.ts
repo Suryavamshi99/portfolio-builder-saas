@@ -28,6 +28,10 @@ export const Route = createFileRoute("/mcp")({
         const auth = await authenticateAccessToken(admin, token);
         if (!auth) return unauthorized(origin);
 
+        // Refuse oversized requests before reading them into memory.
+        if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) {
+          return json({ error: { code: "too_large", message: "Request too large" } }, 413);
+        }
         const raw = await request.text();
         if (raw.length > MAX_BODY_BYTES) return json({ error: { code: "too_large", message: "Request too large" } }, 413);
         let body: unknown;

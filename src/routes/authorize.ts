@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isValidRedirectUri, redirectUriMatches } from "@/server/mcp/oauth";
+import { isTrustedRedirect, isValidRedirectUri, redirectUriMatches } from "@/server/mcp/oauth";
 import { createAuthCode, getClient } from "@/server/mcp/store";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -54,11 +54,11 @@ const redirect = (uri: string, params: Record<string, string>) => {
   return new Response(null, { status: 303, headers: { location: u.toString(), "cache-control": "no-store" } });
 };
 
-async function sessionUserId(): Promise<string | null> {
+async function sessionUser(): Promise<{ id: string; email: string } | null> {
   const {
     data: { user },
   } = await createSupabaseServerClient().auth.getUser();
-  return user?.id ?? null;
+  return user ? { id: user.id, email: user.email ?? "" } : null;
 }
 
 export const Route = createFileRoute("/authorize")({
@@ -69,11 +69,13 @@ export const Route = createFileRoute("/authorize")({
         const v = await validate((k) => url.searchParams.get(k) ?? "");
         if (!v.ok) return v.response;
 
-        if (!(await sessionUserId())) {
+        const me = await sessionUser();
+        if (!me) {
           const back = encodeURIComponent(`/authorize${url.search}`);
           return new Response(null, { status: 302, headers: { location: `/login?redirect=${back}`, "cache-control": "no-store" } });
         }
         const host = new URL(v.p.redirectUri).host;
+        const verified = isTrustedRedirect(v.p.redirectUri);
         const hidden = Object.entries({
           client_id: v.p.clientId,
           redirect_uri: v.p.redirectUri,
@@ -87,7 +89,11 @@ export const Route = createFileRoute("/authorize")({
         return page(
           "Connect to Shipfolio",
           `<h1>Connect ${esc(v.clientName)} to Shipfolio?</h1>` +
-            `<p><strong>${esc(v.clientName)}</strong> (returns to <code>${esc(host)}</code>) will be able to read your resume details and portfolio, and save a portfolio page for you.</p>` +
+            (verified
+              ? ""
+              : `<p style="background:#451a03;border:1px solid #b45309;color:#fde68a;padding:10px 12px;border-radius:8px"><strong>Unverified app.</strong> This app is not Claude or ChatGPT and we can't confirm who runs it. Only continue if you started this connection yourself, from an app you trust, just now.</p>`) +
+            `<p><strong>${esc(v.clientName)}</strong> will send you back to <code>${esc(host)}</code>. It will be able to read your resume details and portfolio, and save a portfolio page for you.</p>` +
+            `<p>You are signed in as <strong>${esc(me.email)}</strong>.</p>` +
             `<p>You can disconnect it any time in Shipfolio settings.</p>` +
             `<form method="post" action="/authorize">${hidden}<div class="row">` +
             `<button name="decision" value="deny" type="submit">Cancel</button><button class="allow" name="decision" value="allow" type="submit">Allow</button></div></form>`,
@@ -100,7 +106,7 @@ export const Route = createFileRoute("/authorize")({
         const form = new URLSearchParams(await request.text());
         const v = await validate((k) => form.get(k) ?? "");
         if (!v.ok) return v.response;
-        const userId = await sessionUserId();
+        const userId = (await sessionUser())?.id;
         if (!userId) return page("Sign in required", "<h1>Sign in required</h1><p>Your session ended. Start the connection again from your chat.</p>", 401);
 
         if (form.get("decision") !== "allow") return redirect(v.p.redirectUri, { error: "access_denied", state: v.p.state });

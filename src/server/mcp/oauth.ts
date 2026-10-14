@@ -50,6 +50,42 @@ export function redirectUriMatches(registered: string[], requested: string): boo
   });
 }
 
+// Apps registered themselves, so their name proves nothing. Only these return hosts are known to be
+// Claude / ChatGPT; every other app is shown to the user as "unverified".
+const TRUSTED_REDIRECT_HOSTS = ["claude.ai", "claude.com", "chatgpt.com", "openai.com"];
+
+export function isTrustedRedirect(uri: string): boolean {
+  try {
+    const u = new URL(uri);
+    if (u.protocol !== "https:") return false;
+    const host = u.hostname.toLowerCase();
+    return TRUSTED_REDIRECT_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}
+
+export const isTrustedClient = (redirectUris: string[]) => redirectUris.length > 0 && redirectUris.every(isTrustedRedirect);
+
+/** A name that pretends to be a known app or to be official. */
+export const IMITATES_KNOWN_APP = /claude|chatgpt|gpt|anthropic|openai|shipfolio|official/i;
+
+/** Strips control, invisible and direction-changing characters so a name can't disguise itself. */
+export function cleanClientName(raw: string): string {
+  return [...raw.replace(/[\t\n\r]+/g, " ")]
+    .filter((c) => {
+      const code = c.codePointAt(0)!;
+      const invisible =
+        code < 32 || code === 127 || (code >= 0x200b && code <= 0x200f) || (code >= 0x202a && code <= 0x202e) ||
+        (code >= 0x2060 && code <= 0x2064) || (code >= 0x2066 && code <= 0x2069) || code === 0xfeff;
+      return !invisible && c !== "<" && c !== ">";
+    })
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100);
+}
+
 export function protectedResourceMetadata(origin: string) {
   return {
     resource: `${origin}/mcp`,

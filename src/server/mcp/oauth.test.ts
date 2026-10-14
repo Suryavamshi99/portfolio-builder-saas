@@ -35,3 +35,32 @@ describe("oauth helpers", () => {
     expect(redirectUriMatches(reg, "http://evil.com:1111/cb")).toBe(false);
   });
 });
+
+import { IMITATES_KNOWN_APP, cleanClientName, isTrustedClient, isTrustedRedirect } from "./oauth";
+
+describe("who is a known app", () => {
+  it("trusts only Claude / ChatGPT return addresses over https", () => {
+    expect(isTrustedRedirect("https://claude.ai/api/mcp/auth_callback")).toBe(true);
+    expect(isTrustedRedirect("https://chatgpt.com/connector_platform_oauth_redirect")).toBe(true);
+    for (const bad of ["http://claude.ai/cb", "https://claude.ai.evil.com/cb", "https://evilclaude.ai/cb", "https://example.com/claude.ai", "http://localhost:1/cb", "nope"]) {
+      expect(isTrustedRedirect(bad), bad).toBe(false);
+    }
+  });
+  it("needs every return address to be trusted", () => {
+    expect(isTrustedClient(["https://claude.ai/cb", "https://claude.com/cb"])).toBe(true);
+    expect(isTrustedClient(["https://claude.ai/cb", "https://evil.com/cb"])).toBe(false);
+    expect(isTrustedClient([])).toBe(false);
+  });
+  it("flags names that imitate a known app", () => {
+    for (const n of ["Claude", "Claude Desktop", "ChatGPT Plus", "Anthropic Official", "OpenAI Connector", "Shipfolio Support"]) {
+      expect(IMITATES_KNOWN_APP.test(n), n).toBe(true);
+    }
+    expect(IMITATES_KNOWN_APP.test("My Notes Helper")).toBe(false);
+  });
+  it("removes invisible and direction-changing characters from names", () => {
+    expect(cleanClientName("Cla​ude")).toBe("Claude");
+    expect(cleanClientName("‮evil‬ app")).toBe("evil app");
+    expect(cleanClientName("a<b>c\n\td")).toBe("abc d");
+    expect(cleanClientName("x".repeat(300))).toHaveLength(100);
+  });
+});
