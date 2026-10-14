@@ -47,8 +47,26 @@ DESIGN & OUTPUT RULES:
   message, surface them as real, clickable links using their exact URLs — e.g. icon buttons in
   the hero or header, or a contact/footer section. Never fabricate a link for a platform that
   wasn't explicitly given a URL.
-- The page must be responsive (usable from ~375px mobile width up) and semantically
-  structured (real heading hierarchy, <nav>, <section>, alt text on images).
+- The page must be semantically structured (real heading hierarchy, <nav>, <section>, alt text
+  on images).
+- MOBILE-FRIENDLY IS MANDATORY, NOT OPTIONAL. Every page must look and work as well on a
+  phone as on a laptop. Design mobile-first and verify mentally at 375px, 768px and 1280px:
+  * Include <meta name="viewport" content="width=device-width, initial-scale=1">.
+  * Write the base CSS for a single phone-width column, then add @media (min-width: 768px) and
+    (min-width: 1024px) rules to enlarge it into multi-column layouts. A page with no @media
+    queries is not acceptable.
+  * No horizontal scrolling at any width: never use fixed pixel widths on containers (use
+    max-width, %, rem, minmax(), fr, clamp()); give every <img>/<video>/<svg> max-width:100%
+    and height:auto; allow long words and URLs to wrap (overflow-wrap:anywhere); put
+    box-sizing:border-box on everything; never size an element with 100vw plus padding.
+  * Multi-column grids and flex rows must collapse to one column on phones (flex-wrap or a
+    single-column grid by default).
+  * Navigation must work on a phone: if the desktop nav links do not fit in one row at 375px,
+    collapse them to a compact menu (a CSS-only checkbox or <details> menu) or a wrapping row
+    of tappable links. Tap targets are at least 44px high; body text is at least 16px; use
+    clamp() for large headings so they never overflow.
+  * Hero images and photos scale down and stay inside the screen; decorative backgrounds and
+    absolutely positioned shapes must not extend past the viewport edges.
 - Include working in-page anchor navigation between sections.
 - Respond with ONLY the raw HTML document — no markdown code fences, no commentary before or
   after, no explanation of what you did.`;

@@ -241,3 +241,16 @@ describe("Task D: Missing tests", () => {
     expect(result.files["images/me.jpg"]).toBeDefined();
   });
 });
+
+describe("mobile safety net", () => {
+  const page = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>J</title><style>h1{color:red}</style></head><body><nav><a href="#a">A</a></nav><section id="a"><h1>Jane</h1></section></body></html>`;
+
+  it("adds the no-sideways-scroll guard exactly once and stays a fixed point", () => {
+    const first = finalizeHtml({ ...BASE_INPUT, rawText: page });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.html.match(/data-shipfolio-guard/g)).toHaveLength(1);
+    const second = finalizeHtml({ ...BASE_INPUT, rawText: first.html });
+    expect(second.ok && second.html.match(/data-shipfolio-guard/g)).toHaveLength(1);
+  });
+});

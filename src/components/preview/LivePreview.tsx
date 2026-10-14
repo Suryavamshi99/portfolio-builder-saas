@@ -6,6 +6,14 @@ interface LivePreviewProps {
   html: string;
 }
 
+// In a srcDoc frame a link like href="#experience" resolves against the Shipfolio page and loads it inside the frame.
+// The published site is a real page, so this only affects the preview: handle in-page links by scrolling instead.
+const PREVIEW_LINK_GUARD = `<script>document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a[href]"):null;if(!a)return;var h=a.getAttribute("href")||"";if(h.charAt(0)==="#"){e.preventDefault();var id=h.slice(1);var t=id?document.getElementById(decodeURIComponent(id)):null;if(t)t.scrollIntoView();else window.scrollTo(0,0);}else if(!/^(mailto:|tel:)/i.test(h)){e.preventDefault();}},true);</script>`;
+
+function withPreviewLinkGuard(html: string): string {
+  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, `${PREVIEW_LINK_GUARD}</body>`) : html + PREVIEW_LINK_GUARD;
+}
+
 type ViewportMode = "desktop" | "tablet" | "mobile";
 
 const DEVICE_WIDTH: Record<ViewportMode, number> = { desktop: 1280, tablet: 820, mobile: 390 };
@@ -31,6 +39,7 @@ export function LivePreview({ html }: LivePreviewProps) {
     return () => ro.disconnect();
   }, []);
 
+  const previewHtml = React.useMemo(() => withPreviewLinkGuard(html), [html]);
   const deviceWidth = DEVICE_WIDTH[mode];
   const scale = size.width > 0 ? Math.min(1, size.width / deviceWidth) : 1;
 
@@ -92,7 +101,7 @@ export function LivePreview({ html }: LivePreviewProps) {
             >
               <iframe
                 title="Portfolio live preview"
-                srcDoc={html}
+                srcDoc={previewHtml}
                 sandbox="allow-scripts"
                 className="block border-0 bg-white"
                 style={{

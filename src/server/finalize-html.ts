@@ -512,6 +512,13 @@ function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[])
     $("head").prepend('<meta name="viewport" content="width=device-width, initial-scale=1">');
     warnings.push("Added a mobile viewport tag.");
   }
+  // Safety net for the most common mobile defect (sideways scrolling): media never wider than the screen,
+  // and anything poking past the viewport edge is clipped. `clip` (unlike `hidden`) keeps position:sticky working.
+  if ($("style").length > 0 && $("style[data-shipfolio-guard]").length === 0) {
+    $("head").append(
+      "<style data-shipfolio-guard>img,video,canvas,svg{max-width:100%}html,body{overflow-x:clip}</style>",
+    );
+  }
 
   if ($("nav").length === 0) {
     warnings.push("The page has no <nav> section.");
