@@ -42,7 +42,13 @@ export const Route = createFileRoute("/api/sites/unpublish")({
         }
 
         // Delete {slug}/... files from the sites bucket
-        await removeSiteFiles(admin, slug);
+        // The page is already unpublished (nothing is served), so a clean-up failure must not
+        // turn this into an error; leftover files are removed by the daily clean-up job.
+        try {
+          await removeSiteFiles(admin, slug);
+        } catch (e) {
+          console.warn("Could not remove site files for", slug, e instanceof Error ? e.message : "");
+        }
 
         return Response.json({ ok: true });
       },
