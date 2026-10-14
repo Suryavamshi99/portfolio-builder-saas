@@ -14,6 +14,7 @@ export interface ChainProvider {
 export type ChainOutcome =
   | { ok: true; html: string; warnings: string[]; providerId: string; model: string }
   | { ok: false; reason: "exhausted" }
+  | { ok: false; reason: "busy" }
   | { ok: false; reason: "failed"; code: "generation_invalid_output" | "generation_unsupported_claims"; details: string[] };
 
 const COOLDOWN_RATE_LIMIT_FALLBACK_S = 300;
@@ -38,6 +39,7 @@ export async function runFreeChain(opts: {
   onProvider?: (p: ChainProvider) => void | Promise<void>;
 }): Promise<ChainOutcome> {
   let lastFailure: Extract<ChainOutcome, { reason: "failed" }> | null = null;
+  let providerErrors = 0;
 
   for (const provider of opts.providers) {
     if (Date.now() >= opts.deadlineMs) break;
@@ -64,6 +66,7 @@ export async function runFreeChain(opts: {
         details: result.details,
       };
     } catch (e) {
+      providerErrors += 1;
       console.warn("Free provider failed", provider.id, e instanceof Error ? e.constructor.name : "error", e instanceof Error ? e.message.slice(0, 300) : "");
       if (e instanceof LlmRateLimitError) await opts.cooldown(provider, e.retryAfterSeconds || COOLDOWN_RATE_LIMIT_FALLBACK_S);
       else if (e instanceof LlmAuthError) await opts.cooldown(provider, COOLDOWN_AUTH_ERROR_S);
@@ -71,5 +74,7 @@ export async function runFreeChain(opts: {
       else throw e;
     }
   }
-  return lastFailure ?? { ok: false, reason: "exhausted" };
+  if (lastFailure) return lastFailure;
+  // Providers were tried and errored (timeouts, rate limits): the models are busy, the budget is not spent.
+  return providerErrors > 0 ? { ok: false, reason: "busy" } : { ok: false, reason: "exhausted" };
 }

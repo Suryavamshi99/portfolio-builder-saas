@@ -148,6 +148,13 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
       // Nothing was spent on this user; try again when the budgets reset.
       return queueJob(admin, job.id, nextBudgetReset());
     }
+    if (!outcome.ok && outcome.reason === "busy") {
+      // Upstream timeouts / rate limits: not the user's fault, so it doesn't count against their free runs.
+      return failJob(admin, job.id, {
+        code: "free_models_busy",
+        message: "The free AI models are busy right now. Please try again in a few minutes.",
+      });
+    }
     if (!outcome.ok) {
       await recordGeneration(admin, job.user_id, job.resume_upload_id, "failed");
       return failJob(admin, job.id, { code: outcome.code, message: CHECK_FAILED[outcome.code], details: outcome.details });
