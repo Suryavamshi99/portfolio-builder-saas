@@ -796,6 +796,11 @@ describe("Routes unit tests with fake Supabase client", () => {
             },
           };
         }
+        if (table === "admin_audit_log") {
+          return {
+            insert: async () => ({ error: null }),
+          };
+        }
         return {};
       },
       storage: {
@@ -816,7 +821,14 @@ describe("Routes unit tests with fake Supabase client", () => {
 
     vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(fakeAdmin as never);
     const handler = (adminUnpublishRoute.options.server?.handlers as { POST: RouteHandler }).POST;
-    const res = await handler({ params: { slug: "takedown-site" } });
+    const res = await handler({
+      params: { slug: "takedown-site" },
+      request: new Request("http://localhost/api/admin/sites/takedown-site/unpublish", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reason: "Terms violation takedown" }),
+      }),
+    });
     expect(res.status).toBe(200);
     expect(statusUpdate).toBe("unpublished");
     expect(removedFiles).toContain("takedown-site/index.html");

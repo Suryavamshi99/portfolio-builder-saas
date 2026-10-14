@@ -13,6 +13,7 @@ export type AdminUserSummary = {
   storageUsedBytes: number;
   vercelConnected: boolean;
   byokProviders: string[];
+  siteSlug: string | null;
 };
 
 /**
@@ -22,13 +23,14 @@ export type AdminUserSummary = {
  * handle; revisit with real pagination if the user table gets large.
  */
 export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSummary[]> {
-  const [authUsersRes, appUsersRes, portfoliosRes, uploadsRes, vercelRes, byokRes] = await Promise.all([
+  const [authUsersRes, appUsersRes, portfoliosRes, uploadsRes, vercelRes, byokRes, sitesRes] = await Promise.all([
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     admin.from("users").select("id, plan, is_admin"),
     admin.from("portfolios").select("user_id, generated_html, updated_at"),
     admin.from("uploads").select("user_id, size_bytes"),
     admin.from("vercel_connections").select("user_id"),
     admin.from("byok_keys").select("user_id, provider"),
+    admin.from("sites").select("user_id, slug"),
   ]);
 
   if (authUsersRes.error) throw authUsersRes.error;
@@ -54,6 +56,7 @@ export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSu
     list.push(row.provider as string);
     byokByUser.set(key, list);
   }
+  const siteByUser = new Map<string, string>((sitesRes.data ?? []).map((r) => [r.user_id as string, r.slug as string]));
 
   return authUsersRes.data.users
     .map((u): AdminUserSummary => {
@@ -69,6 +72,7 @@ export async function listAdminUsers(admin: SupabaseClient): Promise<AdminUserSu
         storageUsedBytes: storageByUser.get(u.id) ?? 0,
         vercelConnected: vercelConnectedUsers.has(u.id),
         byokProviders: byokByUser.get(u.id) ?? [],
+        siteSlug: siteByUser.get(u.id) ?? null,
       };
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

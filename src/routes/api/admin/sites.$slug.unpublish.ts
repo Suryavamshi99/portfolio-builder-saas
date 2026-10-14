@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { adminMiddleware } from "@/server/admin-middleware";
+import { adminMiddleware, requireStepUp } from "@/server/admin-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { removeSiteFiles } from "@/server/sites-storage";
+import { logAdminAction, validateReason } from "@/server/admin-audit";
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -12,11 +13,24 @@ export const Route = createFileRoute("/api/admin/sites/$slug/unpublish")({
   server: {
     middleware: [adminMiddleware],
     handlers: {
-      POST: async ({ params }) => {
+      POST: async ({ request, params }) => {
         const slug = params.slug;
         if (!slug || typeof slug !== "string") {
           return errorResponse(400, "invalid_slug", "Slug parameter is required");
         }
+
+        let body: { reason?: unknown } = {};
+        try {
+          body = ((await request.json()) ?? {}) as { reason?: unknown };
+        } catch {
+          // Empty or non-JSON body
+        }
+
+        const stepUpError = await requireStepUp(request);
+        if (stepUpError) return stepUpError;
+
+        const reasonResult = validateReason(body.reason);
+        if (!reasonResult.ok) return reasonResult.response;
 
         const admin = createSupabaseAdminClient();
 
@@ -51,6 +65,15 @@ export const Route = createFileRoute("/api/admin/sites/$slug/unpublish")({
         } catch (e) {
           console.warn("Could not remove site files for", slug, e instanceof Error ? e.message : "");
         }
+
+        await logAdminAction(admin, {
+          action: "site.takedown",
+          targetType: "site",
+          targetId: slug,
+          reason: reasonResult.reason,
+          detail: { userId: site.user_id },
+          request,
+        });
 
         return Response.json({ ok: true });
       },
