@@ -16,6 +16,9 @@
 6. All lists are paginated server-side: `page` (1-based, default 1), `pageSize` (default 25, max 100). Response always includes `{ page, pageSize, total }`.
 7. Never render or return user HTML except in the existing `GET /api/admin/users/:id` field `portfolio.html`.
 
+## Plan and auth
+Context: `docs/plans/2026-10-14-admin-console-plan.md`. Sign-in v2 (TOTP, step-up, lockout) is handoff 08c, not here. Destructive routes (user delete, takedown, admin-flag change, plan change to/from pro, domain remove, MCP revoke) must call `requireStepUp()` exported by 08c from `src/server/admin-middleware.ts`; until 08c merges, add a local stub marked `// replaced by 08c` that always passes. Job cancel and provider clear-cooldown need a reason but no step-up. Login events use `target_type = 'system'`. Migration 0019 is yours; 08c uses 0020.
+
 ## Task A: Migration `supabase/migrations/0019_admin_audit_log.sql`
 ```sql
 create table public.admin_audit_log (
