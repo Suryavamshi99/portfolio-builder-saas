@@ -370,3 +370,32 @@ describe("isOurProduct with the renewal products", () => {
     expect(tables["users"]![0]!["plan"]).toBe("pro");
   });
 });
+
+describe("renewing after a lapse", () => {
+  it("cancels the user's older Dodo subscription when a new one becomes active", async () => {
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push(`${init?.method} ${url}`);
+      return new Response("{}", { status: 200 });
+    }));
+    process.env["DODO_PAYMENTS_API_KEY"] = "k";
+    const { client, tables } = fakeAdmin({
+      hosting_subscriptions: [{ user_id: "u1", dodo_subscription_id: "sub_old", status: "on_hold", current_period_end: inDays(-5), grace_until: inDays(-1) }],
+    });
+    await applySubscriptionEvent(client, "subscription.active", { subscription_id: "sub_new", next_billing_date: inDays(365), metadata: { userId: "u1" } });
+    expect(calls.some((c) => c.startsWith("PATCH") && c.includes("/subscriptions/sub_old"))).toBe(true);
+    expect(tables["hosting_subscriptions"]![0]!["dodo_subscription_id"]).toBe("sub_new");
+    expect(await hasHostingAccess(client, { id: "u1", isAdmin: false })).toBe(true);
+    vi.unstubAllGlobals();
+  });
+
+  it("does not cancel anything for a first purchase or a repeat event for the same subscription", async () => {
+    const f = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", f);
+    const { client } = fakeAdmin();
+    await applySubscriptionEvent(client, "subscription.active", { subscription_id: "sub_1", next_billing_date: inDays(365), metadata: { userId: "u1" } });
+    await applySubscriptionEvent(client, "subscription.active", { subscription_id: "sub_1", next_billing_date: inDays(365) });
+    expect(f).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+});

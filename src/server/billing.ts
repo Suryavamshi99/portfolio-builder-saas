@@ -114,6 +114,19 @@ export async function applySubscriptionEvent(
   const userId = existing?.user_id ?? data.metadata?.userId;
   if (!userId) throw new Error("subscription event for an unknown user");
 
+  // A user renewing after a lapse starts a new subscription. Stop the older one, so a subscription
+  // that was only on hold cannot charge them again on top of the renewal.
+  if (type === "subscription.active") {
+    const { data: older } = await admin
+      .from("hosting_subscriptions")
+      .select("dodo_subscription_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (older && older.dodo_subscription_id !== subscriptionId) {
+      await cancelDodoSubscription(older.dodo_subscription_id as string);
+    }
+  }
+
   const now = Date.now();
   const nextBilling = data.next_billing_date ? Date.parse(data.next_billing_date) : NaN;
   const hasNextBilling = Number.isFinite(nextBilling);
