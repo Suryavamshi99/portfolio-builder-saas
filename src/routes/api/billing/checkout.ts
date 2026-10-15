@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { getAppOrigin } from "@/config/app";
+import { isAllowedOrigin } from "@/lib/origin";
 import { isDummyPaymentModeEnabled } from "@/config/payment-test";
 import { createProCheckoutSession, DodoCheckoutError } from "@/server/dodo/checkout";
 import { countryFromRequest } from "@/server/geo";
@@ -46,7 +47,12 @@ export const Route = createFileRoute("/api/billing/checkout")({
         // caller that doesn't specify one, matching the original behavior.
         const body = await request.json().catch(() => ({}) as Record<string, unknown>);
         const returnTo = body["returnTo"] === "studio" ? "studio" : "settings";
-        const returnUrl = `${getAppOrigin()}/${returnTo}?upgrade=pending`;
+        // Return the buyer to the site they started from (the branded domain), not APP_ORIGIN
+        // (the canonical vercel.app address): the session cookie lives on the former, so landing on
+        // the latter would look logged out right after paying. Only an allowed origin is used.
+        const callerOrigin = request.headers.get("origin");
+        const origin = isAllowedOrigin(callerOrigin, process.env) ? new URL(callerOrigin as string).origin : getAppOrigin();
+        const returnUrl = `${origin}/${returnTo}?upgrade=pending`;
 
         // PAYMENT_TEST_MODE=dummy (non-production only, see
         // isDummyPaymentModeEnabled) skips Dodo entirely and hands back a
