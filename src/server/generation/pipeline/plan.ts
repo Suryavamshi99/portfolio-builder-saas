@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { BuildInput, Plan, PlanSection, SectionKind, Theme } from "./types";
+import { DESIGN_OPTIONS, type BuildInput, type Design, type Plan, type PlanSection, type SectionKind, type Theme } from "./types";
 
 const MAX_SECTIONS = 7;
 const KINDS: SectionKind[] = ["about", "experience", "projects", "skills", "education", "certifications", "contact", "other"];
@@ -16,6 +16,11 @@ export const DEFAULT_THEMES: Record<"minimal" | "bold", Theme> = {
     colors: { bg: "#0B0D12", surface: "#14161C", text: "#F6F6F3", muted: "#9AA0B0", accent: "#6D83FF", accent2: "#22D3EE" },
     fonts: { display: "Space Grotesk", body: "Inter" },
   },
+};
+
+export const DEFAULT_DESIGNS: Record<"minimal" | "bold", Design> = {
+  minimal: { hero: "plain", heading: "rule", cards: "bordered", radius: "soft", motion: "rise" },
+  bold: { hero: "glow", heading: "marker", cards: "accent-bar", radius: "soft", motion: "rise" },
 };
 
 /** The resume with line numbers, for the plan call. Very long lines are shortened (the plan only needs to see where things start). */
@@ -59,13 +64,16 @@ Reply with ONLY one JSON object, no markdown, in exactly this shape:
     "colors": {"bg":"#rrggbb","surface":"#rrggbb","text":"#rrggbb","muted":"#rrggbb","accent":"#rrggbb","accent2":"#rrggbb"},
     "fonts": {"display":"a Google Fonts family","body":"a Google Fonts family"}
   },
+  "design": {"hero":"glow","heading":"marker","cards":"accent-bar","radius":"soft","motion":"rise"},
   "sections": [
     {"id":"about","title":"About","kind":"about","lines":[[start,end]]}
   ]
 }
 Rules for "sections": only sections the resume has content for; at most ${MAX_SECTIONS}; kinds are one of ${KINDS.join(", ")};
 ids are lowercase letters and hyphens; "lines" are inclusive resume line numbers that hold that section's content (one or more ranges).
-Pick colours with good text contrast. Do not invent anything that is not in the resume.`;
+Pick colours with good text contrast. Do not invent anything that is not in the resume.
+"design" picks the page's character from these menus, whatever fits this person best: hero = ${DESIGN_OPTIONS.hero.join(" | ")}; heading = ${DESIGN_OPTIONS.heading.join(" | ")}; cards = ${DESIGN_OPTIONS.cards.join(" | ")}; radius = ${DESIGN_OPTIONS.radius.join(" | ")}; motion = ${DESIGN_OPTIONS.motion.join(" | ")}.
+Cover the WHOLE resume: every block of experience, projects, skills, education and certifications belongs to a section.`;
 }
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -85,6 +93,7 @@ const planSchema = z.object({
       fonts: z.object({ display: family, body: family }).partial().optional(),
     })
     .optional(),
+  design: z.record(z.string(), z.unknown()).optional(),
   sections: z
     .array(
       z.object({
@@ -129,6 +138,15 @@ function cleanTheme(raw: z.infer<typeof planSchema>["theme"], intensity: "minima
     colors,
     fonts: { display: raw?.fonts?.display ?? base.fonts.display, body: raw?.fonts?.body ?? base.fonts.body },
   };
+}
+
+function cleanDesign(raw: Record<string, unknown> | undefined, intensity: "minimal" | "bold"): Design {
+  const base = DEFAULT_DESIGNS[intensity];
+  const pick = <K extends keyof Design>(key: K): Design[K] => {
+    const v = raw?.[key];
+    return (DESIGN_OPTIONS[key] as readonly unknown[]).includes(v) ? (v as Design[K]) : base[key];
+  };
+  return { hero: pick("hero"), heading: pick("heading"), cards: pick("cards"), radius: pick("radius"), motion: pick("motion") };
 }
 
 function slug(s: string): string {
@@ -183,6 +201,7 @@ export function parsePlan(text: string, input: BuildInput): Plan | null {
     headline: p.headline ?? "",
     tagline: p.tagline ?? "",
     theme: cleanTheme(p.theme, input.designIntensity),
+    design: cleanDesign(p.design, input.designIntensity),
     sections,
   };
 }
@@ -196,6 +215,11 @@ const HEADINGS: Array<[RegExp, SectionKind, string]> = [
   [/^(certifications?|licen[sc]es?|courses|achievements|awards)$/i, "certifications", "Certifications"],
   [/^contact( me)?$/i, "contact", "Contact"],
 ];
+
+function isHeading(line: string): boolean {
+  const t = line.trim().replace(/[:\s]+$/g, "");
+  return t.length > 0 && t.length <= 40 && HEADINGS.some(([re]) => re.test(t));
+}
 
 /** A plan made in code from the resume's own headings, used when the model's plan is unusable. */
 export function fallbackPlan(input: BuildInput): Plan {
@@ -227,7 +251,7 @@ export function fallbackPlan(input: BuildInput): Plan {
   if (sections.length === 0) {
     sections.push({ id: "about", title: "About", kind: "about", lines: [[Math.min(2, lines.length) || 1, Math.max(lines.length, 1)]] });
   }
-  return { name, headline: "", tagline: "", theme: DEFAULT_THEMES[input.designIntensity], sections };
+  return { name, headline: "", tagline: "", theme: DEFAULT_THEMES[input.designIntensity], design: DEFAULT_DESIGNS[input.designIntensity], sections };
 }
 
 /** The resume text for a section, sliced in code from the plan's line ranges. */
@@ -236,4 +260,29 @@ export function sliceFor(section: PlanSection, lines: string[]): string {
     .map(([a, b]) => lines.slice(a - 1, b).join("\n"))
     .join("\n\n")
     .trim();
+}
+
+/** Share (0 to 1) of the resume's content lines (after the first three, which are usually the name and contact line) that a plan puts in a section. */
+export function coverage(plan: Plan, lines: string[]): number {
+  const covered = new Set<number>();
+  for (const sec of plan.sections) for (const [a, b] of sec.lines) for (let n = a; n <= b; n++) covered.add(n);
+  let total = 0;
+  let inside = 0;
+  lines.forEach((l, i) => {
+    if (i < 3 || !l.trim() || isHeading(l)) return;
+    total += 1;
+    if (covered.has(i + 1)) inside += 1;
+  });
+  return total === 0 ? 1 : inside / total;
+}
+
+/**
+ * A small model sometimes plans only one or two sections and leaves most of the resume out. When the plan covers
+ * too little, the sections found from the resume's own headings replace it (the model's name, tagline, theme and design stay).
+ */
+export function completePlan(plan: Plan, input: BuildInput): { plan: Plan; replaced: boolean } {
+  if (coverage(plan, input.lines) >= 0.6) return { plan, replaced: false };
+  const fb = fallbackPlan(input);
+  if (fb.sections.length <= plan.sections.length && coverage(fb, input.lines) <= coverage(plan, input.lines)) return { plan, replaced: false };
+  return { plan: { ...plan, sections: fb.sections }, replaced: true };
 }

@@ -17,6 +17,23 @@ export interface Theme {
   fonts: { display: string; body: string };
 }
 
+/** The page's character, chosen from fixed menus. Each choice maps to vetted CSS (default-design.ts), so contrast and layout stay safe. */
+export interface Design {
+  hero: "plain" | "glow" | "split" | "band";
+  heading: "plain" | "marker" | "highlight" | "rule";
+  cards: "flat" | "bordered" | "accent-bar" | "lifted";
+  radius: "sharp" | "soft" | "round";
+  motion: "none" | "rise";
+}
+
+export const DESIGN_OPTIONS: { [K in keyof Design]: readonly Design[K][] } = {
+  hero: ["plain", "glow", "split", "band"],
+  heading: ["plain", "marker", "highlight", "rule"],
+  cards: ["flat", "bordered", "accent-bar", "lifted"],
+  radius: ["sharp", "soft", "round"],
+  motion: ["none", "rise"],
+};
+
 export interface PlanSection {
   /** Anchor id, lowercase letters, digits and hyphens. */
   id: string;
@@ -31,6 +48,7 @@ export interface Plan {
   headline: string;
   tagline: string;
   theme: Theme;
+  design: Design;
   sections: PlanSection[];
 }
 
@@ -48,7 +66,6 @@ export interface PipelineState {
   plan?: Plan;
   planFallback?: boolean;
   css?: string;
-  cssFallback?: boolean;
   /** Finished page parts by key: "hero" or a section id. */
   fragments: Record<string, string>;
   /** Keys whose part was made in code because the models could not produce it. */

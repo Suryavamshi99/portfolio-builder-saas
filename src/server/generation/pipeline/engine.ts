@@ -3,10 +3,10 @@ import { LlmAuthError, LlmProviderError, LlmRateLimitError } from "@/server/llm"
 import type { FinalizeHtmlResult } from "@/server/finalize-html";
 
 import { assembleDocument, cleanFragment, keysContaining } from "./assemble";
-import { cleanDesignAdditions, defaultCss } from "./default-design";
+import { defaultCss } from "./default-design";
 import { fallbackHero, fallbackSection } from "./fallback-render";
-import { buildPlanMessage, fallbackPlan, parsePlan, sliceFor } from "./plan";
-import { STEP_SYSTEM_PROMPT, buildDesignMessage, buildHeroMessage, buildSectionMessage } from "./prompts";
+import { buildPlanMessage, completePlan, fallbackPlan, parsePlan, sliceFor } from "./plan";
+import { STEP_SYSTEM_PROMPT, buildHeroMessage, buildSectionMessage } from "./prompts";
 import { stepsFor, type BuildInput, type PipelineState, type Plan } from "./types";
 
 /** How the steps reach the outside world. The real ones are in run-pipeline-job.ts; tests pass fakes. */
@@ -40,7 +40,7 @@ const COOLDOWN_PROVIDER_ERROR_S = 60;
 const COOLDOWN_AUTH_ERROR_S = 3600;
 const WAIT_FOR_CAPACITY_MS = 15_000;
 
-const MAX_TOKENS = { plan: 1600, design: 4500, hero: 1500, section: 2200 } as const;
+const MAX_TOKENS = { plan: 2000, hero: 1500, section: 2200 } as const;
 
 const MESSAGES = {
   plan: "Reading your resume and planning the page…",
@@ -116,8 +116,11 @@ export async function runPipeline(deps: EngineDeps, input: BuildInput, state: Pi
       if (res.none === "no_capacity") return { kind: "no_capacity" };
     }
     let plan: Plan;
-    if ("value" in res) plan = res.value;
-    else {
+    if ("value" in res) {
+      const completed = completePlan(res.value, input);
+      plan = completed.plan;
+      if (completed.replaced) state.log.push({ step: "plan", provider: null, ms: 0, ok: true, note: "sections replaced: the plan left out most of the resume" });
+    } else {
       plan = fallbackPlan(input);
       state.planFallback = true;
     }
@@ -130,22 +133,14 @@ export async function runPipeline(deps: EngineDeps, input: BuildInput, state: Pi
   }
 
   const plan = state.plan!;
-  const bold = input.designIntensity === "bold";
 
   for (const step of stepsFor(plan)) {
     if (state.done.includes(step)) continue;
     if (deps.now() >= deadlineMs) return { kind: "yield" };
 
     if (step === "design") {
-      // Our base stylesheet always applies (responsive, readable); the model adds this person's character on top.
-      const base = defaultCss(plan.theme, bold);
-      const res = await ask("design", buildDesignMessage(plan, input.designIntensity), MAX_TOKENS.design, cleanDesignAdditions);
-      if ("none" in res && res.none === "deadline") return { kind: "yield" };
-      if ("value" in res) state.css = `${base}\n/* page character */\n${res.value}\n`;
-      else {
-        state.css = base;
-        state.cssFallback = true;
-      }
+      // Code only: the plan's colours, fonts and design choices select vetted CSS (default-design.ts).
+      state.css = defaultCss(plan.theme, plan.design);
       if (!(await finishStep("design", MESSAGES.hero))) return { kind: "stopped" };
     } else if (step === "hero") {
       const res = await ask("hero", buildHeroMessage(plan, input), MAX_TOKENS.hero, (t) => {
@@ -184,7 +179,7 @@ type Ask = <T>(step: string, user: string, maxTokens: number, validate: (text: s
 
 /** Assemble, run the checks, redo only the parts with unsupported facts, and fall back to code-made parts if that is not enough. */
 async function finishPage(deps: EngineDeps, input: BuildInput, state: PipelineState, plan: Plan, ask: Ask): Promise<EngineOutcome> {
-  const css = state.css ?? defaultCss(plan.theme, input.designIntensity === "bold");
+  const css = state.css ?? defaultCss(plan.theme, plan.design);
   const build = () => assembleDocument(plan, css, state.fragments, input);
   const rebuildInCode = (key: string) => {
     state.fragments[key] = key === "hero" ? fallbackHero(plan, input) : fallbackSection(plan.sections.find((s) => s.id === key)!, sliceFor(plan.sections.find((s) => s.id === key)!, input.lines));

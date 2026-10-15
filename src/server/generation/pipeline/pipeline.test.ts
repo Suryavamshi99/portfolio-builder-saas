@@ -5,9 +5,9 @@ import { findUnsupportedClaims } from "@/server/fact-check";
 import { finalizeHtml } from "@/server/finalize-html";
 import { LlmProviderError, LlmRateLimitError } from "@/server/llm";
 import { assembleDocument, cleanFragment, linksHtml } from "./assemble";
-import { cleanDesignAdditions, defaultCss } from "./default-design";
+import { defaultCss } from "./default-design";
 import { runPipeline, type EngineDeps } from "./engine";
-import { fallbackPlan, parsePlan, resumeLines, sliceFor } from "./plan";
+import { DEFAULT_DESIGNS, completePlan, coverage, fallbackPlan, parsePlan, resumeLines, sliceFor } from "./plan";
 import { emptyState, progressOf, stepsFor, type BuildInput, type PipelineState } from "./types";
 
 const RESUME = `Jane Doe
@@ -65,14 +65,11 @@ const PLAN_JSON = JSON.stringify({
   ],
 });
 
-const GOOD_CSS = ".hero{background:linear-gradient(135deg,var(--accent),var(--accent2))}.card{border-left:4px solid var(--accent)}.sec-title{letter-spacing:-.02em}.tag{font-weight:600}";
-
 const sectionHtml = (id: string, body: string) => `<section id="${id}" class="sec"><div class="wrap"><h2 class="sec-title">${id}</h2>${body}</div></section>`;
 
 /** A well-behaved model that answers each kind of request. */
 function goodReply(user: string, sectionBody: (id: string) => string = (id) => `<p>Text for the ${id} section from the resume.</p>`): string {
   if (user.includes("Plan a portfolio website")) return PLAN_JSON;
-  if (user.includes("Write EXTRA CSS")) return GOOD_CSS;
   if (user.includes("Write the hero section")) return `<section id="top" class="hero"><div class="wrap"><h1>Jane Doe</h1><p class="lead">Backend engineer focused on distributed systems.</p></div></section>`;
   const id = /<section id="([a-z0-9-]+)" class="sec">/.exec(user)?.[1] ?? "x";
   return sectionHtml(id, sectionBody(id));
@@ -131,6 +128,30 @@ describe("plan", () => {
     expect(plan.theme.colors.text).not.toBe("#FEFEFE");
   });
 
+  it("keeps valid design choices and falls back to the defaults for anything else", () => {
+    const withDesign = JSON.parse(PLAN_JSON);
+    withDesign.design = { hero: "band", heading: "highlight", cards: "lifted", radius: "weird", motion: 5 };
+    const plan = parsePlan(JSON.stringify(withDesign), input())!;
+    expect(plan.design).toEqual({ hero: "band", heading: "highlight", cards: "lifted", radius: DEFAULT_DESIGNS.minimal.radius, motion: DEFAULT_DESIGNS.minimal.motion });
+    expect(parsePlan(PLAN_JSON, input())!.design).toEqual(DEFAULT_DESIGNS.minimal);
+    expect(parsePlan(PLAN_JSON, input({ designIntensity: "bold" }))!.design).toEqual(DEFAULT_DESIGNS.bold);
+  });
+
+  it("replaces a plan that leaves most of the resume out with the sections found from the resume's headings", () => {
+    const thin = { ...parsePlan(PLAN_JSON, input())!, sections: [{ id: "about", title: "About", kind: "about" as const, lines: [[4, 5]] as Array<[number, number]> }] };
+    expect(coverage(thin, input().lines)).toBeLessThan(0.6);
+    const { plan, replaced } = completePlan(thin, input());
+    expect(replaced).toBe(true);
+    expect(plan.sections.map((s) => s.kind)).toEqual(["about", "experience", "projects", "skills", "education"]);
+    expect(plan.theme).toEqual(thin.theme); // the model's look is kept
+    expect(coverage(plan, input().lines)).toBeGreaterThan(0.9);
+  });
+
+  it("keeps a plan that already covers the resume", () => {
+    const full = fallbackPlan(input());
+    expect(completePlan(full, input())).toEqual({ plan: full, replaced: false });
+  });
+
   it("builds a plan from the resume's own headings when the model's plan is unusable", () => {
     const plan = fallbackPlan(input());
     expect(plan.name).toBe("Jane Doe");
@@ -160,24 +181,27 @@ describe("page parts", () => {
     expect(cleanFragment('<section id="a"><p>This is a long enough sentence for sure.', "a", "sec")).toBeNull(); // never closed
   });
 
-  it("cleanDesignAdditions accepts extra styling and rejects anything that hides content, is unsafe or is incomplete", () => {
-    const extra = ".hero{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}.card{border-left:4px solid var(--accent)}.sec-title{letter-spacing:-.02em}";
-    expect(cleanDesignAdditions(extra)).toBe(extra);
-    expect(cleanDesignAdditions("```css\n" + extra + "\n```")).toBe(extra);
-    expect(cleanDesignAdditions(extra + "body{background:url(https://evil.test/x.png)}")).toBeNull();
-    expect(cleanDesignAdditions("@import 'x';" + extra)).toBeNull();
-    expect(cleanDesignAdditions(extra + ".sec{display:none}")).toBeNull();
-    expect(cleanDesignAdditions(extra + ".x{opacity:0}")).toBeNull();
-    expect(cleanDesignAdditions(extra + ".x{position:fixed}")).toBeNull();
-    expect(cleanDesignAdditions(".hero{")).toBeNull();
-    expect(cleanDesignAdditions(".a{}")).toBeNull();
+  it("turns the design choices into CSS, and every combination keeps text readable and the page responsive", () => {
+    const plan = parsePlan(PLAN_JSON, input())!;
+    const marker = defaultCss(plan.theme, { hero: "glow", heading: "marker", cards: "accent-bar", radius: "round", motion: "rise" });
+    expect(marker).toContain("border-left:5px solid var(--accent)"); // heading: marker
+    expect(marker).toContain("radial-gradient"); // hero: glow
+    expect(marker).toContain("@keyframes rise"); // motion: rise
+    const plain = defaultCss(plan.theme, { hero: "plain", heading: "plain", cards: "flat", radius: "sharp", motion: "none" });
+    expect(plain).not.toContain("@keyframes");
+    expect(plain).not.toContain("radial-gradient");
+    for (const css of [marker, plain]) {
+      expect(css).toContain("@media (max-width:768px)");
+      expect(css).toContain("prefers-reduced-motion");
+      expect(css).not.toMatch(/url\(|@import|display:none/);
+    }
   });
 
   it("assembles a page that passes the sanitiser, with anchors that match the sections", () => {
     const plan = parsePlan(PLAN_JSON, input())!;
     const frags: Record<string, string> = { hero: `<section id="top" class="hero"><div class="wrap"><h1>Jane Doe</h1></div></section>` };
     for (const s of plan.sections) frags[s.id] = sectionHtml(s.id, `<p>Text for ${s.id} section here.</p>`);
-    const html = assembleDocument(plan, defaultCss(plan.theme, false), frags, input());
+    const html = assembleDocument(plan, defaultCss(plan.theme, plan.design), frags, input());
     for (const s of plan.sections) expect(html).toContain(`href="#${s.id}"`);
     const fin = finalizeHtml({ rawText: html, userId: "u1", supabaseUrl: "https://p.supabase.co", links: {}, referenceText: RESUME });
     expect(fin.ok).toBe(true);
@@ -199,7 +223,7 @@ describe("runPipeline", () => {
     expect(state.fallbacks).toEqual([]);
     expect(state.planFallback).toBeUndefined();
     expect(state.done).toEqual(["plan", ...stepsFor(state.plan!)]);
-    expect(deps.call).toHaveBeenCalledTimes(1 + 1 + 1 + 3); // plan, design, hero, three sections
+    expect(deps.call).toHaveBeenCalledTimes(1 + 1 + 3); // plan, hero, three sections (the design step is made in code)
     expect(out.html).toContain("Jane Doe");
     expect(out.warnings.join(" ")).not.toContain("simple mode");
     expect(saves[0]).toMatch(/planning/i);
@@ -244,7 +268,7 @@ describe("runPipeline", () => {
     const state = emptyState();
     const out = await runPipeline(deps, input(), state, FAR);
     expect(out.kind).toBe("done");
-    expect(state.cssFallback).toBe(true); // no model styling, but the base stylesheet still gives a good page
+    expect(state.css).toContain(":root{--bg:"); // the design is made in code, so it never depends on a model
     expect(state.fallbacks.sort()).toEqual(["about", "experience", "hero", "skills"]);
     if (out.kind === "done") {
       expect(out.html).toContain("Cut API latency by 40%"); // the resume text itself
@@ -332,8 +356,9 @@ describe("runPipeline", () => {
 
     const second = await runPipeline(deps, input(), JSON.parse(JSON.stringify(state)) as PipelineState, now + 10 * 60_000);
     expect(second.kind).toBe("done");
-    // six model calls make a build here (plan, design, hero, three sections); only the unfinished ones are made again
-    expect(calls.length - callsBefore).toBe(6 - doneBefore.length);
+    // five model calls make a build here (plan, hero, three sections; design is code only); only the unfinished ones are made again
+    const modelStepsDone = doneBefore.filter((d) => d !== "design").length;
+    expect(calls.length - callsBefore).toBe(5 - modelStepsDone);
     expect(calls.slice(callsBefore).some((c) => c.includes("Plan a portfolio"))).toBe(false);
   });
 

@@ -35,20 +35,6 @@ function linksBlock(links: ProfileLinks): string {
   return lines.length ? `Verified links (use these exact URLs, never invent others):\n${lines.join("\n")}` : "No links were provided: do not add any links.";
 }
 
-export function buildDesignMessage(plan: Plan, intensity: "minimal" | "bold"): string {
-  const t = plan.theme;
-  return `A base stylesheet already styles the whole page: responsive layout, the sticky header, cards, tags, lists and spacing. Write EXTRA CSS (an addition, 20-60 lines, no <style> tags) that gives ${plan.name}'s page its own character. Output ONLY the CSS.
-
-The base defines these variables, which you may override on :root: --bg, --surface, --text, --muted, --accent, --accent2, --line, --display, --body.
-Current theme: ${t.mood}. bg ${t.colors.bg}, surface ${t.colors.surface}, text ${t.colors.text}, muted ${t.colors.muted}, accent ${t.colors.accent}, accent2 ${t.colors.accent2}. Fonts: headings "${t.fonts.display}", body "${t.fonts.body}".
-${CLASS_VOCABULARY}
-Also available: header.top, .brand, .navlinks, .hero, footer.foot.
-
-${intensity === "bold" ? "Make it expressive: a gradient or textured hero, bold type, asymmetric details, striking hover motion." : "Make it restrained and editorial: refined type, a distinctive but quiet hero treatment, subtle accents."}
-Ideas: a hero background or accent shape, a signature heading style (weight, spacing, underline or marker), card edge details (a left accent bar, a gradient border), tag and button styling, section separators, a gentle entrance animation.
-Rules: keep text readable (good contrast), keep it responsive (use clamp(), %, rem; any @media you add must still work on phones), never hide content (no display:none, no opacity:0, no position:fixed), no url() and no @import.`;
-}
-
 export function buildHeroMessage(plan: Plan, input: BuildInput): string {
   const sourceTop = input.lines.slice(0, 14).join("\n");
   return `Write the hero section for ${plan.name}'s portfolio.
