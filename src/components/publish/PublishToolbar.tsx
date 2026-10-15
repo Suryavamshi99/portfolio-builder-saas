@@ -2,6 +2,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { usePricing } from "@/lib/use-pricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   Globe,
@@ -50,6 +51,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [paymentRequired, setPaymentRequired] = React.useState(false);
+  const pricing = usePricing();
   const [checkingOut, setCheckingOut] = React.useState(false);
   // Payment confirmation, shown as a dialog on this same page instead of a
   // redirect elsewhere — see the `upgrade` query-param handling below.
@@ -313,7 +315,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
               className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-xs font-semibold h-8"
             >
               {checkingOut ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-              Upgrade to unlock deploy
+              Go live now · {pricing.today}
             </Button>
           ) : vercelStatus?.connected ? (
             <Button
@@ -401,9 +403,12 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       {paymentRequired && hasPaidAccess ? (
         <Alert className="border-accent/40 bg-accent/5 py-2.5">
           <Sparkles className="size-4 text-accent" />
-          <AlertTitle className="text-xs font-semibold">Pay now to deploy and download</AlertTitle>
+          <AlertTitle className="text-xs font-semibold">Your portfolio is ready. Go live in 30 seconds</AlertTitle>
           <AlertDescription className="text-xs flex items-center justify-between gap-2">
-            <span>Your portfolio is ready — deploying it live and downloading the HTML both need the one-time Pro unlock.</span>
+            <span>
+              {pricing.today} unlocks deploy, clean HTML download and 1 year of hosting with your own domain. Then{" "}
+              {pricing.renewal}/year, cancel anytime.
+            </span>
             <Button
               type="button"
               size="sm"
@@ -411,7 +416,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
               disabled={checkingOut}
               className="h-7 shrink-0 gap-1.5 bg-accent text-xs font-semibold text-accent-foreground hover:bg-accent/90"
             >
-              {checkingOut ? <Loader2 className="size-3 animate-spin" /> : "Upgrade"}
+              {checkingOut ? <Loader2 className="size-3 animate-spin" /> : `Unlock · ${pricing.today}`}
             </Button>
           </AlertDescription>
         </Alert>

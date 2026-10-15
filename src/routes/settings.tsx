@@ -2,7 +2,8 @@ import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
-import { PRO_PRICE_USD } from "@/config/plans";
+import { SELLING_POINTS } from "@/config/pricing";
+import { usePricing } from "@/lib/use-pricing";
 import { ByokManager } from "@/components/byok/ByokManager";
 import { UploadWidget } from "@/components/upload/UploadWidget";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ interface UserRecord {
   createdAt: string;
   storage: { usedBytes: number; quotaBytes: number };
   vercel: { connected: boolean };
+  hosting?: { active: boolean; status: string | null; renewsOn: string | null; endsOn: string | null };
 }
 
 interface VercelStatus {
@@ -84,10 +86,32 @@ interface VercelStatus {
   connectedAt?: string;
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** One plain sentence about the buyer's hosting term, shown on the Pro plan card. */
+function hostingSummary(hosting: UserRecord["hosting"], renewal: string): string {
+  if (!hosting || !hosting.status) return "Pro is unlocked for good. Your downloads and exports are yours to keep.";
+  if (hosting.status === "cancelled" && hosting.endsOn) {
+    return hosting.active
+      ? `Hosting is cancelled and stays live until ${formatDate(hosting.endsOn)}. Pro and your downloads are yours to keep.`
+      : "Hosting has ended. Pro and your downloads are yours to keep; renew to put your site back online.";
+  }
+  if (hosting.status === "on_hold") {
+    return "Your hosting renewal didn't go through. Your site stays live for a few days, update your payment method to keep it.";
+  }
+  if (hosting.renewsOn) {
+    return `Pro is unlocked for good. Hosting and your domain are included until ${formatDate(hosting.renewsOn)}, then ${renewal}/year. Cancel anytime.`;
+  }
+  return "Pro is unlocked for good. Hosting and your domain are included.";
+}
+
 function SettingsContent() {
   const navigate = useNavigate();
   const { upgrade, tab } = Route.useSearch();
   const { refreshPortfolioStatus } = useAuth();
+  const pricing = usePricing();
   const [activeTab, setActiveTab] = React.useState(tab ?? "byok");
   const [userRecord, setUserRecord] = React.useState<UserRecord | null>(null);
   const [vercelStatus, setVercelStatus] = React.useState<VercelStatus | null>(null);
@@ -258,17 +282,24 @@ function SettingsContent() {
           </div>
           <CardDescription className="text-xs">
             {userRecord?.plan === "pro"
-              ? "Pro is a one-time unlock — no subscription, nothing recurring."
-              : "50MB storage, 5 generations/hour, 10 uploads/hour, and a small badge on your published site."}
+              ? hostingSummary(userRecord.hosting, pricing.renewal)
+              : "Free: a watermarked preview, 50MB storage, 5 generations/hour. Go live in 30 seconds with Pro."}
           </CardDescription>
         </CardHeader>
         <CardContent className="relative z-10 space-y-3">
           {userRecord?.plan !== "pro" && (
             <>
-              <ul className="space-y-1 text-xs text-muted-foreground">
-                <li>• 250MB storage (5x free)</li>
-                <li>• 20 generations/hour, 30 uploads/hour</li>
-                <li>• "Published with Shipfolio" badge removed</li>
+              <ul className="space-y-1.5 text-xs text-foreground/80">
+                {SELLING_POINTS.map((point) => (
+                  <li key={point} className="flex gap-2">
+                    <span className="text-accent">✓</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+                <li className="flex gap-2">
+                  <span className="text-accent">✓</span>
+                  <span>250MB storage (5x free), 20 generations/hour</span>
+                </li>
               </ul>
               {upgradeError && (
                 <Alert variant="destructive">
@@ -278,10 +309,10 @@ function SettingsContent() {
               )}
               <Button onClick={() => void handleUpgrade()} disabled={upgrading} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 font-semibold active:scale-[0.98]">
                 {upgrading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                Upgrade to Pro — ${PRO_PRICE_USD} one-time
+                Go live now · {pricing.today}
               </Button>
               <p className="text-[11px] text-muted-foreground">
-                Handled by Dodo Payments. Not a subscription — nothing recurring, ever.
+                {pricing.fineprint} Secure checkout by Dodo Payments.
               </p>
             </>
           )}

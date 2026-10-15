@@ -2,10 +2,19 @@ import { getDodoApiBase, getDodoApiKey, getDodoProProductId } from "@/config/dod
 
 export class DodoCheckoutError extends Error {}
 
+/**
+ * One checkout buys everything: the product is a Dodo subscription with a
+ * 365-day paid trial, so the buyer pays the Pro price now (which also covers
+ * year-one hosting) and hosting renews yearly from year 2.
+ *
+ * `country` pins the billing country (from IP geo-location), which selects the
+ * fixed INR price for India — UPI only works in INR — and USD elsewhere.
+ */
 export async function createProCheckoutSession(opts: {
   userId: string;
   email: string;
   returnUrl: string;
+  country?: string | undefined;
 }): Promise<{ checkoutUrl: string }> {
   const res = await fetch(`${getDodoApiBase()}/checkouts`, {
     method: "POST",
@@ -16,6 +25,7 @@ export async function createProCheckoutSession(opts: {
     body: JSON.stringify({
       product_cart: [{ product_id: getDodoProProductId(), quantity: 1 }],
       customer: { email: opts.email },
+      ...(opts.country ? { billing_address: { country: opts.country } } : {}),
       return_url: opts.returnUrl,
       metadata: { userId: opts.userId },
     }),

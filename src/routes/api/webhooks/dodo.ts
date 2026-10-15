@@ -3,6 +3,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getDodoWebhookSecret } from "@/config/dodo";
 import { verifyStandardWebhook } from "@/lib/standard-webhooks";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  applySubscriptionEvent,
+  claimWebhook,
+  forgetWebhook,
+  REVOKING_EVENT_TYPES,
+  revokeForPayment,
+  SUBSCRIPTION_EVENT_TYPES,
+  type SubscriptionEventType,
+} from "@/server/billing";
 import { grantProAccess } from "@/server/payments";
 
 /**
@@ -15,6 +24,14 @@ import { grantProAccess } from "@/server/payments";
  * user making this request for RLS to scope against, and the whole point
  * is writing another user's row (whoever's payment this is) — the
  * standard per-request RLS-scoped client cannot do that by design.
+ *
+ * Events handled:
+ *  - payment.succeeded: the first payment unlocks Pro; later ones are
+ *    recorded as hosting renewals.
+ *  - subscription.*: keeps hosting_subscriptions (the hosting term) in sync.
+ *  - refund.succeeded / dispute.lost / dispute.accepted: takes back what the
+ *    payment bought (see revokeForPayment).
+ * Everything else is acknowledged and ignored.
  */
 export const Route = createFileRoute("/api/webhooks/dodo")({
   server: {
@@ -44,6 +61,8 @@ export const Route = createFileRoute("/api/webhooks/dodo")({
           type?: string;
           data?: {
             payment_id?: string;
+            subscription_id?: string;
+            next_billing_date?: string;
             metadata?: { userId?: string };
             total_amount?: number;
             currency?: string;
@@ -56,30 +75,68 @@ export const Route = createFileRoute("/api/webhooks/dodo")({
           return Response.json({ error: { code: "invalid_json" } }, { status: 400 });
         }
 
-        // Only the event this app currently cares about. Any other event
-        // type (failed payments, disputes, refunds — none of which exist
-        // for a one-time non-refundable-by-us digital unlock in this
-        // phase) is acknowledged and ignored, not an error.
-        if (event.type !== "payment.succeeded") {
-          return Response.json({ received: true });
-        }
-
-        const userId = event.data?.metadata?.userId;
-        const paymentId = event.data?.payment_id;
-        if (!userId || !paymentId) {
-          return Response.json({ error: { code: "missing_fields" } }, { status: 400 });
-        }
+        const type = event.type ?? "";
+        const handled =
+          type === "payment.succeeded" || SUBSCRIPTION_EVENT_TYPES.includes(type) || REVOKING_EVENT_TYPES.includes(type);
+        if (!handled) return Response.json({ received: true });
 
         const admin = createSupabaseAdminClient();
 
         try {
-          await grantProAccess(admin, {
-            userId,
-            paymentId,
-            amountCents: event.data?.total_amount,
-            currency: event.data?.currency,
-          });
+          // A redelivered webhook is a no-op.
+          if (!(await claimWebhook(admin, id, type))) return Response.json({ received: true, duplicate: true });
         } catch {
+          return Response.json({ error: { code: "internal_error" } }, { status: 500 });
+        }
+
+        try {
+          if (type === "payment.succeeded") {
+            const paymentId = event.data?.payment_id;
+            if (!paymentId) {
+              await forgetWebhook(admin, id);
+              return Response.json({ error: { code: "missing_fields" } }, { status: 400 });
+            }
+
+            // metadata.userId comes from our own checkout session; fall back to the
+            // subscription row when Dodo does not copy it onto a renewal payment.
+            let userId = event.data?.metadata?.userId;
+            if (!userId && event.data?.subscription_id) {
+              const { data: sub } = await admin
+                .from("hosting_subscriptions")
+                .select("user_id")
+                .eq("dodo_subscription_id", event.data.subscription_id)
+                .maybeSingle();
+              userId = sub?.user_id as string | undefined;
+            }
+            if (!userId) {
+              // 500 so Dodo retries: the subscription row may simply not exist yet.
+              await forgetWebhook(admin, id);
+              return Response.json({ error: { code: "unknown_user" } }, { status: 500 });
+            }
+
+            // The first successful payment buys Pro; any later one is a hosting renewal.
+            const { data: priorPro } = await admin
+              .from("purchases")
+              .select("id")
+              .eq("user_id", userId)
+              .eq("kind", "pro")
+              .is("refunded_at", null)
+              .limit(1);
+            await grantProAccess(admin, {
+              userId,
+              paymentId,
+              amountCents: event.data?.total_amount,
+              currency: event.data?.currency,
+              kind: priorPro && priorPro.length > 0 ? "hosting_renewal" : "pro",
+            });
+          } else if (SUBSCRIPTION_EVENT_TYPES.includes(type)) {
+            await applySubscriptionEvent(admin, type as SubscriptionEventType, event.data ?? {});
+          } else {
+            const paymentId = event.data?.payment_id;
+            if (paymentId) await revokeForPayment(admin, paymentId);
+          }
+        } catch {
+          await forgetWebhook(admin, id);
           return Response.json({ error: { code: "internal_error" } }, { status: 500 });
         }
 

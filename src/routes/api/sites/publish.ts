@@ -7,6 +7,7 @@ import { embedStorageImagesInHtml } from "@/server/template/images";
 import { sanitizeHtmlForServing, UnstableHtmlError } from "@/server/finalize-html";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { siteUrl, validateSlug } from "@/server/sites";
+import { hasHostingAccess } from "@/server/billing";
 
 const SITES_BUCKET = "sites";
 
@@ -38,6 +39,10 @@ export const Route = createFileRoute("/api/sites/publish")({
         }
 
         const admin = createSupabaseAdminClient();
+
+        if (!(await hasHostingAccess(admin, appUser))) {
+          return errorResponse(402, "hosting_required", "Your hosting has ended. Renew it to publish your site");
+        }
 
         // 1. Load generated_html
         const { data: portfolio } = await admin

@@ -27,6 +27,12 @@ vi.mock("@/server/admin-middleware", async (importOriginal) => ({
 }));
 
 
+// Hosting access is covered in billing.test.ts; these tests exercise publish behavior behind active hosting.
+vi.mock("@/server/billing", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/billing")>()),
+  hasHostingAccess: async () => true,
+}));
+
 type RouteHandler = (args: any) => Promise<Response>;
 
 describe("src/server/sites.ts pure helpers", () => {

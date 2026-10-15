@@ -5,6 +5,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { validateHostname, verifyRecordName, newVerifyToken } from "@/server/domains";
 import { getDomainConfig, removeDomain } from "@/server/vercel/domains";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
+import { hasHostingAccess } from "@/server/billing";
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -134,6 +135,10 @@ export const Route = createFileRoute("/api/domains/")({
 
         const hostname = validation.hostname;
         const admin = createSupabaseAdminClient();
+
+        if (!(await hasHostingAccess(admin, appUser))) {
+          return errorResponse(402, "hosting_required", "Your hosting has ended. Renew it to use a custom domain");
+        }
 
         // 400 no_site unless user has a published sites row
         const { data: site } = await admin

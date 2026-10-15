@@ -23,6 +23,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { apiClient, type GitHubStatusResponse } from "@/lib/api-client";
+import { usePricing } from "@/lib/use-pricing";
 
 interface ExportMenuDialogProps {
   open: boolean;
@@ -55,6 +56,7 @@ export function ExportMenuDialog({
   vercelConnected,
   vercelUsername,
 }: ExportMenuDialogProps) {
+  const pricing = usePricing();
   // GitHub push state
   const [githubStatus, setGithubStatus] = React.useState<GitHubStatusResponse | null>(null);
   const [loadingGithub, setLoadingGithub] = React.useState(false);
@@ -142,7 +144,10 @@ export function ExportMenuDialog({
             <Sparkles className="size-4 text-accent" />
             <AlertTitle className="text-xs font-semibold">Pro Feature</AlertTitle>
             <AlertDescription className="text-xs flex items-center justify-between gap-2">
-              <span>Exporting code and deploying to custom providers requires Pro.</span>
+              <span>
+                Download clean HTML, push to GitHub or deploy anywhere. {pricing.today} once, includes 1 year of
+                hosting.
+              </span>
               <Button
                 type="button"
                 size="sm"
@@ -152,7 +157,7 @@ export function ExportMenuDialog({
                 }}
                 className="h-7 shrink-0 gap-1.5 bg-accent text-xs font-semibold text-accent-foreground hover:bg-accent/90"
               >
-                Upgrade
+                Unlock · {pricing.today}
               </Button>
             </AlertDescription>
           </Alert>

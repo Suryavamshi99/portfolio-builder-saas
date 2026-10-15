@@ -18,7 +18,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  */
 export async function grantProAccess(
   admin: SupabaseClient,
-  opts: { userId: string; paymentId: string; amountCents?: number | null | undefined; currency?: string | null | undefined },
+  opts: {
+    userId: string;
+    paymentId: string;
+    amountCents?: number | null | undefined;
+    currency?: string | null | undefined;
+    /** 'pro' (the first payment) unlocks Pro; 'hosting_renewal' is only recorded. */
+    kind?: "pro" | "hosting_renewal";
+  },
 ): Promise<{ granted: boolean }> {
   const { error: insertError } = await admin.from("purchases").insert({
     user_id: opts.userId,
@@ -26,6 +33,7 @@ export async function grantProAccess(
     status: "succeeded",
     amount_cents: opts.amountCents ?? null,
     currency: opts.currency ?? null,
+    kind: opts.kind ?? "pro",
   });
 
   const isDuplicate = insertError?.code === "23505";
@@ -33,7 +41,7 @@ export async function grantProAccess(
     throw new Error(`Could not record purchase: ${insertError.message}`);
   }
 
-  if (!isDuplicate) {
+  if (!isDuplicate && (opts.kind ?? "pro") === "pro") {
     await admin.from("users").upsert({ id: opts.userId, plan: "pro" }, { onConflict: "id" });
   }
 

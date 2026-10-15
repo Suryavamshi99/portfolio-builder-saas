@@ -7,7 +7,7 @@
  */
 export function getDodoApiBase(): string {
   const env = process.env["DODO_ENVIRONMENT"] ?? "test_mode";
-  return env === "live_mode" ? "https://dodopayments.com" : "https://test.dodopayments.com";
+  return env === "live_mode" ? "https://live.dodopayments.com" : "https://test.dodopayments.com";
 }
 
 export function getDodoApiKey(): string {
@@ -16,7 +16,7 @@ export function getDodoApiKey(): string {
   return key;
 }
 
-/** The one product this app sells: the Pro lifetime unlock. */
+/** The one product this app sells: Pro unlock + 1 year hosting (a subscription with a 365-day paid trial). */
 export function getDodoProProductId(): string {
   const id = process.env["DODO_PRODUCT_ID_PRO"];
   if (!id) throw new Error("DODO_PRODUCT_ID_PRO must be set");

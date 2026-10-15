@@ -96,7 +96,7 @@ function PrivacyPage() {
             <strong className="text-foreground">Google sign-in</strong>: if you choose to sign in with Google.
           </li>
           <li>
-            <strong className="text-foreground">Dodo Payments</strong>: processes the one-time Pro payment.
+            <strong className="text-foreground">Dodo Payments</strong>: processes your Pro payment and yearly hosting renewal.
           </li>
         </ul>
       </Section>

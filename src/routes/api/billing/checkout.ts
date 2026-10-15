@@ -4,6 +4,8 @@ import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { getAppOrigin } from "@/config/app";
 import { isDummyPaymentModeEnabled } from "@/config/payment-test";
 import { createProCheckoutSession, DodoCheckoutError } from "@/server/dodo/checkout";
+import { countryFromRequest } from "@/server/geo";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -25,6 +27,17 @@ export const Route = createFileRoute("/api/billing/checkout")({
 
         if (!user.email) {
           return errorResponse(400, "email_required", "Your account has no email on file");
+        }
+
+        // Never sell the same person a second subscription while their hosting is live
+        // (a double-click or a second tab): a second subscription would be orphaned.
+        const { data: live } = await createSupabaseAdminClient()
+          .from("hosting_subscriptions")
+          .select("grace_until")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (live?.grace_until && Date.parse(live.grace_until) > Date.now()) {
+          return errorResponse(409, "already_subscribed", "You already have Pro and active hosting");
         }
 
         // Where to land the user after payment — Studio (so they can go
@@ -50,6 +63,7 @@ export const Route = createFileRoute("/api/billing/checkout")({
             userId: user.id,
             email: user.email,
             returnUrl,
+            country: countryFromRequest(request),
           });
           return Response.json({ checkoutUrl });
         } catch (e) {

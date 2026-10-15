@@ -8,6 +8,12 @@ import { Route as verifyRoute, setTxtResolver } from "../routes/api/domains/veri
 import { Route as cronDomainsRoute } from "../routes/api/cron/domains";
 import sitesAppHandler, { setSitesSupabaseClientGetter } from "../../sites-app/api/serve";
 
+// Hosting access is covered in billing.test.ts; these tests exercise domain behavior behind active hosting.
+vi.mock("@/server/billing", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/billing")>()),
+  hasHostingAccess: async () => true,
+}));
+
 type RouteHandler = (args: any) => Promise<Response>;
 
 describe("Custom domains routes and serve logic", () => {

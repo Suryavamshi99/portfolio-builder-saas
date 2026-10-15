@@ -5,6 +5,12 @@ import * as vercelDomainsModule from "@/server/vercel/domains";
 import { Route as domainsRoute } from "../routes/api/domains/index";
 import { Route as verifyRoute, setTxtResolver } from "../routes/api/domains/verify";
 
+// Hosting access is covered in billing.test.ts; these tests exercise domain behavior behind active hosting.
+vi.mock("@/server/billing", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/billing")>()),
+  hasHostingAccess: async () => true,
+}));
+
 type Handler = (args: any) => Promise<Response>;
 
 beforeEach(() => {

@@ -47,9 +47,11 @@ import { Route as ApiAdminStepUpRouteImport } from './routes/api/admin/step-up'
 import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
+import { Route as ApiBillingPricingRouteImport } from './routes/api/billing/pricing'
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiCronDomainsRouteImport } from './routes/api/cron/domains'
 import { Route as ApiCronFreeQueueRouteImport } from './routes/api/cron.free-queue'
+import { Route as ApiCronHostingRouteImport } from './routes/api/cron/hosting'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
 import { Route as ApiDomainsIndexRouteImport } from './routes/api/domains/index'
 import { Route as ApiDomainsVerifyRouteImport } from './routes/api/domains/verify'
@@ -279,6 +281,11 @@ const ApiBillingCheckoutRoute = ApiBillingCheckoutRouteImport.update({
   path: '/api/billing/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBillingPricingRoute = ApiBillingPricingRouteImport.update({
+  id: '/api/billing/pricing',
+  path: '/api/billing/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiByokKeysProviderRoute = ApiByokKeysProviderRouteImport.update({
   id: '/$provider',
   path: '/$provider',
@@ -292,6 +299,11 @@ const ApiCronDomainsRoute = ApiCronDomainsRouteImport.update({
 const ApiCronFreeQueueRoute = ApiCronFreeQueueRouteImport.update({
   id: '/api/cron/free-queue',
   path: '/api/cron/free-queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronHostingRoute = ApiCronHostingRouteImport.update({
+  id: '/api/cron/hosting',
+  path: '/api/cron/hosting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDevPaymentTestRoute = ApiDevPaymentTestRouteImport.update({
@@ -521,9 +533,11 @@ export interface FileRoutesByFullPath {
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
+  '/api/billing/pricing': typeof ApiBillingPricingRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
+  '/api/cron/hosting': typeof ApiCronHostingRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/domains/verify': typeof ApiDomainsVerifyRoute
   '/api/export/github': typeof ApiExportGithubRoute
@@ -600,9 +614,11 @@ export interface FileRoutesByTo {
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
+  '/api/billing/pricing': typeof ApiBillingPricingRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
+  '/api/cron/hosting': typeof ApiCronHostingRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/domains/verify': typeof ApiDomainsVerifyRoute
   '/api/export/github': typeof ApiExportGithubRoute
@@ -680,9 +696,11 @@ export interface FileRoutesById {
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
+  '/api/billing/pricing': typeof ApiBillingPricingRoute
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
+  '/api/cron/hosting': typeof ApiCronHostingRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/domains/verify': typeof ApiDomainsVerifyRoute
   '/api/export/github': typeof ApiExportGithubRoute
@@ -761,9 +779,11 @@ export interface FileRouteTypes {
     | '/api/admin/system'
     | '/api/admin/users'
     | '/api/billing/checkout'
+    | '/api/billing/pricing'
     | '/api/byok-keys/$provider'
     | '/api/cron/domains'
     | '/api/cron/free-queue'
+    | '/api/cron/hosting'
     | '/api/dev/payment-test'
     | '/api/domains/verify'
     | '/api/export/github'
@@ -840,9 +860,11 @@ export interface FileRouteTypes {
     | '/api/admin/system'
     | '/api/admin/users'
     | '/api/billing/checkout'
+    | '/api/billing/pricing'
     | '/api/byok-keys/$provider'
     | '/api/cron/domains'
     | '/api/cron/free-queue'
+    | '/api/cron/hosting'
     | '/api/dev/payment-test'
     | '/api/domains/verify'
     | '/api/export/github'
@@ -919,9 +941,11 @@ export interface FileRouteTypes {
     | '/api/admin/system'
     | '/api/admin/users'
     | '/api/billing/checkout'
+    | '/api/billing/pricing'
     | '/api/byok-keys/$provider'
     | '/api/cron/domains'
     | '/api/cron/free-queue'
+    | '/api/cron/hosting'
     | '/api/dev/payment-test'
     | '/api/domains/verify'
     | '/api/export/github'
@@ -999,8 +1023,10 @@ export interface RootRouteChildren {
   ApiAdminSystemRoute: typeof ApiAdminSystemRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
+  ApiBillingPricingRoute: typeof ApiBillingPricingRoute
   ApiCronDomainsRoute: typeof ApiCronDomainsRoute
   ApiCronFreeQueueRoute: typeof ApiCronFreeQueueRoute
+  ApiCronHostingRoute: typeof ApiCronHostingRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
   ApiDomainsVerifyRoute: typeof ApiDomainsVerifyRoute
   ApiExportGithubRoute: typeof ApiExportGithubRoute
@@ -1294,6 +1320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBillingCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/billing/pricing': {
+      id: '/api/billing/pricing'
+      path: '/api/billing/pricing'
+      fullPath: '/api/billing/pricing'
+      preLoaderRoute: typeof ApiBillingPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/byok-keys/$provider': {
       id: '/api/byok-keys/$provider'
       path: '/$provider'
@@ -1313,6 +1346,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/free-queue'
       fullPath: '/api/cron/free-queue'
       preLoaderRoute: typeof ApiCronFreeQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/hosting': {
+      id: '/api/cron/hosting'
+      path: '/api/cron/hosting'
+      fullPath: '/api/cron/hosting'
+      preLoaderRoute: typeof ApiCronHostingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/dev/payment-test': {
@@ -1748,8 +1788,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSystemRoute: ApiAdminSystemRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
+  ApiBillingPricingRoute: ApiBillingPricingRoute,
   ApiCronDomainsRoute: ApiCronDomainsRoute,
   ApiCronFreeQueueRoute: ApiCronFreeQueueRoute,
+  ApiCronHostingRoute: ApiCronHostingRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
   ApiDomainsVerifyRoute: ApiDomainsVerifyRoute,
   ApiExportGithubRoute: ApiExportGithubRoute,

@@ -21,6 +21,7 @@ import {
 import { apiClient, type SiteMeResponse } from "@/lib/api-client";
 import { PublishDialog } from "./PublishDialog";
 import { ExportMenuDialog } from "./ExportMenuDialog";
+import { usePricing } from "@/lib/use-pricing";
 
 interface StudioToolbarProps {
   hasPaidAccess: boolean;
@@ -51,6 +52,7 @@ export function StudioToolbar({
   vercelUsername,
   defaultSlug = "",
 }: StudioToolbarProps) {
+  const pricing = usePricing();
   const [siteData, setSiteData] = React.useState<SiteMeResponse | null>(null);
   const [loadingSite, setLoadingSite] = React.useState(true);
   const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
@@ -85,6 +87,17 @@ export function StudioToolbar({
   const isPublished = siteData?.site?.status === "published";
   const liveUrl = isPublished ? siteData?.site?.url : null;
   const draftNewer = siteData?.draftNewer === true;
+
+  // Fewest clicks: coming back from a successful checkout (?upgrade=pending), open the
+  // Publish dialog straight away instead of making the buyer find the button again.
+  const autoOpenedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (autoOpenedRef.current || loadingSite || !hasPaidAccess || isPublished) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") !== "pending") return;
+    autoOpenedRef.current = true;
+    setPublishDialogOpen(true);
+  }, [loadingSite, hasPaidAccess, isPublished]);
 
   const handlePrimaryClick = async () => {
     if (!hasPaidAccess) {
@@ -183,7 +196,7 @@ export function StudioToolbar({
                   </a>
                 </span>
               ) : !hasPaidAccess ? (
-                "Upgrade to unlock high-speed custom hosting"
+                `Go live in 30 seconds. ${pricing.today} includes 1 year of hosting + your domain, then ${pricing.renewal}/yr, cancel anytime`
               ) : (
                 "Publish your site to your own public address"
               )}
@@ -219,7 +232,7 @@ export function StudioToolbar({
             ) : !hasPaidAccess ? (
               <>
                 <Sparkles className="size-3.5" />
-                Upgrade
+                Publish now · {pricing.today}
               </>
             ) : isPublished ? (
               <>

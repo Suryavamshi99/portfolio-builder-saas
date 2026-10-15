@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { apiClient, type CustomDomain } from "@/lib/api-client";
-import { PRO_PRICE_USD } from "@/config/plans";
+import { usePricing } from "@/lib/use-pricing";
 import {
   Globe,
   Copy,
@@ -31,6 +31,7 @@ export function CustomDomainSection({
   onUpgrade,
   upgrading = false,
 }: CustomDomainSectionProps) {
+  const pricing = usePricing();
   const [loading, setLoading] = React.useState(true);
   const [comingSoon, setComingSoon] = React.useState(false);
   const [is402, setIs402] = React.useState(false);
@@ -267,9 +268,10 @@ export function CustomDomainSection({
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 text-xs font-semibold"
               >
                 {upgrading ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                Upgrade to Pro — ${PRO_PRICE_USD} one-time
+                Unlock Pro + your domain · {pricing.today}
               </Button>
             )}
+            <p className="text-[11px] text-muted-foreground">{pricing.fineprint}</p>
           </div>
         ) : loading ? (
           <div className="flex items-center justify-center py-8 text-xs text-muted-foreground gap-2">

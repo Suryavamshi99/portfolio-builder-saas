@@ -2,6 +2,7 @@
   "framework": "tanstack-start",
   "crons": [
     { "path": "/api/cron/free-queue", "schedule": "10 0 * * *" },
-    { "path": "/api/cron/domains", "schedule": "20 0 * * *" }
+    { "path": "/api/cron/domains", "schedule": "20 0 * * *" },
+    { "path": "/api/cron/hosting", "schedule": "30 0 * * *" }
   ]
 }

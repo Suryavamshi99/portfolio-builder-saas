@@ -25,5 +25,5 @@ export const PLAN_UPLOADS_PER_HOUR: Record<Plan, number> = {
   pro: 30,
 };
 
-/** One-time lifetime unlock price, in whole currency units — for display only; Dodo's product itself is the source of truth for what's actually charged. */
-export const PRO_PRICE_USD = 19;
+/** Pro unlock price in USD (includes year-one hosting) — only used by the dev dummy payment page; real display prices live in src/config/pricing.ts. */
+export const PRO_PRICE_USD = 9;

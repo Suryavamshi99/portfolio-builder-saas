@@ -104,7 +104,7 @@ All variables are read inside handlers/functions at runtime, never at module sco
 | `PAYMENTS_ENABLED` | No | Gate for paid features (`true` by default). Set to `false` to make all features free for testing or launch promotions |
 | `DODO_ENVIRONMENT` | Yes | Dodo Payments environment (`test_mode` or `live_mode`) |
 | `DODO_PAYMENTS_API_KEY` | Yes | Dodo Payments secret API key |
-| `DODO_PRODUCT_ID_PRO` | Yes | Dodo product ID for the one-time $19 Pro unlock |
+| `DODO_PRODUCT_ID_PRO` | Yes | Dodo product ID for "Pro + 1 year hosting" ($9 paid trial of 365 days, then $7.99/yr; India has a fixed INR price) |
 | `DODO_WEBHOOK_SECRET` | Yes | Dodo webhook signing secret (`whsec_...`) |
 | `PAYMENT_TEST_MODE` | No | Dev-only dummy checkout bypass (`PAYMENT_TEST_MODE=dummy`). Automatically disabled in production |
 | `ADMIN_USERNAME` | Yes | Superuser username for the standalone `/admin` dashboard |
