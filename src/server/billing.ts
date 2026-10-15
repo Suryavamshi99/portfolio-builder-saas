@@ -176,6 +176,39 @@ export async function applySubscriptionEvent(
   if (error) throw new Error(`Could not save hosting subscription: ${error.message}`);
 }
 
+/**
+ * A one-time payment (India: no Dodo subscription, so no UPI mandate) buys one
+ * year of hosting. The term is tracked here: it starts now, or at the end of
+ * the current term for an early renewal, and gets the usual grace cushion.
+ * The payment id stands in for the subscription id in hosting_subscriptions.
+ */
+export async function applyOneTimeHosting(admin: SupabaseClient, userId: string, paymentId: string): Promise<void> {
+  const now = Date.now();
+  const { data: existing } = await admin
+    .from("hosting_subscriptions")
+    .select("current_period_end, dodo_subscription_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  // Already applied for this very payment (a webhook retry): do not add a second year.
+  if (existing?.dodo_subscription_id === paymentId) return;
+  const previousEnd = existing?.current_period_end ? Date.parse(existing.current_period_end as string) : NaN;
+  const start = Number.isFinite(previousEnd) && previousEnd > now ? previousEnd : now;
+  const periodEnd = start + 365 * DAY_MS;
+
+  const { error } = await admin.from("hosting_subscriptions").upsert(
+    {
+      user_id: userId,
+      dodo_subscription_id: paymentId,
+      status: "active",
+      current_period_end: new Date(periodEnd).toISOString(),
+      grace_until: new Date(periodEnd + HOSTING_GRACE_DAYS * DAY_MS).toISOString(),
+      updated_at: new Date(now).toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+  if (error) throw new Error(`Could not save hosting term: ${error.message}`);
+}
+
 /** Unpublishes the user's site and detaches their custom domain. Both are best-effort. */
 export async function unpublishUserSite(admin: SupabaseClient, userId: string): Promise<void> {
   const { data: site } = await admin.from("sites").select("slug, status").eq("user_id", userId).maybeSingle();
@@ -204,6 +237,8 @@ export async function unpublishUserSite(admin: SupabaseClient, userId: string): 
 
 /** Stops future renewal charges. Best-effort: a failure must not undo the downgrade. */
 async function cancelDodoSubscription(subscriptionId: string): Promise<void> {
+  // One-time (India) purchases store their payment id here: there is no subscription to stop.
+  if (!subscriptionId.startsWith("sub_")) return;
   try {
     const res = await fetch(`${getDodoApiBase()}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
       method: "PATCH",

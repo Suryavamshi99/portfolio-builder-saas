@@ -198,7 +198,7 @@ export function StudioToolbar({
                   </a>
                 </span>
               ) : !hasPaidAccess ? (
-                `Go live in 30 seconds. ${pricing.today} includes 1 year of hosting + your domain, then ${pricing.renewal}/yr, cancel anytime`
+                `Go live in 30 seconds. ${pricing.today} includes 1 year of hosting + your domain, ${pricing.renewalPhrase}`
               ) : (
                 "Publish your site to your own public address"
               )}

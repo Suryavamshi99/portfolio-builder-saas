@@ -48,9 +48,11 @@ function TermsPage() {
             custom domain.
           </li>
           <li>
-            <strong className="text-foreground">From year 2:</strong> hosting renews automatically every year at{" "}
-            {usd.renewal} (or {inr.renewal} in India), tax included. You can cancel at any time before the renewal and
-            you will not be charged.
+            <strong className="text-foreground">From year 2:</strong> outside India, hosting renews automatically every
+            year at {usd.renewal}, tax included. You can cancel at any time before the renewal and you will not be
+            charged. In India, payment is one time and nothing renews automatically: when the year ends you can renew
+            hosting for {inr.renewal} per year, tax included, or let it lapse. Pro and your downloads stay yours
+            either way.
           </li>
           <li>
             Prices may change for future renewals. We will email you at least 30 days before a renewal that costs

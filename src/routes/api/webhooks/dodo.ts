@@ -4,6 +4,7 @@ import { getDodoWebhookSecret } from "@/config/dodo";
 import { verifyStandardWebhook } from "@/lib/standard-webhooks";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
+  applyOneTimeHosting,
   applySubscriptionEvent,
   claimWebhook,
   forgetWebhook,
@@ -28,7 +29,8 @@ import { grantProAccess } from "@/server/payments";
  *
  * Events handled:
  *  - payment.succeeded: the first payment unlocks Pro; later ones are
- *    recorded as hosting renewals.
+ *    recorded as hosting renewals. A payment with no subscription id (India,
+ *    one-time) also starts a one-year hosting term.
  *  - subscription.*: keeps hosting_subscriptions (the hosting term) in sync.
  *  - refund.succeeded / dispute.lost / dispute.accepted: takes back what the
  *    payment bought (see revokeForPayment).
@@ -143,6 +145,9 @@ export const Route = createFileRoute("/api/webhooks/dodo")({
               currency: event.data?.currency,
               kind: priorPro && priorPro.length > 0 ? "hosting_renewal" : "pro",
             });
+            // No subscription id means a one-time purchase (India): there will be no subscription
+            // events, so this payment itself starts the one-year hosting term.
+            if (!event.data?.subscription_id) await applyOneTimeHosting(admin, userId, paymentId);
           } else if (SUBSCRIPTION_EVENT_TYPES.includes(type)) {
             await applySubscriptionEvent(admin, type as SubscriptionEventType, event.data ?? {});
           } else {

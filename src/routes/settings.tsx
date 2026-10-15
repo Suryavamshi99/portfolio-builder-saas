@@ -91,7 +91,7 @@ function formatDate(iso: string): string {
 }
 
 /** One plain sentence about the buyer's hosting term, shown on the Pro plan card. */
-function hostingSummary(hosting: UserRecord["hosting"], renewal: string): string {
+function hostingSummary(hosting: UserRecord["hosting"], renewal: string, autoRenews: boolean): string {
   if (!hosting || !hosting.status) return "Pro is unlocked for good. Your downloads and exports are yours to keep.";
   if (hosting.status === "cancelled" && hosting.endsOn) {
     return hosting.active
@@ -102,7 +102,9 @@ function hostingSummary(hosting: UserRecord["hosting"], renewal: string): string
     return "Your hosting renewal didn't go through. Your site stays live for a few days, update your payment method to keep it.";
   }
   if (hosting.renewsOn) {
-    return `Pro is unlocked for good. Hosting and your domain are included until ${formatDate(hosting.renewsOn)}, then ${renewal}/year. Cancel anytime.`;
+    return `Pro is unlocked for good. Hosting and your domain are included until ${formatDate(hosting.renewsOn)}, ${
+      autoRenews ? `then ${renewal}/year. Cancel anytime.` : `then renew for ${renewal}/year to keep it online.`
+    }`;
   }
   return "Pro is unlocked for good. Hosting and your domain are included.";
 }
@@ -282,7 +284,7 @@ function SettingsContent() {
           </div>
           <CardDescription className="text-xs">
             {userRecord?.plan === "pro"
-              ? hostingSummary(userRecord.hosting, pricing.renewal)
+              ? hostingSummary(userRecord.hosting, pricing.renewal, pricing.autoRenews)
               : "Free: a watermarked preview, 50MB storage, 5 generations/hour. Go live in 30 seconds with Pro."}
           </CardDescription>
         </CardHeader>

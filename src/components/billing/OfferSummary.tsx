@@ -36,8 +36,9 @@ export function OfferSummary({ compact = false }: { compact?: boolean }) {
           Next year
         </span>
         <span className="text-foreground/80">
-          Hosting renews at <strong className="text-foreground">{pricing.renewal}/year</strong>. Cancel anytime, you
-          keep Pro and your downloads.
+          {pricing.autoRenews ? "Hosting renews at " : "Renew hosting for "}
+          <strong className="text-foreground">{pricing.renewal}/year</strong>
+          {pricing.autoRenews ? ". Cancel anytime, you keep" : " when it ends. You keep"} Pro and your downloads.
         </span>
       </div>
       <p className="pt-1 text-[11px] text-muted-foreground">

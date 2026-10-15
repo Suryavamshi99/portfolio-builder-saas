@@ -19,8 +19,9 @@ export function PricingSection() {
           Simple pricing. Pay once, go live today.
         </h2>
         <p className="text-sm text-muted-foreground">
-          Try it free. Pay {pricing.today} when you&rsquo;re ready to publish. Hosting renews at {pricing.renewal}/year
-          from year 2, and you can cancel anytime.
+          Try it free. Pay {pricing.today} when you&rsquo;re ready to publish. {pricing.autoRenews
+            ? `Hosting renews at ${pricing.renewal}/year from year 2, and you can cancel anytime.`
+            : `After year 1, keep hosting for ${pricing.renewal}/year. You renew yourself, nothing is charged automatically.`}
         </p>
       </div>
 

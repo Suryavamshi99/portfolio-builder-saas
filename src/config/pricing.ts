@@ -1,7 +1,8 @@
 /**
  * What the buyer sees. Display only: Dodo's product is the source of truth for
  * what is actually charged. Keep these in step with the Dodo product
- * (USD $9 today then $7.99/yr; India fixed INR price, so UPI works).
+ * (USD $9 today then $7.99/yr auto-renewing; India: fixed INR price, so UPI works, paid once
+ * with a manual yearly renewal because UPI AutoPay mandates run to 2050 with a ₹15,000 limit).
  *
  * The region is decided on the server from the request's IP country
  * (Vercel's x-vercel-ip-country header) and passed to Dodo as the billing
@@ -19,6 +20,10 @@ export interface Pricing {
   renewal: string;
   /** Short line that sits under every buy button. */
   fineprint: string;
+  /** India pays once (no UPI/card mandate); everyone else has a yearly auto-renewing subscription. */
+  autoRenews: boolean;
+  /** "then $7.99/year, cancel anytime" or, for India, "renew for ₹449/year when it ends". */
+  renewalPhrase: string;
 }
 
 const PRICES: Record<PricingRegion, { today: string; renewal: string; paymentHint: string }> = {
@@ -32,11 +37,17 @@ export function regionForCountry(country: string | null | undefined): PricingReg
 
 export function pricingFor(region: PricingRegion): Pricing {
   const p = PRICES[region];
+  const autoRenews = region !== "IN";
+  const renewalPhrase = autoRenews
+    ? `then ${p.renewal}/year, cancel anytime`
+    : `then renew for ${p.renewal}/year when it ends`;
   return {
     region,
     today: p.today,
     renewal: p.renewal,
-    fineprint: `Includes 1 year of hosting and your own domain. Then ${p.renewal}/year, cancel anytime. ${p.paymentHint}`,
+    autoRenews,
+    renewalPhrase,
+    fineprint: `Includes 1 year of hosting and your own domain, ${renewalPhrase}. ${p.paymentHint}`,
   };
 }
 

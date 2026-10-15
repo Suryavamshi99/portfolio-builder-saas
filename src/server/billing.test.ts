@@ -399,3 +399,62 @@ describe("renewing after a lapse", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("one-time purchases (India, no Dodo subscription)", () => {
+  async function post(client: SupabaseClient, webhookId: string, data: Record<string, unknown>) {
+    vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(client as never);
+    process.env["DODO_WEBHOOK_SECRET"] = "whsec_" + Buffer.from("test-secret").toString("base64");
+    const raw = JSON.stringify({ type: "payment.succeeded", data });
+    const ts = String(Math.floor(Date.now() / 1000));
+    const sig = createHmac("sha256", Buffer.from("test-secret")).update(`${webhookId}.${ts}.${raw}`).digest("base64");
+    return (webhookRoute.options.server?.handlers as { POST: (a: any) => Promise<Response> }).POST({
+      request: new Request("http://localhost/api/webhooks/dodo", {
+        method: "POST",
+        headers: { "webhook-id": webhookId, "webhook-timestamp": ts, "webhook-signature": `v1,${sig}` },
+        body: raw,
+      }),
+    });
+  }
+
+  it("a payment with no subscription id unlocks Pro and starts a one-year hosting term", async () => {
+    const { client, tables } = fakeAdmin();
+    const res = await post(client, "wh_a", { payment_id: "pay_1", metadata: { userId: "u1" } });
+    expect(res.status).toBe(200);
+    expect(tables["users"]![0]!["plan"]).toBe("pro");
+    const row = tables["hosting_subscriptions"]![0]!;
+    expect(row["dodo_subscription_id"]).toBe("pay_1");
+    const end = Date.parse(row["current_period_end"] as string);
+    expect(Math.abs(end - (Date.now() + 365 * DAY))).toBeLessThan(60_000);
+    expect(Date.parse(row["grace_until"] as string)).toBeGreaterThan(end);
+    expect(await hasHostingAccess(client, { id: "u1", isAdmin: false })).toBe(true);
+  });
+
+  it("a redelivery of the same payment does not add a second year", async () => {
+    const { client, tables } = fakeAdmin();
+    await post(client, "wh_a", { payment_id: "pay_1", metadata: { userId: "u1" } });
+    const first = tables["hosting_subscriptions"]![0]!["current_period_end"];
+    await post(client, "wh_b", { payment_id: "pay_1", metadata: { userId: "u1" } });
+    expect(tables["hosting_subscriptions"]![0]!["current_period_end"]).toBe(first);
+  });
+
+  it("a renewal before the term ends adds a year to the end date, and a refund of it ends hosting without calling Dodo", async () => {
+    const f = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", f);
+    const { client, tables } = fakeAdmin({
+      users: [{ id: "u1", plan: "pro" }],
+      purchases: [{ dodo_payment_id: "pay_1", user_id: "u1", kind: "pro", refunded_at: null }],
+      hosting_subscriptions: [
+        { user_id: "u1", dodo_subscription_id: "pay_1", status: "active", current_period_end: inDays(10), grace_until: inDays(24) },
+      ],
+    });
+    await post(client, "wh_c", { payment_id: "pay_2", metadata: { userId: "u1" } });
+    const end = Date.parse(tables["hosting_subscriptions"]![0]!["current_period_end"] as string);
+    expect(Math.abs(end - (Date.now() + 375 * DAY))).toBeLessThan(60_000);
+    expect(tables["purchases"]!.map((p) => p["kind"])).toEqual(["pro", "hosting_renewal"]);
+
+    await revokeForPayment(client, "pay_2");
+    expect(tables["hosting_subscriptions"]![0]!["status"]).toBe("cancelled");
+    expect(f).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+});

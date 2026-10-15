@@ -406,8 +406,8 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
           <AlertTitle className="text-xs font-semibold">Your portfolio is ready. Go live in 30 seconds</AlertTitle>
           <AlertDescription className="text-xs flex items-center justify-between gap-2">
             <span>
-              {pricing.today} unlocks deploy, clean HTML download and 1 year of hosting with your own domain. Then{" "}
-              {pricing.renewal}/year, cancel anytime.
+              {pricing.today} unlocks deploy, clean HTML download and 1 year of hosting with your own domain,{" "}
+              {pricing.renewalPhrase}.
             </span>
             <Button
               type="button"
