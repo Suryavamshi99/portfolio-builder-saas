@@ -55,10 +55,14 @@ flowchart TD
     S1 --> S4
 ```
 
-### Path A: Free Model Harness
-- **Harness:** Fallback chain across configured OpenRouter slots (`FREE_MODEL_OPENROUTER_A..D`).
-- **Free-Models-Only Rule:** Enforced in code (`src/config/free-models.ts`). Every OpenRouter model ID **must end with `:free`** (e.g. `nvidia/nemotron-3-super:free`). Any model without the `:free` suffix is discarded at runtime so it can never bill the owner's OpenRouter account.
-- **Quota & Cooldowns:** Shared daily provider budgets (`provider_budgets` table) and per-user daily generation limits (`FREE_GENERATIONS_PER_DAY`: 3 for free users, 10 for pro). If a provider returns 429, 500, or auth errors, it enters a temporary cooldown, allowing fallback to the next provider in the chain.
+### Path A: Free Model Harness (step-by-step builder)
+- **Why steps:** a free model cannot write a whole page in one call. The first design (one big call, a fallback chain) had **0 successes in production**: pages cut off, calls timing out after 9-12 minutes. The page is now built in small saved steps (`src/server/generation/pipeline/`): plan, design (code only), hero, one call per section, assemble and check.
+- **The model never copies resume text.** The plan returns line ranges; `sliceFor()` cuts the exact text. Section calls see only their slice and a fixed class vocabulary. Design choices come from fixed menus (`Design` in `types.ts`) that select vetted CSS, so a small model cannot produce unreadable colours.
+- **Fallbacks in code at every step** (plan from the resume's headings, hero and sections rendered from the resume text), so a build always finishes. A fallback part can only contain resume text, so it cannot fail the fact check. A warning tells the user when a build used simple mode.
+- **Resumable and self-continuing:** state lives in `generation_jobs.params.pipeline` (done steps, parts, a log of provider, time and any rejection reason per call). A run holds a lease (`params->pipeline->lease->>owner`, a compare-and-set on `updated_at` to take it) for about 170 s of work, saves after every step, then starts the next run through `GET /api/cron/generation-advance` (Bearer `CRON_SECRET`, answers 202 and works in the background). The status poll (`GET /api/generations/:id`) restarts a build that has not moved for 45 s and has no active lease.
+- **Providers:** best first, in order: Groq models (`FREE_MODELS_GROQ`, default `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`; gpt-oss gets `reasoning_effort: low`), then OpenRouter slots A-D, then Cerebras. A failure or rate limit moves to the next provider and starts a cooldown. Each model call uses one unit of that provider's daily budget (`claim_provider_budget`); a build uses about 10. Defaults: Groq 55 calls per model a day (the 200K-tokens-a-day limit), OpenRouter 12 per slot (its free models share one 50-requests-a-day account cap). Typical build on Groq: 20-30 s.
+- **Free-Models-Only Rule:** enforced in code (`src/config/free-models.ts`). Every OpenRouter model ID **must end with `:free`**; anything else is discarded so it can never bill the owner's OpenRouter account.
+- **Privacy:** free providers may log requests or train on them; the free option has a consent checkbox and the Privacy Policy says so.
 
 ### Path B: Claude.ai & ChatGPT Connector (MCP)
 - **Model Context Protocol (MCP):** Connects external AI desktop/chat clients (Claude.ai, ChatGPT) via Streamable HTTP at `/mcp`.

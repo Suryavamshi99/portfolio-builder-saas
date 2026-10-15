@@ -87,9 +87,9 @@ All variables are read inside handlers/functions at runtime, never at module sco
 | `SITES_DOMAIN` | No | Shared base domain for user-hosted portfolio sites (e.g. `shipfolio.xyz`). Subdomain sites resolve at `https://{slug}.${SITES_DOMAIN}` |
 | `SITES_BASE_URL` | No | Path-based hosting base URL (e.g. `https://www.shipfolio.xyz/s`). When set, `siteUrl()` builds `<base>/<slug>` instead of `<slug>.<SITES_DOMAIN>`, serving portfolios from `/s/<slug>` on the main domain when wildcard DNS is unavailable |
 | `CRON_SECRET` | Yes | Bearer token secret expected in the `Authorization: Bearer <CRON_SECRET>` header for Vercel Cron routes (`/api/cron/free-queue`, `/api/cron/domains`, `/api/cron/hosting`) |
-| `OPENROUTER_API_KEY` | For Free tier | API key for OpenRouter models in Path A (Free chain) |
+| `OPENROUTER_API_KEY` | No (fallback) | API key for OpenRouter `:free` models, used after Groq. OpenRouter's free models share one account-wide cap (50 requests a day unless the account has ever bought $10 of credit), so the four slots default to 12 calls each (`FREE_BUDGET_OPENROUTER_A..D`) |
 | `FREE_MODEL_OPENROUTER_A..D` | For Free tier | OpenRouter model IDs for fallback slots A through D. **Strict Rule:** Every OpenRouter model ID **MUST end with `:free`** (e.g. `nvidia/nemotron-3-super:free`). Enforced in code (`src/config/free-models.ts`): any model without the `:free` suffix is automatically skipped so it can never bill the OpenRouter account |
-| `GROQ_API_KEY`, `FREE_MODEL_GROQ` | No | Optional secondary free provider key and model ID |
+| `GROQ_API_KEY` | For fast free builds | Groq key (free, no card). When set, Groq's models are used first. Models come from `FREE_MODELS_GROQ` (comma separated; default `openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b`). Budgets per model: `FREE_BUDGET_GROQ` (default 55 calls a day, about 200K tokens) |
 | `CEREBRAS_API_KEY`, `FREE_MODEL_CEREBRAS` | No | Optional tertiary free provider key and model ID |
 | `GITHUB_APP_ID` | For GitHub export | GitHub App numeric ID |
 | `GITHUB_APP_SLUG` | For GitHub export | GitHub App slug name (e.g. `shipfolio-ai-export`) |
@@ -116,6 +116,21 @@ All variables are read inside handlers/functions at runtime, never at module sco
 | `VITE_LAUNCH_MODE` | No | `live` (default) or `waitlist` (swaps CTAs for pre-launch email capture form) |
 | `WAITLIST_WEBHOOK_URL` | If waitlist mode | Google Apps Script Web App URL to receive waitlist email rows |
 | `WAITLIST_WEBHOOK_SECRET` | If waitlist mode | Secret shared with Google Apps Script to verify inbound requests |
+
+---
+
+## Free generation (step by step)
+
+A free model cannot write a whole page in one call (a few tokens a second, small per-minute limits, our own call limits). So the free source builds the page in small saved steps (`src/server/generation/pipeline/`):
+
+1. **Plan** (one call): the model returns the person's name, a palette, fonts, a few design choices and the sections, as **line ranges of the resume**. Our code slices the text itself, so the model never copies it. If the plan is unusable, or covers under 60% of the resume, sections found from the resume's own headings are used.
+2. **Design** (code only): the palette and the design choices (hero, headings, cards, corners, motion) select vetted CSS in `default-design.ts`, so text is always readable and the page always responsive. The model chooses; it never writes colour rules.
+3. **Hero, then one call per section**, each seeing only its slice of the resume and a fixed class vocabulary.
+4. **Assemble in code**, run the sanitiser and the numeric fact check, redo only a section that contains an unsupported number, and fall back to a section rendered from the resume text if that still fails.
+
+Every step has a fallback made in code, so a build always finishes. State is saved after each step in `generation_jobs.params.pipeline` (with a log of which model did what). A run lasts about 170 seconds, then hands over to a fresh invocation (`/api/cron/generation-advance`); the status poll restarts a build that stalled. The Gemini-key source is unchanged (one call).
+
+Providers are tried best first: Groq's models, then OpenRouter's `:free` models. Typical build on Groq: about 20-30 seconds. The progress screen shows "Step N of M"; the user can close the page.
 
 ---
 
