@@ -130,7 +130,7 @@ A free model cannot write a whole page in one call (a few tokens a second, small
 
 Every step has a fallback made in code, so a build always finishes. State is saved after each step in `generation_jobs.params.pipeline` (with a log of which model did what). A run lasts about 170 seconds, then hands over to a fresh invocation (`/api/cron/generation-advance`); the status poll restarts a build that stalled. The Gemini-key source is unchanged (one call).
 
-Providers are tried best first: Groq's models, then OpenRouter's `:free` models. Typical build on Groq: about 20-30 seconds. The progress screen shows "Step N of M"; the user can close the page.
+Providers are tried best first: Groq's models, then OpenRouter's `:free` models. Typical build on Groq: about 20-30 seconds. The progress screen shows "Step N of M"; the user can close the page. When a build finishes (free, Claude/ChatGPT, or a Studio regeneration) `src/lib/build-notify.ts` shows a popup (`BuildReadyPopup`, mounted at the root), plays a two-note chime made with the Web Audio API, and, while the tab is in the background, blinks the tab title, puts a green dot on the tab icon and sends a desktop notification if the user allowed it. It fires once per build, and the progress screen has an on/off control (remembered in `localStorage`).
 
 ---
 
