@@ -12,9 +12,9 @@ All endpoints return JSON responses unless otherwise noted (such as binary downl
 
 | Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
 |---|---|---|---|---|---|---|
-| `GET` | `/api/me` | Session Cookie | No | None | `{ id: string, email: string, plan: "free" \| "pro", isAdmin: boolean, hasPaidAccess: boolean, createdAt: string, storageUsedBytes: number, storageLimitBytes: number, vercel: { connected: boolean, username: string \| null } }` | `401 unauthorized`, `500 internal_error` |
+| `GET` | `/api/me` | Session Cookie | No | None | `{ id: string, email: string, plan: "free" \| "pro", isAdmin: boolean, hasPaidAccess: boolean, createdAt: string, storage: { usedBytes: number, quotaBytes: number }, vercel: { connected: boolean }, hosting: { active: boolean, status: "active" \| "on_hold" \| "cancelled" \| "expired" \| "failed" \| null, renewsOn: string \| null, endsOn: string \| null } }` | `401 unauthorized`, `500 internal_error` |
 
-*Note:* Session creation, sign-in, and password resets are handled directly by the browser Supabase Auth client (`supabase.auth.signUp`, `supabase.auth.signInWithPassword`). `GET /api/me` ensures the `public.users` row exists and computes `hasPaidAccess` on the server.
+*Note:* Session creation, sign-in, and password resets are handled directly by the browser Supabase Auth client (`supabase.auth.signUp`, `supabase.auth.signInWithPassword`). `GET /api/me` ensures the `public.users` row exists and computes `hasPaidAccess` and `hosting.active` on the server (`hosting.endsOn` is when access stops, including the 14-day grace).
 
 ---
 
@@ -104,7 +104,7 @@ Portfolios can be published and hosted on the owner's domain. When wildcard DNS 
 |---|---|---|---|---|---|---|
 | `GET` | `/api/sites/check` | Session Cookie | No | None (query: `?slug=<string>`) | `{ status: "available" \| "yours" \| "taken" \| "reserved" \| "invalid", url: string \| null }` | `401 unauthorized`, `429 rate_limited`, `500 internal_error` |
 | `GET` | `/api/sites/me` | Session Cookie | No | None | `{ site: { slug: string, url: string, status: "published" \| "unpublished", publishedVersionId: string \| null, updatedAt: string } \| null, draftNewer: boolean }` | `401 unauthorized`, `500 internal_error` |
-| `POST` | `/api/sites/publish` | Session Cookie | Yes | `{ slug?: string }` | `{ url: string }` | `400 no_portfolio`, `400 slug_invalid`, `400 slug_reserved`, `401 unauthorized`, `402 payment_required`, `409 slug_taken`, `422 publish_unsafe_html`, `500 internal_error` |
+| `POST` | `/api/sites/publish` | Session Cookie | Yes | `{ slug?: string }` | `{ url: string }` | `400 no_portfolio`, `400 slug_invalid`, `400 slug_reserved`, `401 unauthorized`, `402 payment_required`, `402 hosting_required`, `409 slug_taken`, `422 publish_unsafe_html`, `500 internal_error` |
 | `POST` | `/api/sites/unpublish` | Session Cookie | No | None | `{ ok: true }` | `401 unauthorized`, `404 site_not_found`, `500 internal_error` |
 | `POST` | `/api/admin/sites/:slug/unpublish` | Admin Cookie | No (Admin) | None | `{ ok: true }` | `400 invalid_slug`, `401 unauthorized`, `404 site_not_found`, `500 internal_error` |
 | `GET` | `/s/<slug>` | Public | No | None | HTML document (`text/html; charset=utf-8`) with strict CSP sandbox | `404 HTML document` |
@@ -123,7 +123,7 @@ Users who have published a portfolio can link a custom domain (e.g. `janedoe.com
 | Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
 |---|---|---|---|---|---|---|
 | `GET` | `/api/domains` | Session Cookie | No | None | `{ domain: { hostname: string, status: "pending" \| "verified" \| "live", verifyRecord: { type: "TXT", name: string, value: string }, dns: { a: string[], cname: string[] } \| null, lastCheckedAt: string \| null } \| null }` | `401 unauthorized`, `500 internal_error` |
-| `POST` | `/api/domains` | Session Cookie | Yes | `{ hostname: string }` | `{ domain: { hostname: string, status: "pending", verifyRecord: { type: "TXT", name: string, value: string }, dns: null, lastCheckedAt: null } }` | `400 domain_invalid`, `400 no_site`, `401 unauthorized`, `402 payment_required`, `409 domain_exists`, `409 domain_taken`, `500 internal_error` |
+| `POST` | `/api/domains` | Session Cookie | Yes | `{ hostname: string }` | `{ domain: { hostname: string, status: "pending", verifyRecord: { type: "TXT", name: string, value: string }, dns: null, lastCheckedAt: null } }` | `400 domain_invalid`, `400 no_site`, `401 unauthorized`, `402 payment_required`, `402 hosting_required`, `409 domain_exists`, `409 domain_taken`, `500 internal_error` |
 | `DELETE` | `/api/domains` | Session Cookie | No | None | `{ ok: true }` | `401 unauthorized`, `500 internal_error` |
 | `POST` | `/api/domains/verify` | Session Cookie | No | None | On pending: `{ status: "pending", message: string }`<br>On success: `{ domain: { hostname: string, status: "verified" \| "live", verifyRecord: object, dns: object \| null, lastCheckedAt: string } }` | `401 unauthorized`, `404 no_domain`, `409 domain_unavailable`, `429 rate_limited`, `500 internal_error`, `502 domain_unavailable` |
 
@@ -196,11 +196,18 @@ Enables users to connect their own Claude.ai or ChatGPT subscription to Shipfoli
 
 ## 12. Billing & Payments (Dodo Payments)
 
+One checkout buys Pro and the first year of hosting; hosting then renews yearly. See the README section *Payments & Billing* for the offer, products and go-live steps.
+
 | Method | Path | Auth | Paid-only? | Request Body | Response Shape | Error Codes |
 |---|---|---|---|---|---|---|
-| `POST` | `/api/billing/checkout` | Session Cookie | No | `{ returnTo?: "studio" \| "settings" }` | `{ checkoutUrl: string }` | `400 email_required`, `401 unauthorized`, `502 checkout_failed`, `500 internal_error` |
-| `POST` | `/api/webhooks/dodo` | Webhook Signature | No | Dodo Webhook payload (`payment.succeeded`, `refund.succeeded`, etc.) | `{ ok: true }` | `400 invalid_signature`, `400 invalid_event` |
+| `GET` | `/api/billing/pricing` | None | No | None | `{ region: "IN" \| "ROW", today: string, renewal: string, fineprint: string }` (display strings such as `"₹499"`, chosen from the visitor's IP country; cached privately for 5 minutes) | None |
+| `POST` | `/api/billing/checkout` | Session Cookie | No | `{ returnTo?: "studio" \| "settings" }` | `{ checkoutUrl: string }`. The server picks the product: the Pro offer (INR product for India, USD otherwise), or the renewal-only hosting product when the user already has Pro and hosting has lapsed. The buyer returns to the site they started from, at `/studio` or `/settings?upgrade=pending`. | `400 email_required`, `401 unauthorized`, `409 already_subscribed` (hosting is still active), `502 checkout_failed`, `500 internal_error` |
+| `POST` | `/api/webhooks/dodo` | Webhook Signature (Standard Webhooks, `DODO_WEBHOOK_SECRET`) | No | Dodo event. Handled: `payment.succeeded`, `subscription.active`, `.renewed`, `.on_hold`, `.cancelled`, `.expired`, `.failed`, `refund.succeeded`, `dispute.lost`, `dispute.accepted`. Anything else is acknowledged and ignored. | `{ received: true }`, plus `duplicate: true` for a redelivered webhook id, or `ignored: "other_product" \| "partial_refund"` | `400 missing_signature_headers`, `400 invalid_json`, `400 missing_fields`, `401 invalid_signature`, `500 unknown_user` (Dodo retries), `500 internal_error` |
 | `POST` | `/api/dev/payment-test` | Session Cookie | Dev only | `{ returnTo?: "studio" \| "settings" }` | HTML redirect to simulated checkout success/failure | `403 forbidden` (production) |
+
+*Webhook effects:* the first successful payment sets `users.plan = "pro"`; later payments are recorded as `hosting_renewal`. Subscription events keep `hosting_subscriptions` (`status`, `current_period_end`, `grace_until`) in step. A refund, a lost dispute or an accepted dispute marks the purchase refunded, returns a Pro buyer to `free`, ends hosting, cancels the Dodo subscription and unpublishes the site. Replays are no-ops (`webhook_events`).
+
+*Hosting gate:* `POST /api/sites/publish` and `POST /api/domains` return `402 hosting_required` while `now() >= hosting_subscriptions.grace_until` (admins and `PAYMENTS_ENABLED=false` are exempt).
 
 ---
 
@@ -221,6 +228,7 @@ Scheduled tasks invoked by Vercel Cron (`vercel.json`) and Supabase `pg_cron`:
 |---|---|---|---|
 | `GET` | `/api/cron/free-queue` | `Authorization: Bearer <CRON_SECRET>` (Vercel Cron: `10 0 * * *`) | Processes up to 20 queued generation jobs waiting for free provider budget reset. |
 | `GET` | `/api/cron/domains` | `Authorization: Bearer <CRON_SECRET>` (Vercel Cron: `20 0 * * *`) | Deletes pending custom domain verification records older than 14 days. |
+| `GET` | `/api/cron/hosting` | `Authorization: Bearer <CRON_SECRET>` (Vercel Cron: `30 0 * * *`) | Unpublishes sites and detaches custom domains for users whose hosting lapsed (`grace_until` in the past), and deletes `webhook_events` older than 30 days. Users with no `hosting_subscriptions` row are never touched. |
 | N/A | `purge-post-generation-uploads` | `pg_cron` Hourly (`0 * * * *`) → Edge Function | Purges resumes and visual references 48h after generation. |
 | N/A | `purge-stale-draft-uploads` | `pg_cron` Daily (`0 3 * * *`) → Edge Function | Purges photos and project images for drafts inactive for 30+ days. |
 | N/A | `queue-stale-draft-warnings` | `pg_cron` Daily (`0 4 * * *`) | Queues warning entries in `upload_deletion_warnings` for drafts inactive at 27–28 days. |

@@ -265,7 +265,7 @@ sequenceDiagram
 
 ---
 
-## 7. Database Privilege Lockdown & Table Inventory (Migrations 0001–0020)
+## 7. Database Privilege Lockdown & Table Inventory (Migrations 0001–0021)
 
 ### The Table Privilege Rule
 Column-level `REVOKE` statements in PostgreSQL are ineffective if table-wide privileges are granted to `anon` or `authenticated`. Therefore, **every table must enforce complete privilege revocation**:
@@ -288,7 +288,7 @@ revoke all on public.<table_name> from anon, authenticated;
 | `0002_retention_cron.sql` | `upload_deletion_warnings`, `app_config` | pg_cron schedules & retention configuration. |
 | `0003_storage_cleanup.sql` | Storage purge routines | Edge Function webhook caller. |
 | `0004_vercel_team_id.sql` | `vercel_connections.team_id` | Multi-team Vercel OAuth support. |
-| `0005_payments.sql` | `purchases` | Records Dodo Payments transaction events. |
+| `0005_payments.sql` | `purchases` | Records Dodo Payments transactions (idempotent on `dodo_payment_id`). `kind` and `refunded_at` added in 0021. |
 | `0006_admin_flag.sql` | `users.is_admin` | Superuser flag (hardened in 0010). |
 | `0007_generated_html.sql` | `portfolios.generated_html` | Stores master clean HTML. |
 | `0008_purge_orphaned_uploads.sql` | Cleanup functions | Orphaned upload purge triggers. |
@@ -304,6 +304,22 @@ revoke all on public.<table_name> from anon, authenticated;
 | `0018_retention_new_tables.sql` | Retention extensions | Cascade rules and cleanup triggers across generation jobs and site storage. |
 | `0019_admin_audit_log.sql` | `admin_audit_log` | Append-only record of admin actions and sign-ins. RLS enabled, privileges revoked. |
 | `0020_admin_security.sql` | `admin_security`, `admin_login_attempts` | Admin 2FA secret (encrypted), recovery hashes, session epoch, login lockout attempts. RLS enabled, privileges revoked. |
+| `0021_hosting_subscriptions.sql` | `hosting_subscriptions`, `webhook_events`, `purchases.kind`, `purchases.refunded_at` | Hosting term per user (`grace_until`) and processed Dodo webhook ids. RLS enabled, all privileges revoked from `anon` and `authenticated`; written only by the service-role webhook and cron. |
 
 ## 8. Admin console security
 Admin identity is separate from user auth: env credentials + TOTP 2FA, 8 h / 30 min-idle `__Host-` cookie with a DB epoch for sign-out-everywhere, 5-minute step-up (password + code) for destructive actions, DB-backed lockout, reasons and an append-only audit log, no impersonation, user HTML only in an empty-sandbox iframe. Details: [`ADMIN.md`](./ADMIN.md).
+
+## 9. Payments & Billing security model
+
+One Dodo checkout buys Pro and one year of hosting; hosting renews yearly (see the README section *Payments & Billing* for the offer and products). The security-relevant rules:
+
+- **Nothing is trusted from the browser.** Access changes only in the Dodo webhook (`src/routes/api/webhooks/dodo.ts`) and the hosting cron (`src/server/billing.ts`), both on the service-role client. The `return_url` redirect after payment never grants anything.
+- **Signature and replay.** Every webhook is verified with the Standard Webhooks HMAC (`src/lib/standard-webhooks.ts`, constant-time compare, 5-minute timestamp tolerance). The `webhook-id` is then claimed in `webhook_events`; a redelivery is acknowledged and skipped, and a failed handler releases the id so Dodo's retry is processed.
+- **Who the payment belongs to.** The user comes from `metadata.userId`, which only our own checkout session sets, or from the stored subscription id for later events. An event naming an unknown user returns 500 so Dodo retries.
+- **Only our products count.** Payment and subscription events whose product is not one of the four configured product ids are ignored, so another product in the same Dodo account can never unlock Pro.
+- **Refunds and disputes.** `refund.succeeded`, `dispute.lost` and `dispute.accepted` look the payment up in `purchases` (unknown ids are ignored). A refunded Pro payment returns the user to `free`, ends hosting immediately, cancels the Dodo subscription and unpublishes the site. Partial refunds are ignored. Hosting end is written as `current_period_end = grace_until = now()`, so the `subscription.cancelled` event that follows cannot read the old paid-through date back and give hosting back.
+- **No double billing.** When a new subscription becomes active for a user who has an older one (a renewal after a lapse), the older Dodo subscription is cancelled.
+- **Hosting is a separate gate from Pro.** `hasPaidAccess` (Pro) never expires. `hasHostingAccess` (publish, custom domains) holds while `now() < grace_until`, which is the paid-through date plus 14 days (Indian UPI and card renewals settle about 48 hours late). Only users that have a `hosting_subscriptions` row are ever unpublished by the daily cron.
+- **Pricing by country** uses Vercel's `x-vercel-ip-country` (set by the platform, not forgeable by the browser on production). A visitor behind a VPN is priced for the country they appear from; the price is a display and product choice, not a security boundary.
+- **Checkout guard.** `POST /api/billing/checkout` refuses a second purchase while hosting is active (`409 already_subscribed`).
+

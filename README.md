@@ -1,7 +1,7 @@
 # Shipfolio — AI Developer Portfolio Builder SaaS
 
 Turn a resume into a bespoke, model-written HTML portfolio website in minutes.
-Free preview with watermarked studio inspection; paid unlocks everything: clean HTML, zip export, GitHub push, Vercel deployment, subdomain/path hosting, and custom domains.
+Free preview with watermarked studio inspection. One payment (**$9, or ₹499 in India**) unlocks Pro (clean HTML, zip export, GitHub push, Vercel deployment) and includes **1 year of hosting** with a custom domain; hosting then renews at **$7.99/year (₹449)**. See [Payments & Billing](#payments--billing).
 No fixed templates or JSON steps — each portfolio is an individual, self-contained HTML/CSS document written by an LLM following strict guardrail rules and verified by automated fact checking.
 
 ---
@@ -27,7 +27,7 @@ No fixed templates or JSON steps — each portfolio is an individual, self-conta
    Fill in your Supabase credentials (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`), a 32-byte base64 `ENCRYPTION_KEY`, and `APP_ORIGIN` (e.g. `http://localhost:3000`).
 
 3. **Database migrations:**
-   Migrations live in `supabase/migrations/` (0001 through 0018). In local development, apply them via the Supabase CLI (`supabase db push`) or SQL editor. See [Deploying](#deploying) for strict production migration rules.
+   Migrations live in `supabase/migrations/` (0001 through 0021). In local development, apply them via the Supabase CLI (`supabase db push`) or SQL editor. See [Deploying](#deploying) for strict production migration rules.
 
 4. **Start the local development server:**
    ```sh
@@ -86,7 +86,7 @@ All variables are read inside handlers/functions at runtime, never at module sco
 | `APP_EXTRA_ORIGINS` | No | Comma-separated list of additional permitted request origins (e.g. `https://www.shipfolio.xyz`) when `APP_ORIGIN` holds the Vercel app domain |
 | `SITES_DOMAIN` | No | Shared base domain for user-hosted portfolio sites (e.g. `shipfolio.xyz`). Subdomain sites resolve at `https://{slug}.${SITES_DOMAIN}` |
 | `SITES_BASE_URL` | No | Path-based hosting base URL (e.g. `https://www.shipfolio.xyz/s`). When set, `siteUrl()` builds `<base>/<slug>` instead of `<slug>.<SITES_DOMAIN>`, serving portfolios from `/s/<slug>` on the main domain when wildcard DNS is unavailable |
-| `CRON_SECRET` | Yes | Bearer token secret expected in the `Authorization: Bearer <CRON_SECRET>` header for Vercel Cron routes (`/api/cron/free-queue`, `/api/cron/domains`) |
+| `CRON_SECRET` | Yes | Bearer token secret expected in the `Authorization: Bearer <CRON_SECRET>` header for Vercel Cron routes (`/api/cron/free-queue`, `/api/cron/domains`, `/api/cron/hosting`) |
 | `OPENROUTER_API_KEY` | For Free tier | API key for OpenRouter models in Path A (Free chain) |
 | `FREE_MODEL_OPENROUTER_A..D` | For Free tier | OpenRouter model IDs for fallback slots A through D. **Strict Rule:** Every OpenRouter model ID **MUST end with `:free`** (e.g. `nvidia/nemotron-3-super:free`). Enforced in code (`src/config/free-models.ts`): any model without the `:free` suffix is automatically skipped so it can never bill the OpenRouter account |
 | `GROQ_API_KEY`, `FREE_MODEL_GROQ` | No | Optional secondary free provider key and model ID |
@@ -119,6 +119,40 @@ All variables are read inside handlers/functions at runtime, never at module sco
 
 ---
 
+## Payments & Billing
+
+Payments run on **Dodo Payments** (Merchant of Record), in test mode until live-mode approval. One checkout buys everything.
+
+**The offer**
+
+| | Outside India | India |
+|---|---|---|
+| Pay today (Pro + 1 year of hosting) | $9 | ₹499 (UPI and cards) |
+| Hosting renewal from year 2 | $7.99 / year | ₹449 / year |
+| Tax | included in the price | included (GST) |
+| Refunds | full refund within 14 days of any payment (policy, issued manually in the Dodo dashboard) | same |
+
+**How it is built**
+- **Geo pricing:** the visitor's country comes from Vercel's `x-vercel-ip-country` header (`src/server/geo.ts`). India gets the INR product (UPI only works in INR), everyone else the USD product. Display prices live in `src/config/pricing.ts`; `GET /api/billing/pricing` serves them to the UI.
+- **Products (Dodo):** the buy offer is a *subscription with a 365-day paid trial* (trial amount = today's price, then the yearly hosting price). Two such products (USD, INR; `DODO_PRODUCT_ID_PRO`, `_IN`). A Pro user whose hosting lapsed renews through two renewal-only products with no trial (`DODO_PRODUCT_ID_HOSTING`, `_IN`). `POST /api/billing/checkout` picks the right product on the server.
+- **State:** `users.plan` (`free` / `pro`, set by the first payment and kept for good), `purchases` (audit log; `kind` = `pro` or `hosting_renewal`; `refunded_at`), `hosting_subscriptions` (one row per user; hosting is active while `now() < grace_until`), `webhook_events` (Standard Webhooks ids, so a redelivery is a no-op).
+- **Gating:** `hasPaidAccess` (Pro: downloads, exports) and `hasHostingAccess` (publishing and custom domains, `src/server/billing.ts`). Both pass when `PAYMENTS_ENABLED=false` and for admins.
+- **Webhook** (`POST /api/webhooks/dodo`): verifies the signature, then handles `payment.succeeded` (first payment unlocks Pro, later ones are recorded as renewals), `subscription.active|renewed|on_hold|cancelled|expired|failed` (keeps the hosting term), and `refund.succeeded` / `dispute.lost` / `dispute.accepted` (drops the user to free, ends hosting, cancels the Dodo subscription, unpublishes the site). Events for other products and partial refunds are ignored. A new subscription for a user cancels their older one, so a lapsed-then-renewed user is never charged twice.
+- **Hosting lifecycle:** active until the paid-through date plus a 14-day cushion (Indian renewals settle about 48 hours late). A failed renewal keeps the grace period but does not extend it. A user who cancels keeps hosting to the end of the paid year. `/api/cron/hosting` unpublishes lapsed sites daily.
+- **Public pages:** `/terms`, `/refund`, `/privacy`, and the pricing block on the landing page (`src/components/billing/PricingSection.tsx`). The "Today / You get / Next year" box (`OfferSummary`) appears wherever someone is about to pay.
+
+**Environment:** see the `DODO_*` and `PAYMENTS_ENABLED` rows in [Environment Variables](#environment-variables). Vercel gotcha: the variables already exist, so use `vercel env update NAME production --scope <team> --yes`, not `add`.
+
+**Going live (after Dodo approves the live account)**
+1. In Dodo **Live Mode**, create an API key and the four products (Pro and renewal, USD and INR; same prices, tax-inclusive, same descriptions as test mode).
+2. Add a live webhook endpoint (`https://<app>/api/webhooks/dodo`) with the events above and copy its signing secret.
+3. Set `DODO_ENVIRONMENT=live_mode`, `DODO_PAYMENTS_API_KEY`, `DODO_WEBHOOK_SECRET` and the four product ids on Vercel, then redeploy.
+4. Make one small real purchase and refund it, check the database (plan, `hosting_subscriptions`, `purchases`), and only then set `PAYMENTS_ENABLED=true`.
+
+Test mode notes: India cards complete through a gateway simulator ("Simulate Success"); US cards use `4242 4242 4242 4242`. Dodo test refunds can fail with *Insufficient funds in wallet* until the test balance settles.
+
+---
+
 ## Deploying
 
 Shipfolio runs on Vercel with a paired Supabase backend. Production deployment spans two Vercel projects, scheduled cron triggers, and strict database migration rules.
@@ -140,7 +174,8 @@ Shipfolio runs on Vercel with a paired Supabase backend. Production deployment s
 - **Vercel Cron (`vercel.json`):**
   - `/api/cron/free-queue` (scheduled at `10 0 * * *`): Processes queued free generations once daily provider budgets reset.
   - `/api/cron/domains` (scheduled at `20 0 * * *`): Cleans up unverified pending custom domain claims older than 14 days.
-  - Both routes verify the `Authorization: Bearer <CRON_SECRET>` header.
+  - `/api/cron/hosting` (scheduled at `30 0 * * *`): Unpublishes sites and detaches custom domains for users whose hosting lapsed (past the 14-day grace), and prunes processed webhook ids older than 30 days.
+  - All three routes verify the `Authorization: Bearer <CRON_SECRET>` header.
 - **Supabase `pg_cron` & Edge Functions:**
   - `purge-post-generation-uploads` (hourly): Deletes raw resumes and visual references 48 hours after generation.
   - `purge-stale-draft-uploads` (daily at 03:00): Deletes photos and project images for drafts inactive after 30 days.
@@ -226,12 +261,13 @@ portfolio-builder-saas/
 │   │   ├── storage-markers.ts      # URL marker translation for persistent HTML
 │   │   ├── users.ts                # User entitlements & server-side hasPaidAccess()
 │   │   └── watermark.ts            # Server-side watermark injection for free tier
-│   ├── styles.css            # Tailwind v4 theme tokens, obsidian dark neutrals & electric blue
+│   ├── styles.css            # Tailwind v4 theme tokens: Graphite/Ink/Mist neutrals, Aurora accents (the logo palette)
 │   ├── routeTree.gen.ts      # Auto-generated TanStack router tree
 │   └── start.ts              # TanStack Start server entry point & CSRF origin check
 ├── supabase/
 │   ├── functions/            # Supabase Edge Functions (purge-storage-objects)
-│   └── migrations/           # Postgres migrations (0001 through 0018)
+│   └── migrations/           # Postgres migrations (0001 through 0021)
+├── brand/logo/               # Logo kit (Leaf Launch, Aurora): SVG/PNG masters, web icons, guidelines, presentation
 ├── API.md                    # Canonical API contract for all endpoints
 ├── DESIGN.md                 # Design system tokens, color calibration & taste standards
 └── version2memory.md         # Source of truth for product architecture & decision history
@@ -242,7 +278,7 @@ portfolio-builder-saas/
 ## Documentation Links
 
 - **[API Contract (`API.md`)](./API.md)** — Exhaustive specification of every endpoint (method, path, authentication, payload, responses, and error codes).
-- **[Design System (`DESIGN.md`)](./DESIGN.md)** — Visual design contract, typography hierarchy, Electric Blue (`#3457E8`) accent tokens, Obsidian neutrals, and layout guidelines.
+- **[Design System (`DESIGN.md`)](./DESIGN.md)** — Visual design contract, typography hierarchy, Aurora palette (blue `#3457E8`, cyan, mint) and Graphite neutrals, and layout guidelines.
 - **[Architecture Guide (`docs/ARCHITECTURE.md`)](./docs/ARCHITECTURE.md)** — Detailed pipeline flow, security boundaries, database isolation, and CSP policies.
 - **[User Journeys (`userflow.md`)](./userflow.md)** — Step-by-step current and proposed product flows with Mermaid sequence diagrams.
 - **[Project Memory & Decision Log (`version2memory.md`)](./version2memory.md)** — The primary source of truth recording all technical decisions, scope boundaries, and architectural choices.
