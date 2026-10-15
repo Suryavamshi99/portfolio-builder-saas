@@ -325,5 +325,6 @@ One Dodo checkout buys Pro and one year of hosting; hosting renews yearly (see t
 - **No double billing.** When a new subscription becomes active for a user who has an older one (a renewal after a lapse), the older Dodo subscription is cancelled.
 - **Hosting is a separate gate from Pro.** `hasPaidAccess` (Pro) never expires. `hasHostingAccess` (publish, custom domains) holds while `now() < grace_until`, which is the paid-through date plus 14 days (Indian UPI and card renewals settle about 48 hours late). Only users that have a `hosting_subscriptions` row are ever unpublished by the daily cron.
 - **Pricing by country** uses Vercel's `x-vercel-ip-country` (set by the platform, not forgeable by the browser on production). A visitor behind a VPN is priced for the country they appear from; the price is a display and product choice, not a security boundary.
+- **One-time purchases (India).** A `payment.succeeded` without a `subscription_id` starts a 365-day hosting term in our own code (`applyOneTimeHosting`, idempotent per payment id; the payment id is stored in `hosting_subscriptions.dodo_subscription_id`). Refunds of such payments never call Dodo's subscription cancel (ids not starting with `sub_` are skipped).
 - **Checkout guard.** `POST /api/billing/checkout` refuses a second purchase while hosting is active (`409 already_subscribed`).
 

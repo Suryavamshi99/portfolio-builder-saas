@@ -138,20 +138,20 @@ Providers are tried best first: Groq's models, then OpenRouter's `:free` models.
 
 ## Payments & Billing
 
-Payments run on **Dodo Payments** (Merchant of Record), in test mode until live-mode approval. One checkout buys everything.
+Payments run on **Dodo Payments** (Merchant of Record), **live since 2026-10-15** (go-live record: [`docs/PAYMENTS_GO_LIVE.md`](docs/PAYMENTS_GO_LIVE.md)). One checkout buys everything.
 
 **The offer**
 
 | | Outside India | India |
 |---|---|---|
 | Pay today (Pro + 1 year of hosting) | $9 | ₹499 (UPI and cards) |
-| Hosting renewal from year 2 | $7.99 / year | ₹449 / year |
+| Hosting renewal from year 2 | $7.99 / year, renews automatically | ₹449 / year, **renewed by the user** (India pays once, no UPI/card mandate) |
 | Tax | included in the price | included (GST) |
 | Refunds | full refund within 14 days of any payment (policy, issued manually in the Dodo dashboard) | same |
 
 **How it is built**
 - **Geo pricing:** the visitor's country comes from Vercel's `x-vercel-ip-country` header (`src/server/geo.ts`). India gets the INR product (UPI only works in INR), everyone else the USD product. Display prices live in `src/config/pricing.ts`; `GET /api/billing/pricing` serves them to the UI.
-- **Products (Dodo):** the buy offer is a *subscription with a 365-day paid trial* (trial amount = today's price, then the yearly hosting price). Two such products (USD, INR; `DODO_PRODUCT_ID_PRO`, `_IN`). A Pro user whose hosting lapsed renews through two renewal-only products with no trial (`DODO_PRODUCT_ID_HOSTING`, `_IN`). `POST /api/billing/checkout` picks the right product on the server.
+- **Products (Dodo):** the buy offer is a *subscription with a 365-day paid trial* (trial amount = today's price, then the yearly hosting price). The USD product (`DODO_PRODUCT_ID_PRO`) is that subscription. **India uses a one-time product** (`DODO_PRODUCT_ID_PRO_IN`, ₹499) because UPI AutoPay mandates show a ₹15,000 limit and a 2050 end date that cannot be changed; the webhook turns a payment without a subscription id into a 365-day hosting term (`applyOneTimeHosting`). A Pro user whose hosting lapsed renews through two renewal-only products (`DODO_PRODUCT_ID_HOSTING` recurring USD, `_IN` one-time INR). `POST /api/billing/checkout` picks the right product on the server.
 - **State:** `users.plan` (`free` / `pro`, set by the first payment and kept for good), `purchases` (audit log; `kind` = `pro` or `hosting_renewal`; `refunded_at`), `hosting_subscriptions` (one row per user; hosting is active while `now() < grace_until`), `webhook_events` (Standard Webhooks ids, so a redelivery is a no-op).
 - **Gating:** `hasPaidAccess` (Pro: downloads, exports) and `hasHostingAccess` (publishing and custom domains, `src/server/billing.ts`). Both pass when `PAYMENTS_ENABLED=false` and for admins.
 - **Webhook** (`POST /api/webhooks/dodo`): verifies the signature, then handles `payment.succeeded` (first payment unlocks Pro, later ones are recorded as renewals), `subscription.active|renewed|on_hold|cancelled|expired|failed` (keeps the hosting term), and `refund.succeeded` / `dispute.lost` / `dispute.accepted` (drops the user to free, ends hosting, cancels the Dodo subscription, unpublishes the site). Events for other products and partial refunds are ignored. A new subscription for a user cancels their older one, so a lapsed-then-renewed user is never charged twice.
@@ -160,8 +160,8 @@ Payments run on **Dodo Payments** (Merchant of Record), in test mode until live-
 
 **Environment:** see the `DODO_*` and `PAYMENTS_ENABLED` rows in [Environment Variables](#environment-variables). Vercel gotcha: the variables already exist, so use `vercel env update NAME production --scope <team> --yes`, not `add`.
 
-**Going live (after Dodo approves the live account)**
-1. In Dodo **Live Mode**, create an API key and the four products (Pro and renewal, USD and INR; same prices, tax-inclusive, same descriptions as test mode).
+**Going live (done 2026-10-15; steps kept for reference, details in `docs/PAYMENTS_GO_LIVE.md`)**
+1. In Dodo **Live Mode**, create an API key and the four products (Pro and renewal; USD recurring, INR one-time; tax-inclusive).
 2. Add a live webhook endpoint (`https://<app>/api/webhooks/dodo`) with the events above and copy its signing secret.
 3. Set `DODO_ENVIRONMENT=live_mode`, `DODO_PAYMENTS_API_KEY`, `DODO_WEBHOOK_SECRET` and the four product ids on Vercel, then redeploy.
 4. Make one small real purchase and refund it, check the database (plan, `hosting_subscriptions`, `purchases`), and only then set `PAYMENTS_ENABLED=true`.
