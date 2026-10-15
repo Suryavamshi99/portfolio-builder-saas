@@ -9,6 +9,7 @@ import {
 import { type ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { Navbar } from "@/components/layout/Navbar";
+import { BuildReadyPopup } from "@/components/notify/BuildReadyPopup";
 
 import { FluidOrb } from "@/components/ui/fluid-orb";
 
@@ -129,6 +130,7 @@ function RootComponent() {
             <Outlet />
           </main>
         </div>
+        <BuildReadyPopup />
       </AuthProvider>
     </QueryClientProvider>
   );

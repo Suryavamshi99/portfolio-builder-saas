@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { apiClient, type GenerationJob, type McpStatusResponse } from "@/lib/api-client";
+import { announceBuildReady } from "@/lib/build-notify";
 
 interface McpWaitingPanelProps {
   onPortfolioReady?: () => void;
@@ -38,6 +39,8 @@ export function McpWaitingPanel({ onPortfolioReady, className, initialStatus }: 
       setMcpStatus(data);
       setComingSoon(false);
       if (data.latestJob?.status === "done") {
+        // Only a build that just finished is news; the panel may also open on an old finished one.
+        if (Date.now() - Date.parse(data.latestJob.updatedAt) < 90_000) announceBuildReady(data.latestJob.id);
         onPortfolioReady?.();
       }
     } catch (err: unknown) {

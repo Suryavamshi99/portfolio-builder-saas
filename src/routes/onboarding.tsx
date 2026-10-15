@@ -39,6 +39,7 @@ import {
 import { JobProgressView } from "@/components/wizard/JobProgressView";
 import { McpWaitingPanel } from "@/components/wizard/McpWaitingPanel";
 import { isJobTerminal, shouldContinuePollingJob } from "@/lib/studio-helpers";
+import { announceBuildReady } from "@/lib/build-notify";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -188,6 +189,7 @@ function OnboardingWizard() {
             setGenerating(false);
             await refreshPortfolioStatus();
             setGenerationComplete(true);
+            announceBuildReady(job.id);
             return;
           }
 

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { apiClient, type GenerationJob } from "@/lib/api-client";
 import { shouldContinuePollingJob } from "@/lib/studio-helpers";
+import { announceBuildReady } from "@/lib/build-notify";
 
 interface EditorProps {
   initialHtml: string;
@@ -229,6 +230,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               }
             }
             setStatus({ kind: "ok", msg: "Portfolio regenerated from your latest instructions." });
+            announceBuildReady(job.id, { title: "Your new version is ready", body: "It is open in the Studio.", to: null, ctaLabel: "View it" });
             return;
           }
 

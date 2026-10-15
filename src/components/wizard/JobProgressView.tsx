@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { GenerationJob } from "@/lib/api-client";
+import { NotifyToggle } from "@/components/notify/NotifyToggle";
 
 export interface JobProgressViewProps {
   job: GenerationJob | null;
@@ -196,6 +197,7 @@ export function JobProgressView({
         <Loader2 className="size-3.5 animate-spin text-accent" />
         <span>Sticking to the facts on your resume — nothing made up</span>
       </div>
+      <NotifyToggle />
     </div>
   );
 }
