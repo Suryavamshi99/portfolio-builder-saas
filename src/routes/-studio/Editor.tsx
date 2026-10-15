@@ -27,6 +27,8 @@ import {
 import { apiClient, type GenerationJob } from "@/lib/api-client";
 import { shouldContinuePollingJob } from "@/lib/studio-helpers";
 import { announceBuildReady } from "@/lib/build-notify";
+import { McpHandoff } from "@/components/studio/McpHandoff";
+import { REGEN_METHODS, REGEN_METHOD_KEY, otherMethod, pickRegenMethod, type RegenMethod } from "@/lib/regen-method";
 
 interface EditorProps {
   initialHtml: string;
@@ -62,6 +64,8 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const [html, setHtml] = useState(initialHtml);
   const [instructions, setInstructions] = useState("");
   const [resumeUploadId, setResumeUploadId] = useState<string | null>(null);
+  // Which method "Regenerate" uses: the one that built the page, unless the user picks another.
+  const [method, setMethod] = useState<RegenMethod>("free");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [downloadingZip, setDownloadingZip] = useState(false);
   const [downloadingHtml, setDownloadingHtml] = useState(false);
@@ -115,13 +119,46 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
   }
 
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = sessionStorage.getItem(REGEN_METHOD_KEY);
+    } catch {
+      // sessionStorage unavailable
+    }
+    if (saved) {
+      setMethod(pickRegenMethod(saved, null));
+      return;
+    }
+    let alive = true;
+    void apiClient
+      .getLatestGeneration()
+      .then((latest) => {
+        if (alive) setMethod(pickRegenMethod(null, latest?.source));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  function chooseMethod(next: RegenMethod) {
+    setMethod(next);
+    setActiveJob(null);
+    try {
+      sessionStorage.setItem(REGEN_METHOD_KEY, next);
+    } catch {
+      // not remembered
+    }
+  }
+
   // Keyboard shortcuts: Cmd/Ctrl+Enter to regenerate, Cmd/Ctrl+Shift+H for history
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const isMod = e.metaKey || e.ctrlKey;
       if (isMod && e.key === "Enter") {
         e.preventDefault();
-        if (!regenerating && resumeUploadId) {
+        if (!regenerating && resumeUploadId && method !== "mcp") {
           setConfirmOpen(true);
         }
       } else if (isMod && e.shiftKey && (e.key === "h" || e.key === "H")) {
@@ -133,7 +170,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [regenerating, resumeUploadId]);
+  }, [regenerating, resumeUploadId, method]);
 
   useEffect(() => {
     void fetch("/api/uploads?kind=resume")
@@ -258,7 +295,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
             setRegenerating(false);
             setActiveJob({
               id: jobId,
-              source: "gemini",
+              source: method,
               status: "failed",
               message: "Generation endpoint coming soon.",
               error: { code: "not_found", message: "Generation endpoint coming soon." },
@@ -272,7 +309,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       void check();
       pollingTimerRef.current = setInterval(check, 2000);
     },
-    [onRegenerated, stopPolling]
+    [onRegenerated, stopPolling, method]
   );
 
   useEffect(() => {
@@ -283,6 +320,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
 
   // Task D: Regenerate uses POST /api/generations + JobProgressView
   async function regenerate() {
+    if (method === "mcp") return; // edited in the user's own chat (see McpHandoff), not on our servers
     if (!resumeUploadId) {
       setStatus({ kind: "err", msg: "No resume on file — upload one from the wizard first." });
       return;
@@ -293,7 +331,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
 
     try {
       const created = await apiClient.createGeneration({
-        source: "gemini",
+        source: method,
         resumeUploadId,
         instructions: instructions.trim() || undefined,
       });
@@ -304,7 +342,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       const isNotFound = (err as { isNotFound?: boolean })?.isNotFound;
       setActiveJob({
         id: "temp",
-        source: "gemini",
+        source: method,
         status: "failed",
         message: isNotFound ? "Generation endpoint coming soon." : "Failed to start regeneration",
         error: {
@@ -513,33 +551,70 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
             </p>
           </div>
 
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-medium text-muted-foreground">Regenerate with</p>
+            <div role="radiogroup" aria-label="Regenerate with" className="flex flex-wrap gap-1.5">
+              {REGEN_METHODS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={method === m.id}
+                  disabled={regenerating}
+                  onClick={() => chooseMethod(m.id)}
+                  className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                    method === m.id ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Textarea
             value={instructions}
             onChange={(e) => handleInstructionsChange(e.target.value)}
             rows={5}
-            placeholder="e.g. Make it more minimal and light-themed. Emphasize the machine learning projects. (Press ⌘+Enter to regenerate)"
+            placeholder={
+              method === "mcp"
+                ? "e.g. Make it more minimal and light-themed. Emphasize the machine learning projects."
+                : "e.g. Make it more minimal and light-themed. Emphasize the machine learning projects. (Press ⌘+Enter to regenerate)"
+            }
             disabled={regenerating}
             className="bg-background/60 text-xs"
           />
 
-          <Button
-            type="button"
-            onClick={() => setConfirmOpen(true)}
-            disabled={regenerating}
-            className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98] text-xs font-semibold"
-          >
-            {regenerating ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Regenerating…
-              </>
-            ) : (
-              <>
-                <Sparkles className="size-4" />
-                Regenerate Portfolio
-              </>
-            )}
-          </Button>
+          {method === "mcp" ? (
+            <McpHandoff
+              instructions={instructions}
+              currentHtml={html}
+              onUpdated={(next) => {
+                setHtml(next);
+                onRegenerated(next);
+                setStatus({ kind: "ok", msg: "Your chat saved a new version of your portfolio." });
+              }}
+            />
+          ) : (
+            <Button
+              type="button"
+              onClick={() => setConfirmOpen(true)}
+              disabled={regenerating}
+              className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98] text-xs font-semibold"
+            >
+              {regenerating ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Regenerating…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  Regenerate Portfolio
+                </>
+              )}
+            </Button>
+          )}
 
           {/* Task D: Progress & Failure UI for Studio Regeneration (reusing JobProgressView) */}
           {(regenerating || activeJob) && (
@@ -551,9 +626,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
                 onEditDetails={() => {
                   setActiveJob(null);
                 }}
-                onUseAnotherMethod={() => {
-                  setActiveJob(null);
-                }}
+                onUseAnotherMethod={() => chooseMethod(otherMethod(method))}
                 fallbackMessage="Polishing your updated portfolio with your new instructions…"
               />
             </div>

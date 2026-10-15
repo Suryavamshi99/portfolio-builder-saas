@@ -2,7 +2,7 @@ import type { FreeProvider } from "@/config/free-models";
 import { LlmAuthError, LlmProviderError, LlmRateLimitError } from "@/server/llm";
 import type { FinalizeHtmlResult } from "@/server/finalize-html";
 
-import { assembleDocument, cleanFragment, keysContaining } from "./assemble";
+import { assembleDocument, cleanFragment, ensurePhoto, keysContaining } from "./assemble";
 import { defaultCss } from "./default-design";
 import { fallbackHero, fallbackSection } from "./fallback-render";
 import { buildPlanMessage, completePlan, fallbackPlan, parsePlan, sliceFor } from "./plan";
@@ -148,7 +148,7 @@ export async function runPipeline(deps: EngineDeps, input: BuildInput, state: Pi
         return f && /<h1\b/i.test(f) ? f : null;
       });
       if ("none" in res && res.none === "deadline") return { kind: "yield" };
-      if ("value" in res) state.fragments["hero"] = res.value;
+      if ("value" in res) state.fragments["hero"] = ensurePhoto(res.value, plan, input);
       else {
         state.fragments["hero"] = fallbackHero(plan, input);
         state.fallbacks.push("hero");

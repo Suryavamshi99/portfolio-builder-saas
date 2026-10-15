@@ -4,7 +4,8 @@ import type { FreeProvider } from "@/config/free-models";
 import { findUnsupportedClaims } from "@/server/fact-check";
 import { finalizeHtml } from "@/server/finalize-html";
 import { LlmProviderError, LlmRateLimitError } from "@/server/llm";
-import { assembleDocument, cleanFragment, linksHtml } from "./assemble";
+import { assembleDocument, cleanFragment, ensurePhoto, linksHtml } from "./assemble";
+import { buildHeroMessage, buildSectionMessage } from "./prompts";
 import { defaultCss } from "./default-design";
 import { runPipeline, type EngineDeps } from "./engine";
 import { DEFAULT_DESIGNS, completePlan, coverage, fallbackPlan, parsePlan, resumeLines, sliceFor } from "./plan";
@@ -366,5 +367,43 @@ describe("runPipeline", () => {
     const { deps } = makeDeps({ save: vi.fn(async () => false) });
     expect(await runPipeline(deps, input(), emptyState(), FAR)).toEqual({ kind: "stopped" });
     expect(deps.call).not.toHaveBeenCalled();
+  });
+});
+
+describe("the user's photo and notes", () => {
+  const PHOTO = "https://p.supabase.co/storage/v1/object/sign/uploads/u1/photo/me.png?token=abc&x=1";
+  const plan = () => parsePlan(PLAN_JSON, input())!;
+  const heroWithout = `<section id="top" class="hero"><div class="wrap"><h1>Jane Doe</h1><p class="lead">Hi</p></div></section>`;
+
+  it("puts the photo in the hero when the model left it out", () => {
+    const hero = ensurePhoto(heroWithout, plan(), input({ photoUrl: PHOTO }));
+    expect(hero).toContain('<img src="https://p.supabase.co/storage/v1/object/sign/uploads/u1/photo/me.png?token=abc&amp;x=1"');
+    expect(hero).toContain('alt="Photo of Jane Doe"');
+    expect(hero.indexOf("<img")).toBeLessThan(hero.toLowerCase().lastIndexOf("</div></section>")); // inside the wrap
+  });
+
+  it("leaves a hero alone when the photo is already there, and when there is no photo", () => {
+    const withPhoto = heroWithout.replace("<h1>", `<img src="${PHOTO}" alt="Jane"><h1>`);
+    expect(ensurePhoto(withPhoto, plan(), input({ photoUrl: PHOTO }))).toBe(withPhoto);
+    expect(ensurePhoto(heroWithout, plan(), input())).toBe(heroWithout);
+  });
+
+  it("keeps the photo in a hero that survives the sanitiser", async () => {
+    const hero = ensurePhoto(heroWithout, plan(), input({ photoUrl: PHOTO }));
+    const html = assembleDocument(plan(), defaultCss(plan().theme, plan().design), { hero }, input({ photoUrl: PHOTO }));
+    expect(html).toContain("me.png");
+  });
+
+  it("gives the change request to the hero and every section, and the typed details to the hero and the About section only", () => {
+    const i = input({ instructions: "Emphasize the ML projects", specifics: "Open to relocation" });
+    const p = plan();
+    const about = p.sections.find((s) => s.kind === "about")!;
+    const exp = p.sections.find((s) => s.kind === "experience")!;
+    expect(buildHeroMessage(p, i)).toContain("Emphasize the ML projects");
+    expect(buildHeroMessage(p, i)).toContain("Open to relocation");
+    expect(buildSectionMessage(p, about, "x", i)).toContain("Open to relocation");
+    expect(buildSectionMessage(p, exp, "x", i)).toContain("Emphasize the ML projects");
+    expect(buildSectionMessage(p, exp, "x", i)).not.toContain("Open to relocation");
+    expect(buildSectionMessage(p, exp, "x", input())).not.toContain("The user asked for these changes");
   });
 });

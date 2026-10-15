@@ -154,6 +154,9 @@ export function GenerationMethodCards({
                 Free models may keep your resume text to improve their AI. Use your own Gemini key or Claude/ChatGPT to avoid this.
               </span>
             </label>
+            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+              Free models can't see images, so reference screenshots are not used with them. For a design based on your screenshots, choose your own Gemini key or Claude/ChatGPT. Your profile photo is always used.
+            </p>
           </CardContent>
         </Card>
       )}

@@ -35,6 +35,18 @@ function linksBlock(links: ProfileLinks): string {
   return lines.length ? `Verified links (use these exact URLs, never invent others):\n${lines.join("\n")}` : "No links were provided: do not add any links.";
 }
 
+/** The user's own words for this build: changes they asked for, and (for the parts that may use them) extra details they typed. */
+function userNotes(input: BuildInput, withSpecifics: boolean): string {
+  const parts: string[] = [];
+  if (input.instructions?.trim()) {
+    parts.push(`The user asked for these changes to the page. Apply what relates to this part:\n"""\n${input.instructions.trim()}\n"""`);
+  }
+  if (withSpecifics && input.specifics?.trim()) {
+    parts.push(`Extra details the user typed (you may use these facts as well as the source text):\n"""\n${input.specifics.trim()}\n"""`);
+  }
+  return parts.join("\n\n");
+}
+
 export function buildHeroMessage(plan: Plan, input: BuildInput): string {
   const sourceTop = input.lines.slice(0, 14).join("\n");
   return `Write the hero section for ${plan.name}'s portfolio.
@@ -48,6 +60,7 @@ ${sourceTop}
 """
 ${input.photoUrl ? `Profile photo URL (use this exact URL as the <img src>, with alt text): ${input.photoUrl}` : "No photo was provided: design the hero without a photo and without a placeholder image."}
 ${linksBlock(input.links)}
+${userNotes(input, true)}
 ${CLASS_VOCABULARY}
 
 Output exactly one element: <section id="top" class="hero"><div class="wrap">...</div></section> with an h1 for the name, a .lead positioning sentence (no numbers unless in the source), and the links as .btn or .links items. Nothing else.`;
@@ -61,6 +74,7 @@ SOURCE TEXT for this section:
 ${source}
 """
 ${section.kind === "contact" || section.kind === "projects" ? linksBlock(input.links) : ""}
+${userNotes(input, section.kind === "about")}
 ${CLASS_VOCABULARY}
 
 How to present it: ${KIND_GUIDE[section.kind]}

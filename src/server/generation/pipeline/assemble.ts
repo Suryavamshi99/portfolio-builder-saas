@@ -97,3 +97,17 @@ export function keysContaining(fragments: Record<string, string>, text: string):
 export function planSectionIds(plan: Plan): string[] {
   return plan.sections.map((s: PlanSection) => s.id);
 }
+
+/**
+ * A small model sometimes ignores the photo it was given. The photo is the user's own choice, so it is put in the hero
+ * by code when the model's hero does not show it.
+ */
+export function ensurePhoto(hero: string, plan: Plan, input: BuildInput): string {
+  const url = input.photoUrl;
+  if (!url || hero.includes(url) || hero.includes(esc(url))) return hero;
+  const img = `<img src="${esc(url)}" alt="Photo of ${esc(plan.name)}">`;
+  const close = hero.toLowerCase().lastIndexOf("</div></section>");
+  if (close !== -1) return `${hero.slice(0, close)}${img}${hero.slice(close)}`;
+  const end = hero.toLowerCase().lastIndexOf("</section>");
+  return end === -1 ? hero : `${hero.slice(0, end)}${img}${hero.slice(end)}`;
+}
