@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/lib/auth";
-import { SELLING_POINTS } from "@/config/pricing";
+import { OfferSummary } from "@/components/billing/OfferSummary";
 import { usePricing } from "@/lib/use-pricing";
 import { ByokManager } from "@/components/byok/ByokManager";
 import { UploadWidget } from "@/components/upload/UploadWidget";
@@ -289,18 +289,7 @@ function SettingsContent() {
         <CardContent className="relative z-10 space-y-3">
           {userRecord?.plan !== "pro" && (
             <>
-              <ul className="space-y-1.5 text-xs text-foreground/80">
-                {SELLING_POINTS.map((point) => (
-                  <li key={point} className="flex gap-2">
-                    <span className="text-accent">✓</span>
-                    <span>{point}</span>
-                  </li>
-                ))}
-                <li className="flex gap-2">
-                  <span className="text-accent">✓</span>
-                  <span>250MB storage (5x free), 20 generations/hour</span>
-                </li>
-              </ul>
+              <OfferSummary />
               {upgradeError && (
                 <Alert variant="destructive">
                   <AlertTitle>Couldn't start checkout</AlertTitle>

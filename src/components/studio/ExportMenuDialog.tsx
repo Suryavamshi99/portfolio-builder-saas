@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { apiClient, type GitHubStatusResponse } from "@/lib/api-client";
 import { usePricing } from "@/lib/use-pricing";
+import { OfferSummary } from "@/components/billing/OfferSummary";
 
 interface ExportMenuDialogProps {
   open: boolean;
@@ -139,15 +140,13 @@ export function ExportMenuDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {!hasPaidAccess && <OfferSummary compact />}
         {!hasPaidAccess && (
           <Alert className="border-accent/40 bg-accent/5 py-2.5">
             <Sparkles className="size-4 text-accent" />
             <AlertTitle className="text-xs font-semibold">Pro Feature</AlertTitle>
             <AlertDescription className="text-xs flex items-center justify-between gap-2">
-              <span>
-                Download clean HTML, push to GitHub or deploy anywhere. {pricing.today} once, includes 1 year of
-                hosting.
-              </span>
+              <span>Download clean HTML, push to GitHub or deploy anywhere.</span>
               <Button
                 type="button"
                 size="sm"

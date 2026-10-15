@@ -17,9 +17,12 @@ export function getDodoApiKey(): string {
 }
 
 /** The one product this app sells: Pro unlock + 1 year hosting (a subscription with a 365-day paid trial). */
-export function getDodoProProductId(): string {
-  const id = process.env["DODO_PRODUCT_ID_PRO"];
-  if (!id) throw new Error("DODO_PRODUCT_ID_PRO must be set");
+export function getDodoProProductId(region: "IN" | "ROW" = "ROW"): string {
+  // Two products, because a trial amount is not localised by Dodo: the INR product
+  // (UPI works only in INR) is priced in rupees, the USD one in dollars.
+  const name = region === "IN" ? "DODO_PRODUCT_ID_PRO_IN" : "DODO_PRODUCT_ID_PRO";
+  const id = process.env[name];
+  if (!id) throw new Error(`${name} must be set`);
   return id;
 }
 

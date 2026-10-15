@@ -22,6 +22,7 @@ import { apiClient, type SiteMeResponse } from "@/lib/api-client";
 import { PublishDialog } from "./PublishDialog";
 import { ExportMenuDialog } from "./ExportMenuDialog";
 import { usePricing } from "@/lib/use-pricing";
+import { OfferSummary } from "@/components/billing/OfferSummary";
 
 interface StudioToolbarProps {
   hasPaidAccess: boolean;
@@ -152,6 +153,7 @@ export function StudioToolbar({
 
   return (
     <div className="flex flex-col gap-2">
+      {!hasPaidAccess && <OfferSummary compact />}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 shadow-xs">
         {/* Left: Site status & Link */}
         <div className="flex items-center gap-3">

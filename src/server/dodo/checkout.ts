@@ -1,4 +1,5 @@
 import { getDodoApiBase, getDodoApiKey, getDodoProProductId } from "@/config/dodo";
+import { pricingFor, regionForCountry } from "@/config/pricing";
 
 export class DodoCheckoutError extends Error {}
 
@@ -7,8 +8,9 @@ export class DodoCheckoutError extends Error {}
  * 365-day paid trial, so the buyer pays the Pro price now (which also covers
  * year-one hosting) and hosting renews yearly from year 2.
  *
- * `country` pins the billing country (from IP geo-location), which selects the
- * fixed INR price for India — UPI only works in INR — and USD elsewhere.
+ * `country` comes from IP geo-location. India gets the INR product (UPI only
+ * works in INR); everyone else gets the USD product. It is also pinned as the
+ * billing country so the checkout matches the price shown on our pages.
  */
 export async function createProCheckoutSession(opts: {
   userId: string;
@@ -16,6 +18,7 @@ export async function createProCheckoutSession(opts: {
   returnUrl: string;
   country?: string | undefined;
 }): Promise<{ checkoutUrl: string }> {
+  const region = regionForCountry(opts.country);
   const res = await fetch(`${getDodoApiBase()}/checkouts`, {
     method: "POST",
     headers: {
@@ -23,10 +26,12 @@ export async function createProCheckoutSession(opts: {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      product_cart: [{ product_id: getDodoProProductId(), quantity: 1 }],
+      product_cart: [{ product_id: getDodoProProductId(region), quantity: 1 }],
       customer: { email: opts.email },
       ...(opts.country ? { billing_address: { country: opts.country } } : {}),
       return_url: opts.returnUrl,
+      // The hosted page's layout is fixed; the pay button is one place we can state the price.
+      customization: { theme_config: { pay_button_text: `Pay ${pricingFor(region).today} and go live` } },
       metadata: { userId: opts.userId },
     }),
   });
