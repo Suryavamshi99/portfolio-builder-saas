@@ -26,6 +26,17 @@ export function getDodoProProductId(region: "IN" | "ROW" = "ROW"): string {
   return id;
 }
 
+/**
+ * The renewal-only product for a Pro user whose hosting lapsed: hosting for 1
+ * year with no trial and no second $9 Pro charge. INR and USD, as above.
+ */
+export function getDodoHostingProductId(region: "IN" | "ROW" = "ROW"): string {
+  const name = region === "IN" ? "DODO_PRODUCT_ID_HOSTING_IN" : "DODO_PRODUCT_ID_HOSTING";
+  const id = process.env[name];
+  if (!id) throw new Error(`${name} must be set`);
+  return id;
+}
+
 export function getDodoWebhookSecret(): string {
   const secret = process.env["DODO_WEBHOOK_SECRET"];
   if (!secret) throw new Error("DODO_WEBHOOK_SECRET must be set");

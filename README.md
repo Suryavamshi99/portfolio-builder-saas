@@ -106,6 +106,8 @@ All variables are read inside handlers/functions at runtime, never at module sco
 | `DODO_PAYMENTS_API_KEY` | Yes | Dodo Payments secret API key |
 | `DODO_PRODUCT_ID_PRO` | Yes | Dodo product ID of the USD "Pro + 1 year hosting" product ($9 paid 365-day trial, then $7.99/yr, tax-inclusive) |
 | `DODO_PRODUCT_ID_PRO_IN` | Yes | Same offer as an INR product (₹499, then ₹449/yr) used for buyers in India |
+| `DODO_PRODUCT_ID_HOSTING` | Yes | Renewal-only yearly hosting product in USD ($7.99/yr, no trial), sold to Pro users whose hosting lapsed |
+| `DODO_PRODUCT_ID_HOSTING_IN` | Yes | Same in INR (₹449/yr) for buyers in India |
 | `DODO_WEBHOOK_SECRET` | Yes | Dodo webhook signing secret (`whsec_...`) |
 | `PAYMENT_TEST_MODE` | No | Dev-only dummy checkout bypass (`PAYMENT_TEST_MODE=dummy`). Automatically disabled in production |
 | `ADMIN_USERNAME` | Yes | Superuser username for the standalone `/admin` dashboard |

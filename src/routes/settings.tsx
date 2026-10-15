@@ -287,6 +287,27 @@ function SettingsContent() {
           </CardDescription>
         </CardHeader>
         <CardContent className="relative z-10 space-y-3">
+          {userRecord?.plan === "pro" && userRecord.hosting && !userRecord.hosting.active && (
+            <>
+              {upgradeError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Couldn't start checkout</AlertTitle>
+                  <AlertDescription>{upgradeError}</AlertDescription>
+                </Alert>
+              )}
+              <Button onClick={() => void handleUpgrade()} disabled={upgrading} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md shadow-accent/20 font-semibold active:scale-[0.98]">
+                {upgrading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                Put my site back online · {pricing.renewal}/year
+              </Button>
+              <p className="text-[11px] text-muted-foreground">
+                Renews hosting and your custom domain for 1 year, then every year. Cancel anytime. You keep Pro either
+                way. Full refund within 14 days.{" "}
+                <a className="underline" href="/refund">
+                  Refund policy
+                </a>
+              </p>
+            </>
+          )}
           {userRecord?.plan !== "pro" && (
             <>
               <OfferSummary />

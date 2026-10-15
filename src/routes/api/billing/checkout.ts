@@ -32,14 +32,16 @@ export const Route = createFileRoute("/api/billing/checkout")({
 
         // Never sell the same person a second subscription while their hosting is live
         // (a double-click or a second tab): a second subscription would be orphaned.
-        const { data: live } = await createSupabaseAdminClient()
-          .from("hosting_subscriptions")
-          .select("grace_until")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const admin = createSupabaseAdminClient();
+        const [{ data: live }, { data: account }] = await Promise.all([
+          admin.from("hosting_subscriptions").select("grace_until").eq("user_id", user.id).maybeSingle(),
+          admin.from("users").select("plan").eq("id", user.id).maybeSingle(),
+        ]);
         if (live?.grace_until && Date.parse(live.grace_until) > Date.now()) {
           return errorResponse(409, "already_subscribed", "You already have Pro and active hosting");
         }
+        // Someone who already owns Pro and whose hosting lapsed renews hosting only (no second $9 Pro charge).
+        const product = account?.plan === "pro" ? "hosting" : "pro";
 
         // Where to land the user after payment — Studio (so they can go
         // straight into Connect Vercel → Publish without an extra hop) or
@@ -70,6 +72,7 @@ export const Route = createFileRoute("/api/billing/checkout")({
             email: user.email,
             returnUrl,
             country: countryFromRequest(request),
+            product,
           });
           return Response.json({ checkoutUrl });
         } catch (e) {

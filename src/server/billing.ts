@@ -43,7 +43,12 @@ export const REVOKING_EVENT_TYPES: readonly string[] = ["refund.succeeded", "dis
  * as in tests) there is nothing to compare, so the event is let through.
  */
 export function isOurProduct(data: { product_id?: string; product_cart?: Array<{ product_id?: string }> }): boolean {
-  const ours = [process.env["DODO_PRODUCT_ID_PRO"], process.env["DODO_PRODUCT_ID_PRO_IN"]].filter(
+  const ours = [
+    process.env["DODO_PRODUCT_ID_PRO"],
+    process.env["DODO_PRODUCT_ID_PRO_IN"],
+    process.env["DODO_PRODUCT_ID_HOSTING"],
+    process.env["DODO_PRODUCT_ID_HOSTING_IN"],
+  ].filter(
     (id): id is string => Boolean(id),
   );
   if (ours.length === 0) return true;

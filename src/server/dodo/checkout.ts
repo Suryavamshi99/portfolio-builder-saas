@@ -1,4 +1,4 @@
-import { getDodoApiBase, getDodoApiKey, getDodoProProductId } from "@/config/dodo";
+import { getDodoApiBase, getDodoApiKey, getDodoHostingProductId, getDodoProProductId } from "@/config/dodo";
 import { pricingFor, regionForCountry } from "@/config/pricing";
 
 export class DodoCheckoutError extends Error {}
@@ -17,8 +17,13 @@ export async function createProCheckoutSession(opts: {
   email: string;
   returnUrl: string;
   country?: string | undefined;
+  /** "hosting": a Pro user renewing lapsed hosting (no trial, no second Pro charge). */
+  product?: "pro" | "hosting";
 }): Promise<{ checkoutUrl: string }> {
   const region = regionForCountry(opts.country);
+  const renewing = opts.product === "hosting";
+  const productId = renewing ? getDodoHostingProductId(region) : getDodoProProductId(region);
+  const buttonText = renewing ? `Renew hosting ${pricingFor(region).renewal}/year` : `Pay ${pricingFor(region).today} and go live`;
   const res = await fetch(`${getDodoApiBase()}/checkouts`, {
     method: "POST",
     headers: {
@@ -26,12 +31,12 @@ export async function createProCheckoutSession(opts: {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      product_cart: [{ product_id: getDodoProProductId(region), quantity: 1 }],
+      product_cart: [{ product_id: productId, quantity: 1 }],
       customer: { email: opts.email },
       ...(opts.country ? { billing_address: { country: opts.country } } : {}),
       return_url: opts.returnUrl,
       // The hosted page's layout is fixed; the pay button is one place we can state the price.
-      customization: { theme_config: { pay_button_text: `Pay ${pricingFor(region).today} and go live` } },
+      customization: { theme_config: { pay_button_text: buttonText } },
       metadata: { userId: opts.userId },
     }),
   });

@@ -331,3 +331,42 @@ describe("POST /api/webhooks/dodo", () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe("isOurProduct with the renewal products", () => {
+  it("accepts the Pro and the hosting-renewal products and rejects anything else", async () => {
+    const { isOurProduct } = await import("./billing");
+    process.env["DODO_PRODUCT_ID_PRO"] = "pdt_pro_usd";
+    process.env["DODO_PRODUCT_ID_PRO_IN"] = "pdt_pro_inr";
+    process.env["DODO_PRODUCT_ID_HOSTING"] = "pdt_host_usd";
+    process.env["DODO_PRODUCT_ID_HOSTING_IN"] = "pdt_host_inr";
+    expect(isOurProduct({ product_id: "pdt_host_inr" })).toBe(true);
+    expect(isOurProduct({ product_cart: [{ product_id: "pdt_host_usd" }] })).toBe(true);
+    expect(isOurProduct({ product_id: "pdt_pro_usd" })).toBe(true);
+    expect(isOurProduct({ product_id: "pdt_other" })).toBe(false);
+    for (const k of ["DODO_PRODUCT_ID_PRO", "DODO_PRODUCT_ID_PRO_IN", "DODO_PRODUCT_ID_HOSTING", "DODO_PRODUCT_ID_HOSTING_IN"]) delete process.env[k];
+  });
+
+  it("treats a payment after the Pro one as a hosting renewal (kind) and does not touch the plan", async () => {
+    const { client, tables } = fakeAdmin({
+      users: [{ id: "u1", plan: "pro" }],
+      purchases: [{ dodo_payment_id: "pay_pro", user_id: "u1", kind: "pro", refunded_at: null }],
+    });
+    vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(client as never);
+    const { Route: r } = await import("../routes/api/webhooks/dodo");
+    const secret = "whsec_" + Buffer.from("test-secret").toString("base64");
+    process.env["DODO_WEBHOOK_SECRET"] = secret;
+    const raw = JSON.stringify({ type: "payment.succeeded", data: { payment_id: "pay_renew", metadata: { userId: "u1" } } });
+    const ts = String(Math.floor(Date.now() / 1000));
+    const sig = createHmac("sha256", Buffer.from("test-secret")).update(`wh_r.${ts}.${raw}`).digest("base64");
+    const res = await (r.options.server?.handlers as { POST: (a: any) => Promise<Response> }).POST({
+      request: new Request("http://localhost/api/webhooks/dodo", {
+        method: "POST",
+        headers: { "webhook-id": "wh_r", "webhook-timestamp": ts, "webhook-signature": `v1,${sig}` },
+        body: raw,
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect(tables["purchases"]!.map((p) => p["kind"])).toEqual(["pro", "hosting_renewal"]);
+    expect(tables["users"]![0]!["plan"]).toBe("pro");
+  });
+});
