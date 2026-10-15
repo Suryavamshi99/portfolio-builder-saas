@@ -22,11 +22,11 @@ const pageHeaders = (returnOrigin?: string) => ({
 const page = (title: string, body: string, status = 200, returnOrigin?: string) =>
   new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>` +
-      `<style>body{font-family:system-ui,sans-serif;background:#0b0b0f;color:#f4f4f5;display:grid;place-items:center;min-height:100vh;margin:0;padding:16px}` +
-      `main{max-width:440px;background:#18181b;border:1px solid #27272a;border-radius:14px;padding:28px}h1{font-size:20px;margin:0 0 12px}p{color:#a1a1aa;line-height:1.5}` +
-      `code{background:#27272a;padding:2px 6px;border-radius:6px;color:#f4f4f5}.row{display:flex;gap:10px;margin-top:20px}` +
-      `button{flex:1;padding:11px 14px;border-radius:9px;border:1px solid #3f3f46;background:#27272a;color:#f4f4f5;font-size:15px;cursor:pointer}` +
-      `button.allow{background:#f4f4f5;color:#09090b;border-color:#f4f4f5;font-weight:600}</style></head><body><main>${body}</main></body></html>`,
+      `<style>body{font-family:system-ui,sans-serif;background:#0B0D12;color:#F6F6F3;display:grid;place-items:center;min-height:100vh;margin:0;padding:16px}` +
+      `main{max-width:440px;background:#14161C;border:1px solid #232732;border-radius:14px;padding:28px}h1{font-size:20px;margin:0 0 12px}p{color:#9AA0B0;line-height:1.5}` +
+      `code{background:#232732;padding:2px 6px;border-radius:6px;color:#F6F6F3}.row{display:flex;gap:10px;margin-top:20px}` +
+      `button{flex:1;padding:11px 14px;border-radius:9px;border:1px solid #2E3342;background:#232732;color:#F6F6F3;font-size:15px;cursor:pointer}` +
+      `button.allow{background:#F6F6F3;color:#0B0D12;border-color:#F6F6F3;font-weight:600}</style></head><body><main>${body}</main></body></html>`,
     { status, headers: pageHeaders(returnOrigin) },
   );
 

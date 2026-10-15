@@ -32,6 +32,9 @@
   --color-success-foreground: rgb(var(--success-foreground));
   --color-warning: rgb(var(--warning));
   --color-warning-foreground: rgb(var(--warning-foreground));
+  --color-aurora-blue: rgb(var(--aurora-blue));
+  --color-aurora-cyan: rgb(var(--aurora-cyan));
+  --color-aurora-mint: rgb(var(--aurora-mint));
 
   /* Backward-compatible aliases for ported studio code */
   --color-rule: rgb(var(--border));
@@ -39,50 +42,63 @@
   --color-paper: rgb(var(--background));
 }
 
+/*
+ * Brand palette (source of truth: brand/logo/GUIDELINES.md)
+ *   Aurora Blue  #3457E8   Aurora Cyan #06B6D4   Aurora Mint #34D399
+ *   Graphite     #0B0D12   Ink         #14161C   Mist        #F6F6F3
+ * Two supporting neutrals are derived from Graphite for borders and secondary
+ * text: Slate #232732 and Fog #9AA0B0. Warning and destructive stay as plain
+ * status colours.
+ */
 :root {
-  --background: 250 250 250;
-  --foreground: 24 24 27;
+  --aurora-blue: 52 87 232;
+  --aurora-cyan: 6 182 212;
+  --aurora-mint: 52 211 153;
+
+  /* Light theme (the site is dark-only today; kept consistent for later) */
+  --background: 246 246 243;
+  --foreground: 20 22 28;
   --card: 255 255 255;
-  --card-foreground: 24 24 27;
-  --border: 228 228 231;
+  --card-foreground: 20 22 28;
+  --border: 226 228 222;
   --ring: 52 87 232;
-  --muted: 244 244 245;
-  --muted-foreground: 113 113 122;
-  --primary: 24 24 27;
-  --primary-foreground: 255 255 255;
-  --secondary: 244 244 245;
-  --secondary-foreground: 24 24 27;
+  --muted: 238 239 234;
+  --muted-foreground: 98 104 118;
+  --primary: 20 22 28;
+  --primary-foreground: 246 246 243;
+  --secondary: 238 239 234;
+  --secondary-foreground: 20 22 28;
   --accent: 52 87 232;
   --accent-foreground: 255 255 255;
   --destructive: 225 29 72;
   --destructive-foreground: 255 255 255;
-  --success: 22 163 74;
+  --success: 5 150 105;
   --success-foreground: 255 255 255;
   --warning: 217 119 6;
   --warning-foreground: 255 255 255;
 }
 
 .dark {
-  --background: 9 9 11;
-  --foreground: 250 250 250;
-  --card: 24 24 27;
-  --card-foreground: 250 250 250;
-  --border: 39 39 42;
-  --ring: 96 133 255;
-  --muted: 24 24 27;
-  --muted-foreground: 161 161 170;
-  --primary: 250 250 250;
-  --primary-foreground: 9 9 11;
-  --secondary: 39 39 42;
-  --secondary-foreground: 250 250 250;
-  --accent: 52 87 232;
+  --background: 11 13 18;          /* Graphite #0B0D12 */
+  --foreground: 246 246 243;       /* Mist #F6F6F3 */
+  --card: 20 22 28;                /* Ink #14161C */
+  --card-foreground: 246 246 243;
+  --border: 35 39 50;              /* Slate #232732 */
+  --ring: 6 182 212;               /* Aurora Cyan: focus rings */
+  --muted: 20 22 28;
+  --muted-foreground: 154 160 176; /* Fog #9AA0B0 */
+  --primary: 246 246 243;
+  --primary-foreground: 11 13 18;
+  --secondary: 35 39 50;
+  --secondary-foreground: 246 246 243;
+  --accent: 52 87 232;             /* Aurora Blue #3457E8 */
   --accent-foreground: 255 255 255;
   --destructive: 244 63 94;
   --destructive-foreground: 255 255 255;
-  --success: 34 197 94;
-  --success-foreground: 9 9 11;
+  --success: 52 211 153;           /* Aurora Mint #34D399 */
+  --success-foreground: 11 13 18;
   --warning: 251 191 36;
-  --warning-foreground: 9 9 11;
+  --warning-foreground: 11 13 18;
 }
 
 html,
@@ -141,10 +157,10 @@ a[role="button"]:active:not(:disabled) {
 :root {
   --hero-word-gradient: linear-gradient(
     90deg,
-    rgb(var(--accent)) 0%,
-    color-mix(in srgb, rgb(var(--accent)) 45%, white) 50%,
-    rgb(var(--accent)) 100%
+    rgb(var(--aurora-blue)) 0%,
+    rgb(var(--aurora-cyan)) 35%,
+    rgb(var(--aurora-mint)) 65%,
+    rgb(var(--aurora-cyan)) 85%,
+    rgb(var(--aurora-blue)) 100%
   );
 }
-
-

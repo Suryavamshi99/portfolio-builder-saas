@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { Logo } from "@/components/layout/Logo";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,20 +124,7 @@ export function Integration() {
       </svg>
 
       <div className="absolute top-1/2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg border border-border bg-background p-0.5 shadow-md sm:rounded-2xl sm:p-2 sm:shadow-xl">
-        <div
-          className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-tr from-[#2A46D8] via-[#3457E8] to-[#5B8CFF] text-white shadow-md shadow-[#3457E8]/25 ring-1 ring-white/20 sm:size-14 sm:rounded-xl"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-5 text-white sm:size-8">
-            <rect x="6" y="6" width="20" height="20" rx="4" fill="currentColor" fillOpacity="0.3" transform="rotate(-4 16 16)" />
-            <rect x="7" y="7" width="18" height="18" rx="3.5" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.2" />
-            <path
-              d="M16 10.5C16.3 12.8 17.2 13.7 19.5 14C17.2 14.3 16.3 15.2 16 17.5C15.7 15.2 14.8 14.3 12.5 14C14.8 13.7 15.7 12.8 16 10.5Z"
-              fill="#ffffff"
-            />
-            <circle cx="21" cy="21" r="2" fill="#34d399" />
-          </svg>
-        </div>
+        <Logo showWordmark={false} size="md" className="[&_svg]:size-8 sm:[&_svg]:size-12" />
         <motion.div
           className="border-primary/10 absolute inset-0 rounded-lg border-2 sm:rounded-2xl"
           animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0, 0.3] }}

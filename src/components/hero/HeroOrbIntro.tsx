@@ -44,7 +44,7 @@ export function HeroOrbIntro({ children, className }: { children: React.ReactNod
   return (
     <section
       className={[
-        "relative isolate left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center overflow-hidden bg-[#06101c]",
+        "relative isolate left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center overflow-hidden bg-[#0B0D12]",
         className,
       ]
         .filter(Boolean)
@@ -58,7 +58,7 @@ export function HeroOrbIntro({ children, className }: { children: React.ReactNod
           hero also has its own fixed dark palette independent of the site's
           light/dark toggle (see the file comment above), so the scrim
           should match that, not the theme-dependent site background. */}
-      <CinematicHeroVideo scrim="center" scrimOpacity={0.7} scrimColor="#06101c" />
+      <CinematicHeroVideo scrim="center" scrimOpacity={0.7} scrimColor="#0B0D12" />
       <DotGrid />
 
       <motion.div

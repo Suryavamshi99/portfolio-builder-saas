@@ -79,7 +79,7 @@ export function GenerationMethodCards({
             )}
           </p>
           {!isFreeAvailable && (
-            <Badge variant="outline" className="mt-3 text-[10px] text-amber-500 border-amber-500/30 w-fit">
+            <Badge variant="outline" className="mt-3 text-[10px] text-warning border-warning/30 w-fit">
               Capacity resets soon
             </Badge>
           )}

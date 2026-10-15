@@ -265,8 +265,8 @@ export function HomePage() {
                     Published Portfolio
                   </CardTitle>
                   {publishStatus?.status === "ready" ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5 text-[10px] font-semibold text-success">
+                      <span className="size-1.5 rounded-full bg-success animate-pulse" />
                       Live
                     </span>
                   ) : (
@@ -607,9 +607,9 @@ export function HomePage() {
               >
                 {/* Browser chrome header, pointing at a real deployed URL */}
                 <div className="flex items-center gap-2 border-b border-border/60 px-3 sm:px-4 py-2.5">
-                  <div className="size-3 rounded-full bg-rose-500/80" />
-                  <div className="size-3 rounded-full bg-amber-500/80" />
-                  <div className="size-3 rounded-full bg-emerald-500/80" />
+                  <div className="size-3 rounded-full bg-destructive/80" />
+                  <div className="size-3 rounded-full bg-warning/80" />
+                  <div className="size-3 rounded-full bg-success/80" />
                   <div className="ml-2 flex min-w-0 items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-[11px] font-mono text-muted-foreground">
                     <Lock className="size-3 shrink-0" />
                     <span className="truncate">{FEATURED_PORTFOLIO.host}</span>
@@ -737,19 +737,19 @@ export function HomePage() {
             {/* Before vs After Comparison: opposite-side reveals reinforce the contrast */}
             <div className="grid gap-6 md:grid-cols-2">
               {/* Weak Raw Bullet */}
-              <Reveal x={-32} y={0} className="rounded-2xl border border-rose-200/80 bg-rose-50/30 p-6 dark:border-rose-950/50 dark:bg-rose-950/10 space-y-4">
+              <Reveal x={-32} y={0} className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                  <span className="text-xs font-bold uppercase tracking-wider text-destructive">
                     Typical Raw Resume Text
                   </span>
-                  <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+                  <span className="rounded-full bg-destructive/15 px-2.5 py-0.5 text-[11px] font-bold text-destructive">
                     Weak & Passive
                   </span>
                 </div>
-                <blockquote className="italic text-sm text-muted-foreground border-l-2 border-rose-300 pl-3">
+                <blockquote className="italic text-sm text-muted-foreground border-l-2 border-destructive/50 pl-3">
                   “Worked on backend APIs for the user portal. Fixed bugs, attended standups, and helped team migrate databases.”
                 </blockquote>
-                <ul className="space-y-1.5 text-xs text-rose-700/80 dark:text-rose-300/80">
+                <ul className="space-y-1.5 text-xs text-destructive/80">
                   <li>• Lacks quantifiable metrics or business impact</li>
                   <li>• Passive phrasing doesn’t demonstrate engineering depth</li>
                   <li>• Misses ATS keyword triggers for recruiter searches</li>
@@ -757,19 +757,19 @@ export function HomePage() {
               </Reveal>
 
               {/* Shipfolio Tuned */}
-              <Reveal x={32} y={0} delay={0.1} className="rounded-2xl border border-emerald-200/80 bg-emerald-50/30 p-6 dark:border-emerald-950/50 dark:bg-emerald-950/10 space-y-4 shadow-xs">
+              <Reveal x={32} y={0} delay={0.1} className="rounded-2xl border border-success/30 bg-success/5 p-6 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  <span className="text-xs font-bold uppercase tracking-wider text-success">
                     Shipfolio AI-Tuned Formulation
                   </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
+                  <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-bold text-success">
                     Recruiter Winning
                   </span>
                 </div>
-                <blockquote className="font-medium text-sm text-foreground border-l-2 border-emerald-500 pl-3">
+                <blockquote className="font-medium text-sm text-foreground border-l-2 border-success pl-3">
                   “Architected high-throughput RESTful user microservices, cutting p95 response times by 38% and zero-downtime migrating 2M records to PostgreSQL.”
                 </blockquote>
-                <ul className="space-y-1.5 text-xs text-emerald-700/90 dark:text-emerald-300/90">
+                <ul className="space-y-1.5 text-xs text-success/90">
                   <li>✓ Follows Google’s X-Y-Z accomplishment formula</li>
                   <li>✓ Highlights real speedups, scale, and technical ownership</li>
                   <li>✓ Strict fact guardrails, zero ungrounded hallucinations</li>
@@ -965,7 +965,7 @@ export function HomePage() {
           <Reveal
             as="section"
             y={40}
-            className="relative overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-br from-[#0b0d16] via-[#090a10] to-[#0c111f] p-6 sm:p-14 text-center text-white shadow-2xl"
+            className="relative overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-br from-[#0B0D12] via-[#0B0D12] to-[#14161C] p-6 sm:p-14 text-center text-white shadow-2xl"
           >
             {/* Ambient FluidOrb nestled in right-center */}
             <div className="pointer-events-none absolute -right-16 -top-16 -z-0 opacity-40 blur-2xl">
@@ -976,7 +976,7 @@ export function HomePage() {
               <h2 className="text-3xl font-extrabold sm:text-5xl tracking-tight leading-tight">
                 Ready to stand out in the top 2%?
               </h2>
-              <p className="text-base text-slate-300 leading-relaxed">
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Join thousands of students and engineers creating job-winning portfolios in minutes with Shipfolio.
               </p>
               <div className="pt-2">
@@ -985,7 +985,7 @@ export function HomePage() {
                     <WaitlistCta
                       source="bottom-banner"
                       buttonLabel="Join the waitlist"
-                      buttonClassName="bg-white text-slate-950 hover:bg-slate-100 shadow-xl font-bold"
+                      buttonClassName="bg-foreground text-background hover:bg-foreground/90 shadow-xl font-bold"
                     />
                   </div>
                 ) : (
@@ -993,7 +993,7 @@ export function HomePage() {
                     <Button
                       asChild
                       size="lg"
-                      className="h-12 bg-white text-slate-950 hover:bg-slate-100 font-bold px-8 text-base shadow-xl active:scale-[0.98]"
+                      className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold px-8 text-base shadow-xl active:scale-[0.98]"
                     >
                       <Link to="/login" search={{ redirect: "/onboarding" }}>
                         Create my portfolio now

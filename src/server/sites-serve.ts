@@ -30,7 +30,7 @@ const page = (title: string, message: string, status: number): SiteResponse => (
   contentType: "text/html; charset=utf-8",
   body:
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title>` +
-    `<style>body{font-family:system-ui,sans-serif;background:#09090b;color:#f4f4f5;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}.c{max-width:420px;padding:2rem;border-radius:12px;background:#18181b;border:1px solid #27272a}h1{font-size:1.4rem;margin:0 0 .5rem}p{color:#a1a1aa;margin:0}</style></head>` +
+    `<style>body{font-family:system-ui,sans-serif;background:#0B0D12;color:#F6F6F3;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}.c{max-width:420px;padding:2rem;border-radius:12px;background:#14161C;border:1px solid #232732}h1{font-size:1.4rem;margin:0 0 .5rem}p{color:#9AA0B0;margin:0}</style></head>` +
     `<body><div class="c"><h1>${title}</h1><p>${message}</p></div></body></html>`,
 });
 

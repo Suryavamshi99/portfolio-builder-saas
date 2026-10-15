@@ -650,7 +650,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
                       <p className="text-[11px] text-muted-foreground">{formattedDate}</p>
                       {ver.warnings && ver.warnings.length > 0 && (
                         <p
-                          className="text-[10px] text-amber-500/90 truncate max-w-[280px] cursor-help"
+                          className="text-[10px] text-warning/90 truncate max-w-[280px] cursor-help"
                           title={ver.warnings.join("\n")}
                         >
                           ⚠ {ver.warnings.length} rule warning{ver.warnings.length > 1 ? "s" : ""} (hover to view)

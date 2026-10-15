@@ -164,8 +164,8 @@ export function PublishDialog({
               )}
               {feedback.variant === "unavailable" && (
                 <>
-                  <AlertCircle className="size-3.5 text-amber-500" />
-                  <span className="text-amber-500 text-[11px]">{feedback.message}</span>
+                  <AlertCircle className="size-3.5 text-warning" />
+                  <span className="text-warning text-[11px]">{feedback.message}</span>
                 </>
               )}
               {feedback.variant === "error" && (

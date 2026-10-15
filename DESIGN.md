@@ -63,20 +63,24 @@ This document defines the authoritative design contract for **Shipfolio** (`port
 
 The application operates in **Dark Mode by default** (`<html class="dark">`). Token definitions live in `src/styles.css` matching Tailwind v4 conventions:
 
-* **Primary Accent:** Electric Blue (`#3457E8` / `rgb(52, 87, 232)`), paired with `FluidOrb` WebGL shader (`color="#3457E8"`).
-  * `--accent`: `52 87 232`
-  * `--accent-foreground`: `255 255 255`
-  * Active hover / glow: `#5B8CFF` to `#2A46D8` gradients.
-* **Neutrals (Obsidian Dark Palette):**
-  * Canvas Background (`--background`): `rgb(9, 9, 11)` (`9 9 11`)
-  * Card Surfaces (`--card`): `rgb(24, 24, 27)` (`24 24 27`)
-  * Borders & Dividers (`--border`): `rgb(39, 39, 42)` (`39 39 42`)
-  * Foreground Text (`--foreground`): `rgb(250, 250, 250)` (`250 250 250`)
-  * Muted Foreground (`--muted-foreground`): `rgb(161, 161, 170)` (`161 161 170`)
-* **Semantic Accents:**
-  * Success: Emerald Green (`rgb(34, 197, 94)` / `34 197 94`)
-  * Warning: Amber (`rgb(251, 191, 36)` / `251 191 36`)
-  * Destructive: Rose Red (`rgb(244, 63, 94)` / `244 63 94`)
+The palette is the logo's palette (source of truth: `brand/logo/GUIDELINES.md`). Tailwind classes: `text-aurora-blue`, `text-aurora-cyan`, `text-aurora-mint` and the semantic tokens below.
+
+* **Aurora (accents):**
+  * Aurora Blue `#3457E8` (`52 87 232`): the primary accent (`--accent`, buttons, links, active states), paired with `FluidOrb` (`color="#3457E8"`).
+  * Aurora Cyan `#06B6D4` (`6 182 212`): focus rings (`--ring`) and the middle of the brand gradient.
+  * Aurora Mint `#34D399` (`52 211 153`): success states (`--success`) and the end of the gradient.
+  * Brand gradient: blue → cyan → mint, top-left to bottom-right (logo) or left to right (hero word: `--hero-word-gradient`). Never reorder it.
+* **Neutrals (Graphite family):**
+  * Canvas background (`--background`): Graphite `#0B0D12` (`11 13 18`)
+  * Card surfaces (`--card`, `--muted`): Ink `#14161C` (`20 22 28`)
+  * Borders and dividers (`--border`, `--secondary`): Slate `#232732` (`35 39 50`)
+  * Foreground text (`--foreground`, `--primary`): Mist `#F6F6F3` (`246 246 243`)
+  * Muted foreground (`--muted-foreground`): Fog `#9AA0B0` (`154 160 176`)
+* **Status colours (not part of the brand palette):**
+  * Success: Aurora Mint (above)
+  * Warning: Amber (`251 191 36`)
+  * Destructive: Rose (`244 63 94`)
+* **Rule:** use tokens (`bg-card`, `text-success`, `border-destructive/30`), not raw Tailwind colours such as `emerald-500` or `rose-500`. The only hard-coded colours allowed are third-party brand marks (Google, Claude) and the inline-styled server pages (`sites-serve.ts`, `watermark.ts`, `authorize.ts`), which use the hex values above.
 
 ---
 

@@ -120,14 +120,14 @@ export function JobProgressView({
       : "later today";
 
     return (
-      <div className="flex flex-col items-center justify-center gap-5 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-8 text-center shadow-lg">
-        <div className="flex size-14 items-center justify-center rounded-full bg-amber-500/20 text-amber-500">
+      <div className="flex flex-col items-center justify-center gap-5 rounded-2xl border border-warning/30 bg-warning/5 p-8 text-center shadow-lg">
+        <div className="flex size-14 items-center justify-center rounded-full bg-warning/20 text-warning">
           <Clock className="size-7" />
         </div>
         <div className="space-y-2 max-w-md">
           <div className="flex items-center justify-center gap-2">
             <h3 className="font-bold text-lg text-foreground tracking-tight">Queued for free capacity reset</h3>
-            <Badge variant="outline" className="text-[10px] text-amber-500 border-amber-500/40">
+            <Badge variant="outline" className="text-[10px] text-warning border-warning/40">
               Queued
             </Badge>
           </div>

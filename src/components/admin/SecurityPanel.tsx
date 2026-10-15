@@ -236,7 +236,7 @@ export function SecurityPanel() {
                 >
                   <div className="flex items-center gap-2.5">
                     {att.ok ? (
-                      <ShieldCheck className="size-4 text-green-500" />
+                      <ShieldCheck className="size-4 text-success" />
                     ) : (
                       <ShieldAlert className="size-4 text-destructive" />
                     )}

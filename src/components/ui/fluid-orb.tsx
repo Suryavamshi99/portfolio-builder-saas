@@ -108,7 +108,7 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
 
 const FluidOrb = ({
   size = 240,
-  color = '#10B981',
+  color = '#3457E8',
   className,
   style,
   ...props
