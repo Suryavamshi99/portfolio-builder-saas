@@ -49,16 +49,18 @@ footer.foot{padding:40px 20px 56px;border-top:1px solid var(--line);color:var(--
 `;
 }
 
-/** Checks a model-written stylesheet and returns the cleaned CSS, or null when it should not be used. */
-export function cleanModelCss(raw: string): string | null {
+/**
+ * Checks the extra CSS the model wrote to give a page its own character and returns it cleaned, or null when it
+ * should not be used. It is added after our base stylesheet, so it must not hide content or break the layout.
+ */
+export function cleanDesignAdditions(raw: string): string | null {
   let css = raw.trim();
   const fenced = /```(?:css)?\s*([\s\S]*?)```/i.exec(css);
   if (fenced?.[1]) css = fenced[1].trim();
   css = css.replace(/<\/?style[^>]*>/gi, "").trim();
   if (/@import|url\s*\(|expression\s*\(|javascript:|<\/?script|<\//i.test(css)) return null;
-  if (css.length < 700 || css.length > 14000) return null;
-  if (!/\.wrap\b/.test(css) || !/\.sec\b/.test(css)) return null;
-  if (!/@media/i.test(css)) return null;
+  if (/display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?![.\d])|position\s*:\s*fixed|overflow\s*:\s*hidden\s*;?\s*}\s*$/i.test(css)) return null;
+  if (css.length < 80 || css.length > 8000) return null;
   const open = (css.match(/\{/g) ?? []).length;
   const close = (css.match(/\}/g) ?? []).length;
   if (open === 0 || open !== close) return null;

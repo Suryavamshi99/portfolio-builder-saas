@@ -3,7 +3,7 @@ import { LlmAuthError, LlmProviderError, LlmRateLimitError } from "@/server/llm"
 import type { FinalizeHtmlResult } from "@/server/finalize-html";
 
 import { assembleDocument, cleanFragment, keysContaining } from "./assemble";
-import { cleanModelCss, defaultCss } from "./default-design";
+import { cleanDesignAdditions, defaultCss } from "./default-design";
 import { fallbackHero, fallbackSection } from "./fallback-render";
 import { buildPlanMessage, fallbackPlan, parsePlan, sliceFor } from "./plan";
 import { STEP_SYSTEM_PROMPT, buildDesignMessage, buildHeroMessage, buildSectionMessage } from "./prompts";
@@ -137,11 +137,13 @@ export async function runPipeline(deps: EngineDeps, input: BuildInput, state: Pi
     if (deps.now() >= deadlineMs) return { kind: "yield" };
 
     if (step === "design") {
-      const res = await ask("design", buildDesignMessage(plan, input.designIntensity), MAX_TOKENS.design, cleanModelCss);
+      // Our base stylesheet always applies (responsive, readable); the model adds this person's character on top.
+      const base = defaultCss(plan.theme, bold);
+      const res = await ask("design", buildDesignMessage(plan, input.designIntensity), MAX_TOKENS.design, cleanDesignAdditions);
       if ("none" in res && res.none === "deadline") return { kind: "yield" };
-      if ("value" in res) state.css = res.value;
+      if ("value" in res) state.css = `${base}\n/* page character */\n${res.value}\n`;
       else {
-        state.css = defaultCss(plan.theme, bold);
+        state.css = base;
         state.cssFallback = true;
       }
       if (!(await finishStep("design", MESSAGES.hero))) return { kind: "stopped" };
@@ -231,7 +233,7 @@ async function finishPage(deps: EngineDeps, input: BuildInput, state: PipelineSt
   }
 
   const warnings = [...fin.warnings];
-  if (state.fallbacks.length > 0 || state.cssFallback || state.planFallback) {
+  if (state.fallbacks.length > 0 || state.planFallback) {
     warnings.push("Some parts of this page were built in simple mode because the free AI models were busy. Use \"Improve with AI\" later to refine it.");
   }
   const used = [...new Set(state.log.filter((l) => l.ok && l.provider).map((l) => l.provider as string))];

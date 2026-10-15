@@ -37,17 +37,16 @@ function linksBlock(links: ProfileLinks): string {
 
 export function buildDesignMessage(plan: Plan, intensity: "minimal" | "bold"): string {
   const t = plan.theme;
-  return `Write the complete CSS for a one-page portfolio. Output ONLY the CSS (no <style> tags).
+  return `A base stylesheet already styles the whole page: responsive layout, the sticky header, cards, tags, lists and spacing. Write EXTRA CSS (an addition, 20-60 lines, no <style> tags) that gives ${plan.name}'s page its own character. Output ONLY the CSS.
 
-Theme: ${t.mood}. Colours: bg ${t.colors.bg}, surface ${t.colors.surface}, text ${t.colors.text}, muted ${t.colors.muted}, accent ${t.colors.accent}, accent2 ${t.colors.accent2}.
-Fonts: headings "${t.fonts.display}", body "${t.fonts.body}" (loaded for you; use them in font-family with a system fallback).
-${intensity === "bold" ? "Make it expressive: strong type scale, gradient or textured hero, asymmetric layout, tasteful hover motion." : "Make it restrained and editorial: whitespace, a clear type hierarchy, subtle motion."}
+The base defines these variables, which you may override on :root: --bg, --surface, --text, --muted, --accent, --accent2, --line, --display, --body.
+Current theme: ${t.mood}. bg ${t.colors.bg}, surface ${t.colors.surface}, text ${t.colors.text}, muted ${t.colors.muted}, accent ${t.colors.accent}, accent2 ${t.colors.accent2}. Fonts: headings "${t.fonts.display}", body "${t.fonts.body}".
+${CLASS_VOCABULARY}
+Also available: header.top, .brand, .navlinks, .hero, footer.foot.
 
-Define :root variables for the colours, then style: body, header.top (sticky, with .brand and .navlinks a), main, .hero (the first section: big h1, .lead, .links, an optional photo img), ${CLASS_VOCABULARY}
-Also style footer.foot.
-Requirements: mobile-first and responsive (use @media for max-width 768px and 480px; grids collapse to one column; nav links wrap or scroll),
-never a fixed pixel width on containers, img max-width 100%, box-sizing border-box, overflow-wrap anywhere, body text at least 16px,
-tap targets at least 44px high, smooth anchor scrolling, subtle transitions on hover. No external resources: no @import and no url().`;
+${intensity === "bold" ? "Make it expressive: a gradient or textured hero, bold type, asymmetric details, striking hover motion." : "Make it restrained and editorial: refined type, a distinctive but quiet hero treatment, subtle accents."}
+Ideas: a hero background or accent shape, a signature heading style (weight, spacing, underline or marker), card edge details (a left accent bar, a gradient border), tag and button styling, section separators, a gentle entrance animation.
+Rules: keep text readable (good contrast), keep it responsive (use clamp(), %, rem; any @media you add must still work on phones), never hide content (no display:none, no opacity:0, no position:fixed), no url() and no @import.`;
 }
 
 export function buildHeroMessage(plan: Plan, input: BuildInput): string {

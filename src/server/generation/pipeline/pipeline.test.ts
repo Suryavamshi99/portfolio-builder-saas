@@ -5,7 +5,7 @@ import { findUnsupportedClaims } from "@/server/fact-check";
 import { finalizeHtml } from "@/server/finalize-html";
 import { LlmProviderError, LlmRateLimitError } from "@/server/llm";
 import { assembleDocument, cleanFragment, linksHtml } from "./assemble";
-import { cleanModelCss, defaultCss } from "./default-design";
+import { cleanDesignAdditions, defaultCss } from "./default-design";
 import { runPipeline, type EngineDeps } from "./engine";
 import { fallbackPlan, parsePlan, resumeLines, sliceFor } from "./plan";
 import { emptyState, progressOf, stepsFor, type BuildInput, type PipelineState } from "./types";
@@ -65,14 +65,14 @@ const PLAN_JSON = JSON.stringify({
   ],
 });
 
-const GOOD_CSS = `:root{--a:#3457E8}.wrap{max-width:1000px;margin:0 auto}.sec{padding:60px 0}.card{border:1px solid #ccc}.grid{display:grid;gap:16px}${".x{color:red}".repeat(60)}@media (max-width:768px){.grid{display:block}}`;
+const GOOD_CSS = ".hero{background:linear-gradient(135deg,var(--accent),var(--accent2))}.card{border-left:4px solid var(--accent)}.sec-title{letter-spacing:-.02em}.tag{font-weight:600}";
 
 const sectionHtml = (id: string, body: string) => `<section id="${id}" class="sec"><div class="wrap"><h2 class="sec-title">${id}</h2>${body}</div></section>`;
 
 /** A well-behaved model that answers each kind of request. */
 function goodReply(user: string, sectionBody: (id: string) => string = (id) => `<p>Text for the ${id} section from the resume.</p>`): string {
   if (user.includes("Plan a portfolio website")) return PLAN_JSON;
-  if (user.includes("Write the complete CSS")) return GOOD_CSS;
+  if (user.includes("Write EXTRA CSS")) return GOOD_CSS;
   if (user.includes("Write the hero section")) return `<section id="top" class="hero"><div class="wrap"><h1>Jane Doe</h1><p class="lead">Backend engineer focused on distributed systems.</p></div></section>`;
   const id = /<section id="([a-z0-9-]+)" class="sec">/.exec(user)?.[1] ?? "x";
   return sectionHtml(id, sectionBody(id));
@@ -160,13 +160,17 @@ describe("page parts", () => {
     expect(cleanFragment('<section id="a"><p>This is a long enough sentence for sure.', "a", "sec")).toBeNull(); // never closed
   });
 
-  it("cleanModelCss accepts a real stylesheet and rejects unsafe or incomplete ones", () => {
-    expect(cleanModelCss(GOOD_CSS)).toBe(GOOD_CSS);
-    expect(cleanModelCss("```css\n" + GOOD_CSS + "\n```")).toBe(GOOD_CSS);
-    expect(cleanModelCss(GOOD_CSS + "body{background:url(https://evil.test/x.png)}")).toBeNull();
-    expect(cleanModelCss("@import 'x';" + GOOD_CSS)).toBeNull();
-    expect(cleanModelCss(GOOD_CSS.replace("@media (max-width:768px){.grid{display:block}}", ""))).toBeNull();
-    expect(cleanModelCss(".wrap{}")).toBeNull();
+  it("cleanDesignAdditions accepts extra styling and rejects anything that hides content, is unsafe or is incomplete", () => {
+    const extra = ".hero{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}.card{border-left:4px solid var(--accent)}.sec-title{letter-spacing:-.02em}";
+    expect(cleanDesignAdditions(extra)).toBe(extra);
+    expect(cleanDesignAdditions("```css\n" + extra + "\n```")).toBe(extra);
+    expect(cleanDesignAdditions(extra + "body{background:url(https://evil.test/x.png)}")).toBeNull();
+    expect(cleanDesignAdditions("@import 'x';" + extra)).toBeNull();
+    expect(cleanDesignAdditions(extra + ".sec{display:none}")).toBeNull();
+    expect(cleanDesignAdditions(extra + ".x{opacity:0}")).toBeNull();
+    expect(cleanDesignAdditions(extra + ".x{position:fixed}")).toBeNull();
+    expect(cleanDesignAdditions(".hero{")).toBeNull();
+    expect(cleanDesignAdditions(".a{}")).toBeNull();
   });
 
   it("assembles a page that passes the sanitiser, with anchors that match the sections", () => {
@@ -240,7 +244,7 @@ describe("runPipeline", () => {
     const state = emptyState();
     const out = await runPipeline(deps, input(), state, FAR);
     expect(out.kind).toBe("done");
-    expect(state.cssFallback).toBe(true);
+    expect(state.cssFallback).toBe(true); // no model styling, but the base stylesheet still gives a good page
     expect(state.fallbacks.sort()).toEqual(["about", "experience", "hero", "skills"]);
     if (out.kind === "done") {
       expect(out.html).toContain("Cut API latency by 40%"); // the resume text itself
