@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { progressOf, type PipelineState } from "./pipeline/types";
+
 export type JobStatus = "queued" | "reading" | "writing" | "checking" | "saving" | "done" | "failed";
 export type JobSource = "gemini" | "free" | "mcp";
 export interface JobError {
@@ -17,7 +19,7 @@ export interface JobRow {
   error: JobError | null;
   retry_at: string | null;
   resume_upload_id: string | null;
-  params: { instructions?: string };
+  params: { instructions?: string; pipeline?: PipelineState };
   provider: string | null;
   created_at: string;
   updated_at: string;
@@ -50,6 +52,8 @@ export function toApiJob(row: JobRow) {
     error: row.error,
     retryAt: row.retry_at,
     updatedAt: row.updated_at,
+    // Present for a step-by-step (free) build while it runs: { done, total } steps.
+    progress: row.params.pipeline && ["reading", "writing", "checking", "saving"].includes(row.status) ? progressOf(row.params.pipeline) : null,
   };
 }
 

@@ -403,7 +403,7 @@ function SettingsContent() {
                 )}
               </div>
               <CardDescription className="text-xs">
-                Link your personal Vercel account via OAuth. When you publish, your static portfolio is deployed directly to your own Vercel account.
+                Link your personal Vercel account via OAuth to deploy your static portfolio directly to your own Vercel account from Studio's Export menu.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -450,7 +450,7 @@ function SettingsContent() {
                   <div className="space-y-1">
                     <h4 className="font-semibold text-sm">No Vercel Account Linked</h4>
                     <p className="text-xs text-muted-foreground max-w-sm">
-                      Connect your Vercel account to enable 1-click publishing of your portfolio to the global edge.
+                      Connect your Vercel account to deploy your portfolio directly to your personal Vercel project from Studio's Export menu.
                     </p>
                   </div>
                   <Button onClick={handleConnectVercel} className="gap-2">

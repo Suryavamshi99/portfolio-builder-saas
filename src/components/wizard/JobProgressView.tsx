@@ -167,6 +167,8 @@ export function JobProgressView({
 
   // Active progress view
   const progressText = job?.message || fallbackMessage;
+  const progress = job?.progress ?? null;
+  const percent = progress && progress.total > 0 ? Math.max(4, Math.round((progress.done / progress.total) * 100)) : null;
 
   return (
     <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-2xl border border-accent/40 bg-accent/5 p-8 text-center shadow-lg">
@@ -180,6 +182,16 @@ export function JobProgressView({
         <h3 className="font-bold text-lg text-foreground tracking-tight">A beautiful portfolio is in the works…</h3>
         <p className="text-xs text-accent font-medium animate-pulse">{progressText}</p>
       </div>
+      {percent !== null && progress && (
+        <div className="w-full max-w-sm space-y-1.5" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="Build progress">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
+            <div className="h-full rounded-full bg-gradient-to-r from-aurora-blue via-aurora-cyan to-aurora-mint transition-all duration-700" style={{ width: `${percent}%` }} />
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Step {Math.min(progress.done + 1, progress.total)} of {progress.total}. Free builds take a few minutes. You can close this page; we keep building and it will be here when you come back.
+          </p>
+        </div>
+      )}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Loader2 className="size-3.5 animate-spin text-accent" />
         <span>Sticking to the facts on your resume — nothing made up</span>

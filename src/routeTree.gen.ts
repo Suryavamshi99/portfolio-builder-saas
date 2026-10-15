@@ -53,6 +53,7 @@ import { Route as ApiBillingPricingRouteImport } from './routes/api/billing/pric
 import { Route as ApiByokKeysProviderRouteImport } from './routes/api/byok-keys.$provider'
 import { Route as ApiCronDomainsRouteImport } from './routes/api/cron/domains'
 import { Route as ApiCronFreeQueueRouteImport } from './routes/api/cron.free-queue'
+import { Route as ApiCronGenerationAdvanceRouteImport } from './routes/api/cron.generation-advance'
 import { Route as ApiCronHostingRouteImport } from './routes/api/cron/hosting'
 import { Route as ApiDevPaymentTestRouteImport } from './routes/api/dev/payment-test'
 import { Route as ApiDomainsIndexRouteImport } from './routes/api/domains/index'
@@ -313,6 +314,12 @@ const ApiCronFreeQueueRoute = ApiCronFreeQueueRouteImport.update({
   path: '/api/cron/free-queue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronGenerationAdvanceRoute =
+  ApiCronGenerationAdvanceRouteImport.update({
+    id: '/api/cron/generation-advance',
+    path: '/api/cron/generation-advance',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiCronHostingRoute = ApiCronHostingRouteImport.update({
   id: '/api/cron/hosting',
   path: '/api/cron/hosting',
@@ -551,6 +558,7 @@ export interface FileRoutesByFullPath {
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
+  '/api/cron/generation-advance': typeof ApiCronGenerationAdvanceRoute
   '/api/cron/hosting': typeof ApiCronHostingRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/domains/verify': typeof ApiDomainsVerifyRoute
@@ -634,6 +642,7 @@ export interface FileRoutesByTo {
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
+  '/api/cron/generation-advance': typeof ApiCronGenerationAdvanceRoute
   '/api/cron/hosting': typeof ApiCronHostingRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/domains/verify': typeof ApiDomainsVerifyRoute
@@ -718,6 +727,7 @@ export interface FileRoutesById {
   '/api/byok-keys/$provider': typeof ApiByokKeysProviderRoute
   '/api/cron/domains': typeof ApiCronDomainsRoute
   '/api/cron/free-queue': typeof ApiCronFreeQueueRoute
+  '/api/cron/generation-advance': typeof ApiCronGenerationAdvanceRoute
   '/api/cron/hosting': typeof ApiCronHostingRoute
   '/api/dev/payment-test': typeof ApiDevPaymentTestRoute
   '/api/domains/verify': typeof ApiDomainsVerifyRoute
@@ -803,6 +813,7 @@ export interface FileRouteTypes {
     | '/api/byok-keys/$provider'
     | '/api/cron/domains'
     | '/api/cron/free-queue'
+    | '/api/cron/generation-advance'
     | '/api/cron/hosting'
     | '/api/dev/payment-test'
     | '/api/domains/verify'
@@ -886,6 +897,7 @@ export interface FileRouteTypes {
     | '/api/byok-keys/$provider'
     | '/api/cron/domains'
     | '/api/cron/free-queue'
+    | '/api/cron/generation-advance'
     | '/api/cron/hosting'
     | '/api/dev/payment-test'
     | '/api/domains/verify'
@@ -969,6 +981,7 @@ export interface FileRouteTypes {
     | '/api/byok-keys/$provider'
     | '/api/cron/domains'
     | '/api/cron/free-queue'
+    | '/api/cron/generation-advance'
     | '/api/cron/hosting'
     | '/api/dev/payment-test'
     | '/api/domains/verify'
@@ -1052,6 +1065,7 @@ export interface RootRouteChildren {
   ApiBillingPricingRoute: typeof ApiBillingPricingRoute
   ApiCronDomainsRoute: typeof ApiCronDomainsRoute
   ApiCronFreeQueueRoute: typeof ApiCronFreeQueueRoute
+  ApiCronGenerationAdvanceRoute: typeof ApiCronGenerationAdvanceRoute
   ApiCronHostingRoute: typeof ApiCronHostingRoute
   ApiDevPaymentTestRoute: typeof ApiDevPaymentTestRoute
   ApiDomainsVerifyRoute: typeof ApiDomainsVerifyRoute
@@ -1386,6 +1400,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/free-queue'
       fullPath: '/api/cron/free-queue'
       preLoaderRoute: typeof ApiCronFreeQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/generation-advance': {
+      id: '/api/cron/generation-advance'
+      path: '/api/cron/generation-advance'
+      fullPath: '/api/cron/generation-advance'
+      preLoaderRoute: typeof ApiCronGenerationAdvanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/hosting': {
@@ -1833,6 +1854,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBillingPricingRoute: ApiBillingPricingRoute,
   ApiCronDomainsRoute: ApiCronDomainsRoute,
   ApiCronFreeQueueRoute: ApiCronFreeQueueRoute,
+  ApiCronGenerationAdvanceRoute: ApiCronGenerationAdvanceRoute,
   ApiCronHostingRoute: ApiCronHostingRoute,
   ApiDevPaymentTestRoute: ApiDevPaymentTestRoute,
   ApiDomainsVerifyRoute: ApiDomainsVerifyRoute,

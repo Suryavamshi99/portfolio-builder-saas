@@ -11,10 +11,11 @@ import {
   callLlmProvider,
 } from "@/server/llm";
 import { savePortfolioVersion } from "@/server/portfolio-versions";
-import { runFreeChain, type ChainProvider } from "./free-chain";
-import { callFreeProvider, getFreeChain } from "./free-wiring";
+import { getFreeChain } from "./free-wiring";
+import { advancePipeline, scheduleContinue } from "./pipeline/run-pipeline-job";
+import { resumeLines } from "./pipeline/plan";
+import type { BuildInput } from "./pipeline/types";
 import {
-  RUN_BUDGET_MS,
   budgetDay,
   completeJob,
   failJob,
@@ -59,7 +60,6 @@ export async function runJob(admin: SupabaseClient, jobId: string): Promise<void
 }
 
 async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
-  const deadlineMs = Date.now() + RUN_BUDGET_MS;
   await setStatus(admin, job.id, "reading");
 
   if (!job.resume_upload_id) {
@@ -77,7 +77,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     links: prepared.links,
     referenceText: prepared.referenceText,
   };
-  await setStatus(admin, job.id, "writing");
+  if (job.source !== "free") await setStatus(admin, job.id, "writing");
 
   let html: string;
   let warnings: string[];
@@ -122,29 +122,25 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     source = "free";
     const day = budgetDay();
     const providers = getFreeChain();
-    const outcome = await runFreeChain({
-      providers,
-      claim: async (p: ChainProvider) => {
-        const { data } = await admin.rpc("claim_provider_budget", { p_provider: p.id, p_day: day, p_limit: p.dailyRequestBudget });
-        return data === true;
-      },
-      cooldown: async (p, seconds) => {
-        await admin
-          .from("provider_budgets")
-          .update({ cooldown_until: new Date(Date.now() + seconds * 1000).toISOString() })
-          .eq("provider", p.id)
-          .eq("day", day);
-      },
-      call: callFreeProvider,
-      userMessage: prepared.userMessage,
-      images: prepared.images,
-      finalize,
-      deadlineMs,
-      onProvider: async (p) => {
-        await setStatus(admin, job.id, "writing", { provider: p.id });
-      },
-    });
-    if (!outcome.ok && outcome.reason === "exhausted") {
+    // The step-by-step builder (see pipeline/): a free model cannot write a whole page in one call.
+    const input: BuildInput = {
+      lines: resumeLines(prepared.resumeText),
+      specifics: prepared.specifics,
+      instructions: job.params.instructions,
+      designIntensity: prepared.designIntensity,
+      photoUrl: prepared.photoUrl,
+      links: prepared.links,
+    };
+    // setStatus() above moved updated_at; the pipeline's lease compares against the current row.
+    const current = (await getJobById(admin, job.id)) ?? job;
+    const outcome = await advancePipeline(admin, current, input, finalize);
+
+    if (outcome.kind === "stopped") return; // another run owns this build
+    if (outcome.kind === "yield") {
+      scheduleContinue(job.id); // not finished: continue in a fresh invocation
+      return;
+    }
+    if (outcome.kind === "no_capacity") {
       // Queue for tomorrow only when every budget is genuinely spent. If some provider still has budget left
       // and is just cooling down after an error, the models are busy: let the user retry in a few minutes.
       const { data: rows } = await admin.from("provider_budgets").select("provider, used").eq("day", day);
@@ -156,14 +152,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
         message: "The free AI models are busy right now. Please try again in a few minutes.",
       });
     }
-    if (!outcome.ok && outcome.reason === "busy") {
-      // Upstream timeouts / rate limits: not the user's fault, so it doesn't count against their free runs.
-      return failJob(admin, job.id, {
-        code: "free_models_busy",
-        message: "The free AI models are busy right now. Please try again in a few minutes.",
-      });
-    }
-    if (!outcome.ok) {
+    if (outcome.kind === "failed") {
       await recordGeneration(admin, job.user_id, job.resume_upload_id, "failed");
       return failJob(admin, job.id, { code: outcome.code, message: CHECK_FAILED[outcome.code], details: outcome.details });
     }

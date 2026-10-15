@@ -70,7 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and private BYOK AI.",
+          "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and recruiter-grade AI.",
       },
       { name: "theme-color", content: "#0B0D12" },
       // Social share card (Slack, X, LinkedIn, WhatsApp): the image must be an absolute URL.

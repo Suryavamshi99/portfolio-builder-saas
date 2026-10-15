@@ -379,7 +379,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       {!isPublishing && deployStatus === "ready" && liveUrl && (
         <Alert variant="success" className="py-2.5">
           <CheckCircle2 className="size-4" />
-          <AlertTitle className="text-xs font-semibold">Site is Live on Vercel!</AlertTitle>
+          <AlertTitle className="text-xs font-semibold">Site is Live!</AlertTitle>
           <AlertDescription className="text-xs flex items-center justify-between gap-2">
             <span>Your updates have been compiled and published to the edge.</span>
             <a
@@ -438,8 +438,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
       )}
 
       {/* Success/fail land back on Studio itself (see the `upgrade`
-          query-param handling above) instead of bouncing to Settings — the
-          natural next step after paying is right here: connect Vercel. */}
+          query-param handling above) instead of bouncing to Settings */}
       <Dialog open={paymentSuccessOpen} onOpenChange={setPaymentSuccessOpen}>
         <DialogContent>
           <DialogHeader>
@@ -448,7 +447,7 @@ export function PublishToolbar({ onPublishStarted, className }: PublishToolbarPr
               Payment successful
             </DialogTitle>
             <DialogDescription>
-              Pro is unlocked. You can now connect your Vercel account and publish your portfolio.
+              Pro is unlocked. You can now publish your portfolio with instant hosting or deploy to your own Vercel account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

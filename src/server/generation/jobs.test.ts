@@ -20,7 +20,7 @@ const row = (over: Partial<JobRow> = {}): JobRow => ({
 describe("generation jobs", () => {
   it("exposes only what the client needs", () => {
     const api = toApiJob(row({ user_id: "secret", provider: "groq", params: { instructions: "x" } }));
-    expect(Object.keys(api).sort()).toEqual(["error", "id", "message", "retryAt", "source", "status", "updatedAt"]);
+    expect(Object.keys(api).sort()).toEqual(["error", "id", "message", "progress", "retryAt", "source", "status", "updatedAt"]);
   });
 
   it("shows the failure message for a failed job", () => {

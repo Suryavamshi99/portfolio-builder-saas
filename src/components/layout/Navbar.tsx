@@ -10,10 +10,10 @@ import {
   LayoutTemplate,
   LogOut,
   LogIn,
-  KeyRound,
   FolderUp,
   Lock,
   Menu,
+  Settings,
   X,
 } from "lucide-react";
 
@@ -118,8 +118,8 @@ export function Navbar() {
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <KeyRound className="size-3.5" />
-                  BYOK & Storage
+                  <Settings className="size-3.5" />
+                  Settings
                 </span>
               </Link>
             </nav>
@@ -273,8 +273,8 @@ export function Navbar() {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <KeyRound className="size-4 text-accent" />
-              <span>BYOK & Storage</span>
+              <Settings className="size-4 text-accent" />
+              <span>Settings</span>
             </Link>
             <button
               type="button"

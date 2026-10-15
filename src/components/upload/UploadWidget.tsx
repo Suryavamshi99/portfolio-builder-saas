@@ -85,7 +85,7 @@ const KIND_CONFIG: Record<
     maxSizeFormatted: "5 MB each",
     allowedTypesFormatted: "PNG, JPG, WEBP",
     accept: "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp",
-    retentionNotice: "Project images are embedded directly into your Vercel static bundle upon publish.",
+    retentionNotice: "Project images are embedded directly into your published portfolio assets upon publish.",
   },
 };
 

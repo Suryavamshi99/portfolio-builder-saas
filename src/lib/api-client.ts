@@ -75,6 +75,8 @@ export interface GenerationJob {
   error: ApiErrorPayload | null;
   retryAt: string | null;
   updatedAt: string;
+  /** Steps finished of the total, for a step-by-step (free) build while it runs. */
+  progress?: { done: number; total: number } | null;
 }
 
 export interface FreeStatusResponse {

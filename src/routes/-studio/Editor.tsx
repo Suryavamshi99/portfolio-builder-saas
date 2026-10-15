@@ -46,6 +46,8 @@ function formatModelName(model: string | null): string {
     model.includes(":free") ||
     model.startsWith("nvidia/") ||
     model.startsWith("google/gemma") ||
+    model.startsWith("step build") ||
+    model.startsWith("openai/gpt-oss") ||
     model.includes("free-chain")
   ) {
     return "Free Model";

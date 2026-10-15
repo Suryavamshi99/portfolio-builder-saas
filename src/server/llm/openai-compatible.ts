@@ -11,6 +11,8 @@ export type OpenAiCompatibleInput = LlmCallInput & {
   model: string;
   maxOutputTokens: number;
   timeoutMs: number;
+  /** Extra JSON fields merged into the request body (provider-specific options such as reasoning_effort). */
+  extraBody?: Record<string, unknown> | undefined;
 };
 
 export type OpenAiCompatibleResult = LlmCallResult & {
@@ -40,7 +42,7 @@ function isOpenRouterHost(baseUrl: string): boolean {
 export async function callOpenAICompatible(
   input: OpenAiCompatibleInput,
 ): Promise<OpenAiCompatibleResult> {
-  const { apiKey, systemPrompt, userMessage, images, baseUrl, model, maxOutputTokens, timeoutMs } =
+  const { apiKey, systemPrompt, userMessage, images, baseUrl, model, maxOutputTokens, timeoutMs, extraBody } =
     input;
 
   const url = `${baseUrl.replace(/\/+$/, "")}/chat/completions`;
@@ -82,6 +84,7 @@ export async function callOpenAICompatible(
   ];
 
   const body = JSON.stringify({
+    ...extraBody,
     model,
     max_tokens: maxOutputTokens,
     stream: false,

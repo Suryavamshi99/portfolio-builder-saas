@@ -53,7 +53,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Turn your resume into a live, edge-deployed developer portfolio using recruiter-grade AI and your own BYOK keys.",
+          "Turn your resume into a live, edge-deployed developer portfolio using recruiter-grade AI with instant hosting, custom domains, or export to GitHub & Vercel.",
       },
     ],
   }),
@@ -141,6 +141,7 @@ export function HomePage() {
   const [vercelJustConnected, setVercelJustConnected] = React.useState(vercel === "connected");
   const [userData, setUserData] = React.useState<UserRecord | null>(null);
   const [publishStatus, setPublishStatus] = React.useState<PublishStatus | null>(null);
+  const [siteData, setSiteData] = React.useState<{ slug: string; url: string; status: string } | null>(null);
 
   // Dynamic typing / rotating word in hero
   const [wordIndex, setWordIndex] = React.useState(0);
@@ -167,6 +168,13 @@ export function HomePage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((data: PublishStatus | null) => {
         if (data) setPublishStatus(data);
+      })
+      .catch(() => {});
+
+    void fetch("/api/sites/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { site?: { slug: string; url: string; status: string } | null } | null) => {
+        if (data?.site) setSiteData(data.site);
       })
       .catch(() => {});
   }, [user]);
@@ -264,7 +272,7 @@ export function HomePage() {
                     <Globe className="size-4 text-accent" />
                     Published Portfolio
                   </CardTitle>
-                  {publishStatus?.status === "ready" ? (
+                  {(siteData?.status === "published" || publishStatus?.status === "ready") ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5 text-[10px] font-semibold text-success">
                       <span className="size-1.5 rounded-full bg-success animate-pulse" />
                       Live
@@ -276,24 +284,24 @@ export function HomePage() {
                   )}
                 </div>
                 <CardDescription className="text-xs">
-                  {publishStatus?.status === "ready"
-                    ? "Your static site is deployed to Vercel."
-                    : "Your site has not been published to Vercel yet."}
+                  {(siteData?.status === "published" || publishStatus?.status === "ready")
+                    ? "Your static portfolio is live and accessible online."
+                    : "Your site has not been published yet."}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {publishStatus?.status === "ready" && publishStatus.url ? (
+                {(siteData?.url || publishStatus?.url) ? (
                   <div className="space-y-3">
                     <a
-                      href={publishStatus.url}
+                      href={siteData?.url || publishStatus?.url}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline truncate max-w-full"
                     >
-                      {publishStatus.url}
+                      {siteData?.url || publishStatus?.url}
                       <ExternalLink className="size-3 shrink-0" />
                     </a>
-                    {publishStatus.finishedAt && (
+                    {publishStatus?.finishedAt && (
                       <p className="text-[11px] text-muted-foreground">
                         Last published {new Date(publishStatus.finishedAt).toLocaleDateString()}
                       </p>
@@ -301,7 +309,7 @@ export function HomePage() {
                   </div>
                 ) : (
                   <div className="text-xs text-muted-foreground">
-                    Connect Vercel in Settings or Studio to deploy your site.
+                    Publish your portfolio in Studio to go live.
                   </div>
                 )}
               </CardContent>
@@ -363,29 +371,29 @@ export function HomePage() {
             </Card>
             </StaggerItem>
 
-            {/* Card 3: AI BYOK Status */}
+            {/* Card 3: AI Generation Status */}
             <StaggerItem whileHover={{ y: -3 }} transition={{ type: "spring", stiffness: 300, damping: 24 }}>
             <Card className="border-border/80 hover:border-accent/40">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <KeyRound className="size-4 text-accent" />
-                    BYOK API Keys
+                    AI Generation & Privacy
                   </CardTitle>
                   <Badge variant="secondary" className="text-[10px]">
                     AES-256
                   </Badge>
                 </div>
                 <CardDescription className="text-xs">
-                  Zero inference markup — run generation with your own free Google Gemini key.
+                  Generate with built-in free models, your Claude/ChatGPT plan, or your own Gemini key.
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground">
-                Keys are stored with envelope encryption and never logged.
+                Keys and tokens are protected with envelope encryption and never logged.
               </CardContent>
               <CardFooter className="border-t border-border/40 pt-3">
                 <Button asChild variant="ghost" size="sm" className="h-7 w-full text-xs">
-                  <Link to="/settings">Configure Keys →</Link>
+                  <Link to="/settings">Configure AI & Keys →</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -417,10 +425,10 @@ export function HomePage() {
               </div>
               <div className="space-y-1.5 rounded-xl bg-muted/40 p-3.5 border border-border/40">
                 <div className="font-semibold text-foreground flex items-center gap-1.5">
-                  <Globe className="size-3.5 text-accent" /> Edge Bundle Immunity
+                  <Globe className="size-3.5 text-accent" /> Bundled Image Permanence
                 </div>
                 <p>
-                  Publishing copies image bytes into your Vercel deployment bundle, guaranteeing your live site stays online.
+                  Publishing embeds image assets directly into your site, guaranteeing your live portfolio stays online permanently.
                 </p>
               </div>
             </div>
@@ -463,7 +471,7 @@ export function HomePage() {
                 <span>AI Portfolio Builder for Developers</span>
                 <span className="h-3 w-px bg-white/20" />
                 <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide text-accent-foreground">
-                  100% BYOK
+                  Free to Try
                 </span>
               </div>
 
@@ -520,7 +528,7 @@ export function HomePage() {
 
               {/* Subtext: Strict copy constraint (<20 words, max 3 lines) */}
               <p className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-white/80 leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
-                Transform raw resume bullets into an interactive, recruiter-vetted portfolio and deploy to Vercel in minutes with private BYOK AI.
+                Transform raw resume bullets into an interactive, recruiter-vetted portfolio. Live in minutes with instant hosting or export anywhere.
               </p>
 
               {/* Action Buttons: 1 primary + max 1 secondary */}
@@ -566,7 +574,7 @@ export function HomePage() {
 
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="size-4 text-accent" />
-                  <span className="font-medium">Private BYOK · zero inference markup</span>
+                  <span className="font-medium">Private & secure · zero inference markup</span>
                 </div>
 
                 <Link
@@ -822,7 +830,7 @@ export function HomePage() {
                 </div>
               </StaggerItem>
 
-              {/* Bento Card 2: 100% BYOK Privacy */}
+              {/* Bento Card 2: Flexible AI Generation */}
               <StaggerItem
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
@@ -831,18 +839,18 @@ export function HomePage() {
                 <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <KeyRound className="size-5" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">100% BYOK Privacy</h3>
+                <h3 className="text-xl font-bold text-foreground">Flexible AI & Privacy</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Connect your own free Google Gemini API key. Keys are protected with AES-256-GCM envelope encryption at rest.
+                  Generate with built-in free models, connect Claude/ChatGPT via MCP, or bring your own Gemini key. Keys are encrypted at rest with zero markup.
                 </p>
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
-                    <Lock className="size-3" /> Zero inference markup
+                    <Lock className="size-3" /> Free models · MCP · BYOK
                   </span>
                 </div>
               </StaggerItem>
 
-              {/* Bento Card 3: 1-Click Vercel Deploy */}
+              {/* Bento Card 3: Instant Hosting & Export */}
               <StaggerItem
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
@@ -858,13 +866,13 @@ export function HomePage() {
                 <div className="relative z-10 flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <Globe className="size-5" />
                 </div>
-                <h3 className="relative z-10 text-xl font-bold text-foreground">1-Click Vercel Deploy</h3>
+                <h3 className="relative z-10 text-xl font-bold text-foreground">Instant Hosting & Export</h3>
                 <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Connect your personal Vercel account. Your portfolio deploys as high-performance static HTML on Vercel’s global edge CDN.
+                  Go live instantly on Shipfolio with free HTTPS or your custom domain. You can also export clean HTML, push to GitHub, or deploy to Vercel in 1 click.
                 </p>
                 <div className="relative z-10 pt-2">
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
-                    <Zap className="size-3" /> Edge bundle immunity
+                    <Zap className="size-3" /> Shipfolio · GitHub · Vercel
                   </span>
                 </div>
               </StaggerItem>
@@ -904,34 +912,32 @@ export function HomePage() {
             </StaggerGroup>
           </section>
 
-          {/* Section 5: Integrations — real BYOK providers + Vercel deploy, not a generic tool wall */}
+          {/* Section 5: Integrations — Models, Connectors, Hosting & Deployment */}
           <section className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/80 bg-card shadow-xs">
             <div className="grid gap-8 md:grid-cols-2 md:items-center">
               <Reveal x={-24} y={0} className="space-y-4 p-6 sm:p-10">
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                  <KeyRound className="size-3.5" />
-                  <span>Bring your own everything</span>
+                  <Layers className="size-3.5" />
+                  <span>Seamless Integrations</span>
                 </div>
                 <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-                  Your AI keys. Your Vercel account. Zero markup.
+                  Your choice of AI. Instant hosting or export anywhere.
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Shipfolio runs generation with your own free Google Gemini API key, then
-                  deploys the finished portfolio straight to your own Vercel account — no proxy inference fees,
-                  no vendor lock-in.
+                  Generate your portfolio using built-in free models, connect your Claude or ChatGPT subscription via MCP, or bring your own Gemini key. Publish with instant hosting and custom domains, or export directly to GitHub and Vercel.
                 </p>
                 <ul className="space-y-2 text-xs text-muted-foreground sm:text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Free Gemini key — no card required, more providers coming soon
+                    3 generation paths: Free models, Claude/ChatGPT via MCP, or Gemini BYOK
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Keys encrypted at rest with AES-256-GCM, never logged
+                    Keys and connector tokens encrypted at rest with AES-256-GCM, never logged
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    1-click publish to your personal Vercel edge deployment
+                    Instant HTTPS hosting, custom domains, plus GitHub and Vercel export
                   </li>
                 </ul>
               </Reveal>

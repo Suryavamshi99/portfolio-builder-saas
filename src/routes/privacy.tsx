@@ -69,7 +69,7 @@ function PrivacyPage() {
         <ul className="list-disc space-y-2 pl-5">
           <li>To create your account and sign you in.</li>
           <li>To read your resume and generate your portfolio when you ask us to.</li>
-          <li>To publish your portfolio to your own Vercel account when you choose to publish it.</li>
+          <li>To host your portfolio on Shipfolio or publish/deploy it to your own Vercel or GitHub account when you choose to.</li>
           <li>To process your upgrade and enforce plan limits.</li>
           <li>To keep the service secure and fix problems.</li>
         </ul>
@@ -89,8 +89,14 @@ function PrivacyPage() {
             products. Check Google&rsquo;s terms for the key you connect.
           </li>
           <li>
-            <strong className="text-foreground">Vercel</strong>: hosts Shipfolio, and hosts your published portfolio in
-            your own Vercel account.
+            <strong className="text-foreground">Free AI models (Groq and OpenRouter)</strong>: if you choose the free
+            option, your resume text and the details you typed are sent to Groq or OpenRouter, which pass them to the
+            companies that run the models. Under their free-tier terms these providers may log requests or use them to
+            improve their models. Choose your own Gemini key or Claude/ChatGPT to avoid this.
+          </li>
+          <li>
+            <strong className="text-foreground">Vercel</strong>: hosts Shipfolio, and optionally deploys your portfolio to
+            your personal Vercel account if you choose to connect it.
           </li>
           <li>
             <strong className="text-foreground">Google sign-in</strong>: if you choose to sign in with Google.
@@ -110,7 +116,7 @@ function PrivacyPage() {
           <li>
             <strong className="text-foreground">Profile photos and project images</strong> are kept while your draft is
             active. If a draft is left untouched for 30 days, we delete them. Once you publish, the published copy
-            lives in your own Vercel account, under your control.
+            lives on our secure hosting or your own connected accounts, under your control.
           </li>
           <li>
             <strong className="text-foreground">Your portfolio draft and account</strong> are kept until you delete

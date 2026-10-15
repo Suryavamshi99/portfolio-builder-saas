@@ -12,6 +12,11 @@ export type PreparedGeneration =
       ok: true;
       userMessage: string;
       referenceText: string;
+      /** The pieces the step-by-step builder (free models) works from. */
+      resumeText: string;
+      specifics: string | undefined;
+      designIntensity: "minimal" | "bold";
+      photoUrl: string | undefined;
       images: LlmImageInput[];
       links: Awaited<ReturnType<typeof loadPortfolioInputs>>["links"];
     }
@@ -98,5 +103,15 @@ export async function prepareGeneration(
     .filter(Boolean)
     .join("\n");
 
-  return { ok: true, userMessage, referenceText, images, links };
+  return {
+    ok: true,
+    userMessage,
+    referenceText,
+    resumeText,
+    specifics: specifics ?? undefined,
+    designIntensity: designIntensity ?? "minimal",
+    photoUrl,
+    images,
+    links,
+  };
 }

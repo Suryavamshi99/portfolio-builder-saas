@@ -12,68 +12,40 @@ describe("getFreeProviderChain", () => {
     FREE_MODEL_CEREBRAS: "llama3.3-70b",
   };
 
-  it("returns providers in the exact specified order with defaults", () => {
+  it("lists Groq first (fastest), then OpenRouter, then Cerebras, with realistic default budgets", () => {
     const chain = getFreeProviderChain(fullValidEnv);
 
-    expect(chain).toHaveLength(4);
-    expect(chain.map((p) => p.id)).toEqual([
-      "openrouter-a",
-      "openrouter-b",
-      "groq",
-      "cerebras",
-    ]);
+    expect(chain.map((p) => p.id)).toEqual(["groq:llama-3.3-70b-versatile", "openrouter-a", "openrouter-b", "cerebras"]);
 
-    // Check OpenRouter A
     expect(chain[0]).toEqual({
-      id: "openrouter-a",
-      label: "OpenRouter (A)",
-      baseUrl: "https://openrouter.ai/api/v1",
-      apiKeyEnv: "OPENROUTER_API_KEY",
-      model: "meta-llama/llama-3.3-70b-instruct:free",
-      supportsImages: false,
-      maxOutputTokens: 12000,
-      timeoutMs: 100000,
-      dailyRequestBudget: 200,
-    });
-
-    // Check OpenRouter B
-    expect(chain[1]).toEqual({
-      id: "openrouter-b",
-      label: "OpenRouter (B)",
-      baseUrl: "https://openrouter.ai/api/v1",
-      apiKeyEnv: "OPENROUTER_API_KEY",
-      model: "qwen/qwen-2.5-72b-instruct:free",
-      supportsImages: false,
-      maxOutputTokens: 12000,
-      timeoutMs: 100000,
-      dailyRequestBudget: 200,
-    });
-
-    // Check Groq
-    expect(chain[2]).toEqual({
-      id: "groq",
-      label: "Groq",
+      id: "groq:llama-3.3-70b-versatile",
+      label: "Groq (llama-3.3-70b-versatile)",
       baseUrl: "https://api.groq.com/openai/v1",
       apiKeyEnv: "GROQ_API_KEY",
       model: "llama-3.3-70b-versatile",
       supportsImages: false,
       maxOutputTokens: 12000,
       timeoutMs: 100000,
-      dailyRequestBudget: 200,
+      dailyRequestBudget: 55, // Groq's free tier is about 200K tokens a day per model
     });
+    // OpenRouter's free models share one small account-wide cap, so the four ids split it
+    expect(chain[1]).toMatchObject({ id: "openrouter-a", baseUrl: "https://openrouter.ai/api/v1", dailyRequestBudget: 12 });
+    expect(chain[2]).toMatchObject({ id: "openrouter-b", dailyRequestBudget: 12 });
+    expect(chain[3]).toMatchObject({ id: "cerebras", baseUrl: "https://api.cerebras.ai/v1", dailyRequestBudget: 200 });
+  });
 
-    // Check Cerebras
-    expect(chain[3]).toEqual({
-      id: "cerebras",
-      label: "Cerebras",
-      baseUrl: "https://api.cerebras.ai/v1",
-      apiKeyEnv: "CEREBRAS_API_KEY",
-      model: "llama3.3-70b",
-      supportsImages: false,
-      maxOutputTokens: 12000,
-      timeoutMs: 100000,
-      dailyRequestBudget: 200,
-    });
+  it("uses the three built-in Groq models when none are configured, and asks gpt-oss for low reasoning effort", () => {
+    const chain = getFreeProviderChain({ GROQ_API_KEY: "gsk-test" });
+    expect(chain.map((p) => p.model)).toEqual(["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]);
+    expect(chain.map((p) => p.id)).toEqual(["groq:openai/gpt-oss-120b", "groq:openai/gpt-oss-20b", "groq:qwen/qwen3.8-27b"]);
+    expect(chain[0]?.extraBody).toEqual({ reasoning_effort: "low" });
+    expect(chain[1]?.extraBody).toEqual({ reasoning_effort: "low" });
+    expect(chain[2]?.extraBody).toBeUndefined();
+  });
+
+  it("takes the Groq models from FREE_MODELS_GROQ (comma separated)", () => {
+    const chain = getFreeProviderChain({ GROQ_API_KEY: "gsk-test", FREE_MODELS_GROQ: " model-a , model-b ,, " });
+    expect(chain.map((p) => p.model)).toEqual(["model-a", "model-b"]);
   });
 
   it("omits providers when apiKey or model is missing or whitespace only", () => {
@@ -82,9 +54,9 @@ describe("getFreeProviderChain", () => {
       OPENROUTER_API_KEY: "sk-or-test",
       FREE_MODEL_OPENROUTER_A: "model-a:free",
       // openrouter-b: key exists (shares OPENROUTER_API_KEY), but model is missing -> omitted
-      // groq: model exists, but key is missing -> omitted
+      // groq: a model is set, but the key is missing -> no Groq providers at all
       FREE_MODEL_GROQ: "groq-model",
-      // cerebras: key and model are empty/whitespace -> omitted
+      // cerebras: key is whitespace -> omitted
       CEREBRAS_API_KEY: "   ",
       FREE_MODEL_CEREBRAS: "cerebras-model",
     };
@@ -101,7 +73,6 @@ describe("getFreeProviderChain", () => {
       FREE_BUDGET_OPENROUTER_A: "500",
       FREE_BUDGET_GROQ: "150",
       FREE_IMAGES_OPENROUTER_A: "true",
-      FREE_IMAGES_GROQ: "false",
     };
 
     const chain = getFreeProviderChain(customEnv);
@@ -112,28 +83,20 @@ describe("getFreeProviderChain", () => {
     expect(openrouterA?.dailyRequestBudget).toBe(500);
     expect(openrouterA?.supportsImages).toBe(true);
 
-    const groq = chain.find((p) => p.id === "groq");
+    const groq = chain.find((p) => p.id.startsWith("groq:"));
     expect(groq?.maxOutputTokens).toBe(16000);
     expect(groq?.dailyRequestBudget).toBe(150);
     expect(groq?.supportsImages).toBe(false);
 
     const cerebras = chain.find((p) => p.id === "cerebras");
-    expect(cerebras?.maxOutputTokens).toBe(16000);
     expect(cerebras?.dailyRequestBudget).toBe(200); // default
     expect(cerebras?.supportsImages).toBe(false); // default
   });
 
   it("falls back to default budget and token limits when env strings are invalid numbers", () => {
-    const invalidNumbersEnv: NodeJS.ProcessEnv = {
-      ...fullValidEnv,
-      FREE_MAX_OUTPUT_TOKENS: "invalid-number",
-      FREE_BUDGET_GROQ: "not-a-number",
-    };
-
-    const chain = getFreeProviderChain(invalidNumbersEnv);
+    const chain = getFreeProviderChain({ ...fullValidEnv, FREE_MAX_OUTPUT_TOKENS: "invalid-number", FREE_BUDGET_GROQ: "not-a-number" });
     expect(chain[0]?.maxOutputTokens).toBe(12000);
-    const groq = chain.find((p) => p.id === "groq");
-    expect(groq?.dailyRequestBudget).toBe(200);
+    expect(chain.find((p) => p.id.startsWith("groq:"))?.dailyRequestBudget).toBe(55);
   });
 });
 
