@@ -170,6 +170,33 @@ describe("revokeForPayment", () => {
     vi.unstubAllGlobals();
   });
 
+  it("does not give hosting back when Dodo then reports the subscription cancelled", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+    process.env["DODO_PAYMENTS_API_KEY"] = "k";
+    const { client, tables } = fakeAdmin({
+      users: [{ id: "u1", plan: "pro" }],
+      purchases: [{ dodo_payment_id: "pay_1", user_id: "u1", kind: "pro", refunded_at: null }],
+      hosting_subscriptions: [
+        {
+          user_id: "u1",
+          dodo_subscription_id: "sub_1",
+          status: "active",
+          current_period_end: inDays(365),
+          grace_until: inDays(379),
+        },
+      ],
+    });
+    (client as any).storage = { from: () => ({ list: async () => ({ data: [], error: null }), remove: async () => ({ error: null }) }) };
+
+    await revokeForPayment(client, "pay_1");
+    // the event Dodo sends after we cancel the subscription
+    await applySubscriptionEvent(client, "subscription.cancelled", { subscription_id: "sub_1" });
+
+    expect(await hasHostingAccess(client, { id: "u1", isAdmin: false })).toBe(false);
+    expect(tables["hosting_subscriptions"]![0]!["status"]).toBe("cancelled");
+    vi.unstubAllGlobals();
+  });
+
   it("ignores payments that are not ours and repeats of an already-refunded one", async () => {
     const { client } = fakeAdmin({
       purchases: [{ dodo_payment_id: "pay_1", user_id: "u1", kind: "pro", refunded_at: new Date().toISOString() }],
@@ -263,6 +290,38 @@ describe("POST /api/webhooks/dodo", () => {
     const again = await post(signed(body, "wh_same"));
     expect((await again.json()) as { duplicate?: boolean }).toMatchObject({ duplicate: true });
     expect(tables["purchases"]).toHaveLength(1);
+  });
+
+  it("ignores a payment for some other product in the Dodo account", async () => {
+    process.env["DODO_PRODUCT_ID_PRO"] = "pdt_ours_usd";
+    process.env["DODO_PRODUCT_ID_PRO_IN"] = "pdt_ours_inr";
+    const { client, tables } = fakeAdmin({ users: [{ id: "u1", plan: "free" }] });
+    vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(client as never);
+
+    const other = await post(
+      signed({ type: "payment.succeeded", data: { payment_id: "pay_x", product_cart: [{ product_id: "pdt_donation" }], metadata: { userId: "u1" } } }, "wh_other"),
+    );
+    expect((await other.json()) as { ignored?: string }).toMatchObject({ ignored: "other_product" });
+    expect(tables["users"]![0]!["plan"]).toBe("free");
+
+    const ours = await post(
+      signed({ type: "payment.succeeded", data: { payment_id: "pay_y", product_cart: [{ product_id: "pdt_ours_inr" }], metadata: { userId: "u1" } } }, "wh_ours"),
+    );
+    expect(ours.status).toBe(200);
+    expect(tables["users"]![0]!["plan"]).toBe("pro");
+    delete process.env["DODO_PRODUCT_ID_PRO"];
+    delete process.env["DODO_PRODUCT_ID_PRO_IN"];
+  });
+
+  it("does not downgrade anyone for a partial refund", async () => {
+    const { client, tables } = fakeAdmin({
+      users: [{ id: "u1", plan: "pro" }],
+      purchases: [{ dodo_payment_id: "pay_1", user_id: "u1", kind: "pro", refunded_at: null }],
+    });
+    vi.spyOn(adminModule, "createSupabaseAdminClient").mockReturnValue(client as never);
+    const res = await post(signed({ type: "refund.succeeded", data: { payment_id: "pay_1", is_partial: true } }, "wh_part"));
+    expect((await res.json()) as { ignored?: string }).toMatchObject({ ignored: "partial_refund" });
+    expect(tables["users"]![0]!["plan"]).toBe("pro");
   });
 
   it("acknowledges and ignores events it does not handle", async () => {

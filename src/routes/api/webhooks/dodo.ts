@@ -7,6 +7,7 @@ import {
   applySubscriptionEvent,
   claimWebhook,
   forgetWebhook,
+  isOurProduct,
   REVOKING_EVENT_TYPES,
   revokeForPayment,
   SUBSCRIPTION_EVENT_TYPES,
@@ -63,6 +64,9 @@ export const Route = createFileRoute("/api/webhooks/dodo")({
             payment_id?: string;
             subscription_id?: string;
             next_billing_date?: string;
+            product_id?: string;
+            product_cart?: Array<{ product_id?: string }>;
+            is_partial?: boolean;
             metadata?: { userId?: string };
             total_amount?: number;
             currency?: string;
@@ -79,6 +83,16 @@ export const Route = createFileRoute("/api/webhooks/dodo")({
         const handled =
           type === "payment.succeeded" || SUBSCRIPTION_EVENT_TYPES.includes(type) || REVOKING_EVENT_TYPES.includes(type);
         if (!handled) return Response.json({ received: true });
+
+        // Only our own product may unlock anything (the Dodo account can hold others).
+        // Refund and dispute events reference our payment ids, which the purchases table vouches for.
+        if (!REVOKING_EVENT_TYPES.includes(type) && !isOurProduct(event.data ?? {})) {
+          return Response.json({ received: true, ignored: "other_product" });
+        }
+        // A partial refund (e.g. goodwill) does not take back Pro or hosting.
+        if (REVOKING_EVENT_TYPES.includes(type) && event.data?.is_partial === true) {
+          return Response.json({ received: true, ignored: "partial_refund" });
+        }
 
         const admin = createSupabaseAdminClient();
 

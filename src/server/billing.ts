@@ -36,6 +36,24 @@ export const SUBSCRIPTION_EVENT_TYPES: readonly string[] = [
 
 export const REVOKING_EVENT_TYPES: readonly string[] = ["refund.succeeded", "dispute.lost", "dispute.accepted"];
 
+/**
+ * True unless the event is clearly about some other product in the Dodo
+ * account. Payment events carry product_cart[].product_id, subscription events
+ * carry product_id. When neither is present (or no product ids are configured,
+ * as in tests) there is nothing to compare, so the event is let through.
+ */
+export function isOurProduct(data: { product_id?: string; product_cart?: Array<{ product_id?: string }> }): boolean {
+  const ours = [process.env["DODO_PRODUCT_ID_PRO"], process.env["DODO_PRODUCT_ID_PRO_IN"]].filter(
+    (id): id is string => Boolean(id),
+  );
+  if (ours.length === 0) return true;
+  const seen = [data.product_id, ...(data.product_cart ?? []).map((item) => item.product_id)].filter(
+    (id): id is string => Boolean(id),
+  );
+  if (seen.length === 0) return true;
+  return seen.some((id) => ours.includes(id));
+}
+
 /** True if this user may publish a site / use a custom domain right now. */
 export async function hasHostingAccess(
   admin: SupabaseClient,
@@ -212,7 +230,9 @@ export async function revokeForPayment(admin: SupabaseClient, paymentId: string)
   if (hosting) {
     await admin
       .from("hosting_subscriptions")
-      .update({ status: "cancelled", grace_until: nowIso, updated_at: nowIso })
+      // current_period_end too: cancelling the Dodo subscription below sends a
+      // subscription.cancelled event, which must not read the old paid-through date back.
+      .update({ status: "cancelled", current_period_end: nowIso, grace_until: nowIso, updated_at: nowIso })
       .eq("user_id", userId);
     await cancelDodoSubscription(hosting.dodo_subscription_id as string);
   }
