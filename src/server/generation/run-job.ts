@@ -60,7 +60,8 @@ export async function runJob(admin: SupabaseClient, jobId: string): Promise<void
 }
 
 async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
-  await setStatus(admin, job.id, "reading");
+  // A step-by-step build that is being continued keeps its own progress message.
+  if (!job.params.pipeline) await setStatus(admin, job.id, "reading");
 
   if (!job.resume_upload_id) {
     return failJob(admin, job.id, { code: "resume_not_found", message: "Resume upload not found" });

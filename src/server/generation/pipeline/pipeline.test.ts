@@ -203,7 +203,7 @@ describe("runPipeline", () => {
     expect(progressOf(state)).toEqual({ done: state.done.length, total: 1 + stepsFor(state.plan!).length });
   });
 
-  it("spreads the steps across providers", async () => {
+  it("uses the first (best) provider for every step and only moves on when it fails", async () => {
     const used: string[] = [];
     const { deps } = makeDeps({
       call: vi.fn(async (p, _s, user) => {
@@ -212,7 +212,7 @@ describe("runPipeline", () => {
       }),
     });
     await runPipeline(deps, input(), emptyState(), FAR);
-    expect(new Set(used).size).toBe(3);
+    expect(new Set(used)).toEqual(new Set(["a"]));
   });
 
   it("uses a code-made plan when the model's plan is garbage, and still finishes", async () => {

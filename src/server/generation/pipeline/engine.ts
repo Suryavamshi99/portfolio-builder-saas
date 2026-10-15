@@ -32,7 +32,7 @@ export type EngineOutcome =
   | { kind: "yield" }
   | { kind: "stopped" };
 
-const CALL_TIMEOUT_MS = 45_000;
+const CALL_TIMEOUT_MS = 40_000;
 const MAX_ATTEMPTS = 3;
 const COOLDOWN_RATE_LIMIT_FALLBACK_S = 60;
 const COOLDOWN_RATE_LIMIT_MAX_S = 300;
@@ -40,7 +40,7 @@ const COOLDOWN_PROVIDER_ERROR_S = 60;
 const COOLDOWN_AUTH_ERROR_S = 3600;
 const WAIT_FOR_CAPACITY_MS = 15_000;
 
-const MAX_TOKENS = { plan: 1600, design: 2800, hero: 1300, section: 1900 } as const;
+const MAX_TOKENS = { plan: 1600, design: 4500, hero: 1500, section: 2200 } as const;
 
 const MESSAGES = {
   plan: "Reading your resume and planning the page…",
@@ -53,14 +53,13 @@ type CallResult<T> = { value: T; provider: FreeProvider } | { none: "no_capacity
 
 export async function runPipeline(deps: EngineDeps, input: BuildInput, state: PipelineState, deadlineMs: number): Promise<EngineOutcome> {
   const stepStarted = () => deps.now();
-  let rotate = state.log.length;
 
   /** One model call with up to MAX_ATTEMPTS different providers; validate() turns a reply into a value or null. */
   async function ask<T>(step: string, user: string, maxTokens: number, validate: (text: string) => T | null, allowCutOff = false): Promise<CallResult<T>> {
     let attempts = 0;
     let waited = false;
-    const order = deps.providers.length ? deps.providers.map((_, i) => deps.providers[(rotate + i) % deps.providers.length]!) : [];
-    rotate += 1;
+    // Best (fastest) provider first, in the configured order; a failure or a rate limit moves to the next one.
+    const order = deps.providers;
     let i = 0;
     while (i < order.length && attempts < MAX_ATTEMPTS) {
       if (deps.now() >= deadlineMs) return { none: "deadline" };
@@ -86,7 +85,7 @@ export async function runPipeline(deps: EngineDeps, input: BuildInput, state: Pi
         }
         const value = validate(r.text);
         if (value === null) {
-          state.log.push({ step, provider: p.id, ms: deps.now() - t0, ok: false, note: "unusable reply" });
+          state.log.push({ step, provider: p.id, ms: deps.now() - t0, ok: false, note: `unusable reply: ${r.text.replace(/\s+/g, " ").slice(0, 110)}` });
           continue;
         }
         state.log.push({ step, provider: p.id, ms: deps.now() - t0, ok: true });
