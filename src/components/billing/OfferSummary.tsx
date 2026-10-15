@@ -40,6 +40,16 @@ export function OfferSummary({ compact = false }: { compact?: boolean }) {
           keep Pro and your downloads.
         </span>
       </div>
+      <p className="pt-1 text-[11px] text-muted-foreground">
+        Full refund within 14 days.{" "}
+        <a className="underline" href="/refund" target="_blank" rel="noreferrer">
+          Refund policy
+        </a>
+        {" · "}
+        <a className="underline" href="/terms" target="_blank" rel="noreferrer">
+          Terms
+        </a>
+      </p>
     </div>
   );
 }

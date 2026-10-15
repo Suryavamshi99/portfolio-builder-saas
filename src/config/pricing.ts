@@ -46,6 +46,6 @@ export const SELLING_POINTS: readonly string[] = [
   "Your own domain with free HTTPS, 1 year of hosting included",
   "Download clean HTML + zip. It's yours to keep, no lock-in",
   "Push to GitHub or deploy to your own Vercel in one click",
-  "No \"Made with Shipfolio\" watermark",
+  "No Shipfolio watermark or badge on your site",
   "Refine with AI and republish in seconds, 4x the free generation limit",
 ];

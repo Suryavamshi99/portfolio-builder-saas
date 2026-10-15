@@ -14,6 +14,7 @@ import { FluidOrb } from "@/components/ui/fluid-orb";
 import { HeroOrbIntro } from "@/components/hero/HeroOrbIntro";
 import { Integration, VisualContainer } from "@/components/ui/integration-card";
 import { Reveal, StaggerGroup, StaggerItem, Magnetic } from "@/components/motion/reveal";
+import { PricingSection } from "@/components/billing/PricingSection";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
@@ -943,6 +944,9 @@ export function HomePage() {
             </div>
           </section>
 
+          {/* Pricing: same numbers and wording as checkout */}
+          <PricingSection />
+
           {/* Section 6: Privacy & Trust Architecture */}
           <Reveal
             as="section"
@@ -1010,7 +1014,7 @@ export function HomePage() {
                 <span className="text-muted-foreground/60">|</span>
                 <span>The AI Developer Portfolio Builder</span>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                 {launchMode === "waitlist" ? (
                   <Link to="/" hash="waitlist" hashScrollIntoView className="hover:text-foreground">
                     Join waitlist
@@ -1028,6 +1032,21 @@ export function HomePage() {
                 <Link to="/settings" className="hover:text-foreground">
                   Privacy & Keys
                 </Link>
+                <a href="#pricing" className="hover:text-foreground">
+                  Pricing
+                </a>
+                <a href="/terms" className="hover:text-foreground">
+                  Terms
+                </a>
+                <a href="/refund" className="hover:text-foreground">
+                  Refund Policy
+                </a>
+                <a href="/privacy" className="hover:text-foreground">
+                  Privacy Policy
+                </a>
+                <a href="mailto:vamshi.ravi99@gmail.com" className="hover:text-foreground">
+                  Contact
+                </a>
               </div>
               <div>
                 © {new Date().getFullYear()} Shipfolio. All rights reserved.
