@@ -58,6 +58,9 @@ function ErrorComponent({ error }: { error: unknown }) {
   );
 }
 
+/** Public address of the site, for absolute URLs in social-share tags (the head also renders in the browser, where server env is unavailable). */
+const SITE_URL = "https://www.shipfolio.xyz";
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -69,10 +72,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and private BYOK AI.",
       },
-      { name: "theme-color", content: "#3457E8" },
+      { name: "theme-color", content: "#0B0D12" },
+      // Social share card (Slack, X, LinkedIn, WhatsApp): the image must be an absolute URL.
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Shipfolio" },
+      { property: "og:title", content: "Shipfolio: your resume, live as a portfolio in 30 seconds" },
+      {
+        property: "og:description",
+        content: "Turn your resume into a bespoke developer portfolio and put it online in about 30 seconds.",
+      },
+      { property: "og:image", content: `${SITE_URL}/og-image.png` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
+      { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
       { rel: "stylesheet", href: appCss },
     ],
   }),
