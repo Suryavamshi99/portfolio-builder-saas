@@ -67,11 +67,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Shipfolio — AI Resume to Live Developer Portfolio Builder" },
+      { title: "Shipfolio — Turn Your Resume into a Live Portfolio" },
       {
         name: "description",
         content:
-          "Turn your resume into a job-winning, edge-deployed developer portfolio in minutes. Recruiter-tested sections, action-verb impact tuning, and recruiter-grade AI.",
+          "Turn your resume into a live, interactive portfolio in seconds. Instant hosting, custom domains, or export anywhere.",
       },
       { name: "theme-color", content: "#0B0D12" },
       // Social share card (Slack, X, LinkedIn, WhatsApp): the image must be an absolute URL.
@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Shipfolio: your resume, live as a portfolio in 30 seconds" },
       {
         property: "og:description",
-        content: "Turn your resume into a bespoke developer portfolio and put it online in about 30 seconds.",
+        content: "Turn your resume into a live, interactive portfolio in seconds.",
       },
       { property: "og:image", content: `${SITE_URL}/og-image.png` },
       { property: "og:image:width", content: "1200" },

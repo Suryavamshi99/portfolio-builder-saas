@@ -49,11 +49,11 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Shipfolio — AI Resume to Live Portfolio SaaS" },
+      { title: "Shipfolio — Turn Your Resume into a Live Portfolio" },
       {
         name: "description",
         content:
-          "Turn your resume into a live, edge-deployed developer portfolio using recruiter-grade AI with instant hosting, custom domains, or export to GitHub & Vercel.",
+          "Turn your resume into a live, interactive personal portfolio in seconds. Instant hosting, custom domains, or export anywhere.",
       },
     ],
   }),
@@ -468,7 +468,7 @@ export function HomePage() {
                   "100% BYOK" gets its own solid accent chip for hierarchy. */}
               <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/45 px-4 py-1.5 text-xs font-semibold text-white shadow-lg shadow-black/30 backdrop-blur-xl">
                 <Sparkles className="size-3.5 text-accent" />
-                <span>AI Portfolio Builder for Developers</span>
+                <span>Resume to Portfolio in Minutes</span>
                 <span className="h-3 w-px bg-white/20" />
                 <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide text-accent-foreground">
                   Free to Try
@@ -528,7 +528,7 @@ export function HomePage() {
 
               {/* Subtext: Strict copy constraint (<20 words, max 3 lines) */}
               <p className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-white/80 leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
-                Transform raw resume bullets into an interactive, recruiter-vetted portfolio. Live in minutes with instant hosting or export anywhere.
+                Turn your resume into a live, interactive portfolio. Ready in minutes with instant hosting or export anywhere.
               </p>
 
               {/* Action Buttons: 1 primary + max 1 secondary */}
@@ -574,7 +574,7 @@ export function HomePage() {
 
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="size-4 text-accent" />
-                  <span className="font-medium">Private & secure · zero inference markup</span>
+                  <span className="font-medium">Private & secure · your data stays yours</span>
                 </div>
 
                 <Link
@@ -584,7 +584,7 @@ export function HomePage() {
                   className="flex items-center gap-2 font-medium hover:text-white"
                 >
                   <ExternalLink className="size-4 text-accent" />
-                  <span>See real portfolios built with Shipfolio</span>
+                  <span>See real portfolios</span>
                 </Link>
               </div>
             </div>
@@ -643,7 +643,7 @@ export function HomePage() {
             <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
               Real portfolios built on Shipfolio
             </h3>
-            <div className="text-xs text-muted-foreground font-mono">Shared with developer permission</div>
+            <div className="text-xs text-muted-foreground font-mono">Shared with permission</div>
           </div>
 
           <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-left">
@@ -707,10 +707,10 @@ export function HomePage() {
         <section id="how-it-works" className="mx-auto max-w-5xl space-y-10 scroll-mt-20">
             <Reveal className="text-center space-y-3">
               <h2 className="text-3xl font-extrabold sm:text-4xl text-foreground tracking-tight">
-                How our AI elevates your resume into a portfolio
+                Turn plain bullets into real impact
               </h2>
               <p className="mx-auto max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Generic AI tools hallucinate facts or output generic boilerplate. Shipfolio structures your raw experience into authoritative, recruiter-vetted impact stories.
+                Shipfolio polishes your experience into clear, compelling accomplishments — with strict fact-checking and zero hallucinations.
               </p>
             </Reveal>
 
@@ -748,19 +748,19 @@ export function HomePage() {
               <Reveal x={-32} y={0} className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-destructive">
-                    Typical Raw Resume Text
+                    Typical Resume Bullet
                   </span>
                   <span className="rounded-full bg-destructive/15 px-2.5 py-0.5 text-[11px] font-bold text-destructive">
-                    Weak & Passive
+                    Passive & Unclear
                   </span>
                 </div>
                 <blockquote className="italic text-sm text-muted-foreground border-l-2 border-destructive/50 pl-3">
-                  “Worked on backend APIs for the user portal. Fixed bugs, attended standups, and helped team migrate databases.”
+                  “Helped with project launches and client presentations. Attended team meetings and updated weekly reports.”
                 </blockquote>
                 <ul className="space-y-1.5 text-xs text-destructive/80">
-                  <li>• Lacks quantifiable metrics or business impact</li>
-                  <li>• Passive phrasing doesn’t demonstrate engineering depth</li>
-                  <li>• Misses ATS keyword triggers for recruiter searches</li>
+                  <li>• Lacks quantifiable results or clear impact</li>
+                  <li>• Passive phrasing undersells what you accomplished</li>
+                  <li>• Hard for hiring managers to quickly assess</li>
                 </ul>
               </Reveal>
 
@@ -768,19 +768,19 @@ export function HomePage() {
               <Reveal x={32} y={0} delay={0.1} className="rounded-2xl border border-success/30 bg-success/5 p-6 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-success">
-                    Shipfolio AI-Tuned Formulation
+                    Polished with Shipfolio
                   </span>
                   <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-bold text-success">
-                    Recruiter Winning
+                    Clear & Impactful
                   </span>
                 </div>
                 <blockquote className="font-medium text-sm text-foreground border-l-2 border-success pl-3">
-                  “Architected high-throughput RESTful user microservices, cutting p95 response times by 38% and zero-downtime migrating 2M records to PostgreSQL.”
+                  “Led 4 cross-functional product launches generating $1.2M in pipeline, cutting onboarding cycle time by 35%.”
                 </blockquote>
                 <ul className="space-y-1.5 text-xs text-success/90">
-                  <li>✓ Follows Google’s X-Y-Z accomplishment formula</li>
-                  <li>✓ Highlights real speedups, scale, and technical ownership</li>
-                  <li>✓ Strict fact guardrails, zero ungrounded hallucinations</li>
+                  <li>✓ Highlights real results, scale, and ownership</li>
+                  <li>✓ Structured for quick reading and high retention</li>
+                  <li>✓ Strict fact guardrails — zero hallucinations</li>
                 </ul>
               </Reveal>
             </div>
@@ -791,19 +791,19 @@ export function HomePage() {
             <Reveal className="text-center space-y-3">
               <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                 <Layers className="size-3.5" />
-                <span>Architecture & Features</span>
+                <span>Features</span>
               </div>
               <h2 className="text-3xl font-extrabold sm:text-4xl text-foreground tracking-tight">
-                Engineered for speed, privacy, and flawless presentation
+                Everything you need to showcase your work
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Everything you need to showcase real engineering depth without fighting fragile website builders.
+                Fast, private, and effortless. No fragile site builders or complex setup.
               </p>
             </Reveal>
 
             {/* Asymmetric Bento Grid */}
             <StaggerGroup className="grid gap-6 md:grid-cols-3">
-              {/* Bento Card 1: Autonomous WebGL Fluid Dynamics (Span 2 cols) */}
+              {/* Bento Card 1: Autonomous Fluid Dynamics (Span 2 cols) */}
               <StaggerItem
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
@@ -815,10 +815,10 @@ export function HomePage() {
                       <Cpu className="size-5" />
                     </div>
                     <h3 className="text-xl font-bold text-foreground">
-                      Dynamic WebGL Fluid Canvas & Edge Bundles
+                      Modern, Interactive Design
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                      Every portfolio features lightweight WebGL fluid shader dynamics with GPU acceleration, fallback-safe rendering, and zero client-side layout jumping.
+                      Smooth visuals, polished typography, and responsive layouts that look exceptional on phones and laptops.
                     </p>
                   </div>
 
@@ -839,13 +839,13 @@ export function HomePage() {
                 <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <KeyRound className="size-5" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Flexible AI & Privacy</h3>
+                <h3 className="text-xl font-bold text-foreground">Built-in AI & Full Privacy</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Generate with built-in free models, connect Claude/ChatGPT via MCP, or bring your own Gemini key. Keys are encrypted at rest with zero markup.
+                  Build completely free, or connect Claude, ChatGPT, or Gemini. Encrypted, private, never shared.
                 </p>
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
-                    <Lock className="size-3" /> Free models · MCP · BYOK
+                    <Lock className="size-3" /> Free to build · Private by default
                   </span>
                 </div>
               </StaggerItem>
@@ -866,13 +866,13 @@ export function HomePage() {
                 <div className="relative z-10 flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <Globe className="size-5" />
                 </div>
-                <h3 className="relative z-10 text-xl font-bold text-foreground">Instant Hosting & Export</h3>
+                <h3 className="relative z-10 text-xl font-bold text-foreground">Instant Live Link & Custom Domains</h3>
                 <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Go live instantly on Shipfolio with free HTTPS or your custom domain. You can also export clean HTML, push to GitHub, or deploy to Vercel in 1 click.
+                  Go live instantly with a fast link, connect your own custom domain, or download your website files anytime.
                 </p>
                 <div className="relative z-10 pt-2">
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
-                    <Zap className="size-3" /> Shipfolio · GitHub · Vercel
+                    <Zap className="size-3" /> Instant link · Custom domain · Export
                   </span>
                 </div>
               </StaggerItem>
@@ -896,17 +896,17 @@ export function HomePage() {
                   <Terminal className="size-5" />
                 </div>
                 <h3 className="relative z-10 text-xl font-bold text-foreground">
-                  Recruiter-Aligned Taxonomy & Evidence Links
+                  Highlight Your Skills & Projects
                 </h3>
                 <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Technologies are grouped into clean domains (Languages, Systems, Cloud, Frontend). Each skill links directly to concrete proof in your projects with zero ungrounded claims.
+                  Clearly organize your core skills and link them to real case studies and milestones so visitors see undeniable proof of your work.
                 </p>
                 <div className="relative z-10 flex flex-wrap gap-2 pt-1 text-xs">
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">TypeScript</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Rust</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">PostgreSQL</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Distributed Systems</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Docker</span>
+                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Product Strategy</span>
+                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Marketing & Growth</span>
+                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Design & UX</span>
+                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Analytics</span>
+                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Operations</span>
                 </div>
               </StaggerItem>
             </StaggerGroup>
@@ -918,26 +918,26 @@ export function HomePage() {
               <Reveal x={-24} y={0} className="space-y-4 p-6 sm:p-10">
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                   <Layers className="size-3.5" />
-                  <span>Seamless Integrations</span>
+                  <span>Integrations</span>
                 </div>
                 <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-                  Your choice of AI. Instant hosting or export anywhere.
+                  Use your favorite AI. Deploy anywhere.
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Generate your portfolio using built-in free models, connect your Claude or ChatGPT subscription via MCP, or bring your own Gemini key. Publish with instant hosting and custom domains, or export directly to GitHub and Vercel.
+                  Generate your portfolio using free built-in models, connect your Claude or ChatGPT subscription, or bring your own Gemini key. Publish with instant hosting and custom domains, or export directly to GitHub and Vercel.
                 </p>
                 <ul className="space-y-2 text-xs text-muted-foreground sm:text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    3 generation paths: Free models, Claude/ChatGPT via MCP, or Gemini BYOK
+                    Free models included, plus Claude, ChatGPT, or Gemini keys
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Keys and connector tokens encrypted at rest with AES-256-GCM, never logged
+                    Keys encrypted at rest with AES-256-GCM and never logged
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Instant HTTPS hosting, custom domains, plus GitHub and Vercel export
+                    Instant HTTPS hosting, custom domains, or 1-click export
                   </li>
                 </ul>
               </Reveal>
@@ -963,7 +963,7 @@ export function HomePage() {
             </div>
             <h3 className="text-xl font-bold text-foreground">Privacy-First Architecture</h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              We never sell your data or keep your documents longer than needed. Resumes and reference screenshots are deleted within 48 hours, and we strip hidden location and camera info from your photos before they're ever stored.
+              We never sell your data. Resumes and reference screenshots are automatically deleted within 48 hours, and location metadata is stripped from photos before saving.
             </p>
           </Reveal>
 
@@ -980,10 +980,10 @@ export function HomePage() {
 
             <div className="relative z-10 max-w-2xl mx-auto space-y-6">
               <h2 className="text-3xl font-extrabold sm:text-5xl tracking-tight leading-tight">
-                Ready to stand out in the top 2%?
+                Ready to put your work online?
               </h2>
               <p className="text-base text-muted-foreground leading-relaxed">
-                Join thousands of students and engineers creating job-winning portfolios in minutes with Shipfolio.
+                Create a clean, interactive portfolio from your resume in minutes with Shipfolio.
               </p>
               <div className="pt-2">
                 {launchMode === "waitlist" ? (
@@ -1002,7 +1002,7 @@ export function HomePage() {
                       className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold px-8 text-base shadow-xl active:scale-[0.98]"
                     >
                       <Link to="/login" search={{ redirect: "/onboarding" }}>
-                        Create my portfolio now
+                        Create my portfolio
                         <ArrowRight className="ml-2 size-4" />
                       </Link>
                     </Button>
@@ -1018,7 +1018,7 @@ export function HomePage() {
               <div className="flex items-center gap-2">
                 <Logo size="sm" />
                 <span className="text-muted-foreground/60">|</span>
-                <span>The AI Developer Portfolio Builder</span>
+                <span>Resume to live portfolio in minutes</span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                 {launchMode === "waitlist" ? (

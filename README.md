@@ -1,4 +1,4 @@
-# Shipfolio — AI Developer Portfolio Builder SaaS
+# Shipfolio — AI Resume to Live Portfolio SaaS
 
 Turn a resume into a bespoke, model-written HTML portfolio website in minutes.
 Free preview with watermarked studio inspection. One payment (**$9, or ₹499 in India**) unlocks Pro (clean HTML, zip export, GitHub push, Vercel deployment) and includes **1 year of hosting** with a custom domain; hosting then renews at **$7.99/year (₹449)**. See [Payments & Billing](#payments--billing).
