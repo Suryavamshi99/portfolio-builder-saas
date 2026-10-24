@@ -96,6 +96,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/site.webmanifest" },
       { rel: "stylesheet", href: appCss },
     ],
+    // Microsoft Clarity (session replay + heatmaps). Production builds only, so dev sessions don't pollute the data.
+    scripts: import.meta.env.PROD
+      ? [
+          {
+            children: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","z2laorc0r7");`,
+          },
+        ]
+      : [],
   }),
   shellComponent: RootShell,
   component: RootComponent,
