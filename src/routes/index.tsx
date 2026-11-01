@@ -710,7 +710,7 @@ export function HomePage() {
                 Turn plain bullets into real impact
               </h2>
               <p className="mx-auto max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Shipfolio polishes your experience into clear, compelling accomplishments — with strict fact-checking and zero hallucinations.
+                Shipfolio rewrites your experience into clearer, stronger wording using only what your resume says, and a fact check flags numbers that aren’t in it.
               </p>
             </Reveal>
 
@@ -768,19 +768,19 @@ export function HomePage() {
               <Reveal x={32} y={0} delay={0.1} className="rounded-2xl border border-success/30 bg-success/5 p-6 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-success">
-                    Polished with Shipfolio
+                    Polished with Shipfolio · illustrative example
                   </span>
                   <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-bold text-success">
                     Clear & Impactful
                   </span>
                 </div>
                 <blockquote className="font-medium text-sm text-foreground border-l-2 border-success pl-3">
-                  “Led 4 cross-functional product launches generating $1.2M in pipeline, cutting onboarding cycle time by 35%.”
+                  “Supported project launches and delivered client presentations; kept the team informed with weekly status reports.”
                 </blockquote>
                 <ul className="space-y-1.5 text-xs text-success/90">
-                  <li>✓ Highlights real results, scale, and ownership</li>
-                  <li>✓ Structured for quick reading and high retention</li>
-                  <li>✓ Strict fact guardrails — zero hallucinations</li>
+                  <li>✓ Active wording that says what you did</li>
+                  <li>✓ Structured for quick reading</li>
+                  <li>✓ No invented numbers: figures you didn’t provide are flagged, not added</li>
                 </ul>
               </Reveal>
             </div>
