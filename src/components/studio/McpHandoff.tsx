@@ -11,36 +11,46 @@ import { chatgptUrl, claudeUrl, mcpEditPrompt } from "@/lib/regen-method";
  */
 export function McpHandoff({
   instructions,
-  currentHtml,
   onUpdated,
 }: {
   instructions: string;
-  currentHtml: string;
+  currentHtml?: string;
   onUpdated: (html: string) => void;
 }) {
   const prompt = mcpEditPrompt(instructions);
   const [copied, setCopied] = React.useState(false);
-  const baseline = React.useRef(currentHtml);
-  baseline.current = currentHtml;
+  // The last page the SERVER returned, not what the editor shows: the editor may post-process what onUpdated gives it,
+  // so comparing against its copy made every poll look like a new save and re-fired the toast. The first poll only
+  // records the starting point.
+  const lastSeen = React.useRef<string | null>(null);
+  const onUpdatedRef = React.useRef(onUpdated);
+  onUpdatedRef.current = onUpdated;
 
   // While this panel is open, notice when the chat saves a new version.
   React.useEffect(() => {
-    const timer = window.setInterval(async () => {
+    const check = async () => {
       try {
         const res = await fetch("/api/content");
         if (!res.ok) return;
         const { html } = (await res.json()) as { html?: string };
-        if (html && html !== baseline.current) {
-          baseline.current = html;
-          onUpdated(html);
+        if (!html) return;
+        if (lastSeen.current === null) {
+          lastSeen.current = html;
+          return;
+        }
+        if (html !== lastSeen.current) {
+          lastSeen.current = html;
+          onUpdatedRef.current(html);
           announceBuildReady(`mcp-edit-${Date.now()}`, { title: "Your portfolio was updated", body: "Your chat saved the changes. They are open in the Studio.", to: null, ctaLabel: "View it" });
         }
       } catch {
         // try again on the next tick
       }
-    }, 4000);
+    };
+    void check();
+    const timer = window.setInterval(() => void check(), 4000);
     return () => window.clearInterval(timer);
-  }, [onUpdated]);
+  }, []);
 
   const copy = async () => {
     try {
