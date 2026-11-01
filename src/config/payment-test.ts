@@ -11,3 +11,20 @@
 export function isDummyPaymentModeEnabled(): boolean {
   return process.env["PAYMENT_TEST_MODE"] === "dummy" && process.env["NODE_ENV"] !== "production";
 }
+
+/**
+ * Demo-day exception to the rule above: one named account may use the dummy
+ * checkout in production. Gated server-side on the signed-in user's id
+ * matching DEMO_PAYMENT_USER_ID, so every other user (and every request when
+ * the variable is unset) gets the real Dodo checkout and a 404 from the dummy
+ * page. Unset the variable to switch it off.
+ */
+export function isDemoPaymentUser(userId: string): boolean {
+  const demoId = process.env["DEMO_PAYMENT_USER_ID"]?.trim();
+  return Boolean(demoId) && demoId === userId;
+}
+
+/** True when this user should be sent to the dummy checkout instead of Dodo. */
+export function usesDummyCheckout(userId: string): boolean {
+  return isDummyPaymentModeEnabled() || isDemoPaymentUser(userId);
+}

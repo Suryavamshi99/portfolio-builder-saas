@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { getAppOrigin } from "@/config/app";
 import { isAllowedOrigin } from "@/lib/origin";
-import { isDummyPaymentModeEnabled } from "@/config/payment-test";
+import { usesDummyCheckout } from "@/config/payment-test";
 import { createProCheckoutSession, DodoCheckoutError } from "@/server/dodo/checkout";
 import { countryFromRequest } from "@/server/geo";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/billing/checkout")({
         // same-origin page with Success/Fail buttons, so the full
         // paywall → publish flow can be tested without touching real
         // payment infra or needing to trigger Dodo test-mode failures.
-        if (isDummyPaymentModeEnabled()) {
+        if (usesDummyCheckout(user.id)) {
           const checkoutUrl = `${getAppOrigin()}/api/dev/payment-test?returnUrl=${encodeURIComponent(returnUrl)}`;
           return Response.json({ checkoutUrl });
         }

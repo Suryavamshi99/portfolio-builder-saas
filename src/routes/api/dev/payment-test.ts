@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { getAppOrigin } from "@/config/app";
-import { isDummyPaymentModeEnabled } from "@/config/payment-test";
+import { isDemoPaymentUser, isDummyPaymentModeEnabled, usesDummyCheckout } from "@/config/payment-test";
 import { PRO_PRICE_USD } from "@/config/plans";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { grantProAccess } from "@/server/payments";
@@ -33,19 +33,22 @@ export const Route = createFileRoute("/api/dev/payment-test")({
   server: {
     middleware: [authMiddleware],
     handlers: {
-      GET: async ({ request }) => {
-        if (!isDummyPaymentModeEnabled()) return notFound();
+      GET: async ({ request, context }) => {
+        const { user } = context as AuthedContext;
+        if (!usesDummyCheckout(user.id)) return notFound();
+        const demo = isDemoPaymentUser(user.id);
 
         const returnUrl = safeReturnUrl(new URL(request.url).searchParams.get("returnUrl"));
         const html = `<!doctype html>
 <html>
-<head><meta charset="utf-8"><title>Dummy payment (test mode)</title></head>
+<head><meta charset="utf-8"><title>Demo payment</title></head>
 <body style="font-family: system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1rem;">
-  <h1>Test-mode checkout</h1>
-  <p>PAYMENT_TEST_MODE=dummy is set — this stands in for Dodo's real checkout so you can simulate either outcome. One-time Pro unlock: $${PRO_PRICE_USD}.</p>
+  <h1>${demo ? "Demo checkout" : "Test-mode checkout"}</h1>
+  <p>${demo ? "Demo account: no real charge is made." : "PAYMENT_TEST_MODE=dummy is set"} — this stands in for Dodo's real checkout so you can simulate either outcome. One-time Pro unlock: $${PRO_PRICE_USD}.</p>
   <form method="POST" action="/api/dev/payment-test" style="display:inline">
     <input type="hidden" name="returnUrl" value="${returnUrl}">
     <input type="hidden" name="outcome" value="success">
+    ${demo ? '<label>Card number <input name="card" inputmode="numeric" value="" placeholder="0000000000" style="padding:0.5rem;font-size:1rem;"></label><br><br>' : ""}
     <button type="submit" style="padding:0.75rem 1.5rem;font-size:1rem;">Success</button>
   </form>
   <form method="POST" action="/api/dev/payment-test" style="display:inline;margin-left:0.5rem">
@@ -59,19 +62,27 @@ export const Route = createFileRoute("/api/dev/payment-test")({
       },
 
       POST: async ({ request, context }) => {
-        if (!isDummyPaymentModeEnabled()) return notFound();
-
         const { user } = context as AuthedContext;
+        if (!usesDummyCheckout(user.id)) return notFound();
+        const demo = isDemoPaymentUser(user.id);
         const form = await request.formData();
         const outcome = form.get("outcome");
         const returnUrl = safeReturnUrl(form.get("returnUrl")?.toString() ?? null);
+
+        const cardOk = !demo || form.get("card")?.toString().trim() === "0000000000";
+        if (outcome === "success" && !cardOk) {
+          const badUrl = new URL(returnUrl);
+          badUrl.searchParams.set("upgrade", "failed");
+          return Response.redirect(badUrl.toString(), 303);
+        }
 
         if (outcome === "success") {
           const admin = createSupabaseAdminClient();
           await grantProAccess(admin, {
             userId: user.id,
-            paymentId: `dummy_${randomUUID()}`,
-            amountCents: PRO_PRICE_USD * 100,
+            // "demo_" ids and a zero amount keep demo grants out of revenue counts.
+            paymentId: `${demo ? "demo" : "dummy"}_${randomUUID()}`,
+            amountCents: demo ? 0 : PRO_PRICE_USD * 100,
             currency: "USD",
           });
           return Response.redirect(returnUrl, 303);
