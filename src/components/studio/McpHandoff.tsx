@@ -19,9 +19,9 @@ export function McpHandoff({
 }) {
   const prompt = mcpEditPrompt(instructions);
   const [copied, setCopied] = React.useState(false);
-  // The last page the SERVER returned, not what the editor shows: the editor may post-process what onUpdated gives it,
-  // so comparing against its copy made every poll look like a new save and re-fired the toast. The first poll only
-  // records the starting point.
+  // Change is detected by the server's `updatedAt`, never by comparing HTML: the page comes back with freshly signed
+  // photo URLs on every request (and the editor post-processes it), so the HTML differs on every poll and re-fired the
+  // toast. The first poll only records the starting point.
   const lastSeen = React.useRef<string | null>(null);
   const onUpdatedRef = React.useRef(onUpdated);
   onUpdatedRef.current = onUpdated;
@@ -32,14 +32,14 @@ export function McpHandoff({
       try {
         const res = await fetch("/api/content");
         if (!res.ok) return;
-        const { html } = (await res.json()) as { html?: string };
-        if (!html) return;
+        const { html, updatedAt } = (await res.json()) as { html?: string; updatedAt?: string | null };
+        if (!html || !updatedAt) return;
         if (lastSeen.current === null) {
-          lastSeen.current = html;
+          lastSeen.current = updatedAt;
           return;
         }
-        if (html !== lastSeen.current) {
-          lastSeen.current = html;
+        if (updatedAt !== lastSeen.current) {
+          lastSeen.current = updatedAt;
           onUpdatedRef.current(html);
           announceBuildReady(`mcp-edit-${Date.now()}`, { title: "Your portfolio was updated", body: "Your chat saved the changes. They are open in the Studio.", to: null, ctaLabel: "View it" });
         }
