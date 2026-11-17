@@ -4,7 +4,9 @@ import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
-import { getOrCreateAppUser } from "@/server/users";
+import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
+import { checkThemeAccess } from "@/server/themes/gate";
+import { parseThemeRequest } from "@/server/themes/types";
 import { savePortfolioInputs } from "@/server/portfolio-inputs";
 import { runInBackground } from "@/server/generation/background";
 import { createJob, toApiJob } from "@/server/generation/jobs";
@@ -56,6 +58,15 @@ export const Route = createFileRoute("/api/generations")({
         const appUser = await getOrCreateAppUser(supabase, user.id);
         if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
 
+        // A themed build. Unknown or not-ready themes are rejected; paid themes need paid access (checked here, not in the page).
+        let theme: ReturnType<typeof parseThemeRequest> = null;
+        if (body["theme"] !== undefined) {
+          theme = parseThemeRequest(body["theme"]);
+          if (!theme) return errorResponse(400, "invalid_request", "theme is not valid");
+          const access = checkThemeAccess(theme.id, hasPaidAccess(appUser));
+          if (!access.ok) return errorResponse(access.status, access.code, access.message);
+        }
+
         const hourly = await checkHourlyRateLimit(supabase, "generations", user.id, PLAN_GENERATIONS_PER_HOUR[appUser.plan]);
         if (hourly.limited) {
           return errorResponse(429, "rate_limited", "Generation limit reached, try again later", {
@@ -95,6 +106,7 @@ export const Route = createFileRoute("/api/generations")({
           source,
           resumeUploadId,
           instructions: typeof instructions === "string" && instructions.trim() ? instructions.trim() : undefined,
+          theme: theme ?? undefined,
         });
         if (!created.ok) {
           return errorResponse(409, "job_in_progress", "A generation is already running.", { jobId: created.activeJobId });

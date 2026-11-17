@@ -32,6 +32,7 @@ import { Route as ApiGenerationsRouteImport } from './routes/api/generations'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as ApiPublishRouteImport } from './routes/api/publish'
 import { Route as ApiResetRouteImport } from './routes/api/reset'
+import { Route as ApiThemesRouteImport } from './routes/api/themes'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
@@ -82,6 +83,7 @@ import { Route as ApiAdminLoginTotpRouteImport } from './routes/api/admin/login.
 import { Route as ApiAdminProvidersClearCooldownRouteImport } from './routes/api/admin/providers.clear-cooldown'
 import { Route as ApiAdminUsersIdRouteImport } from './routes/api/admin/users.$id'
 import { Route as ApiMcpConnectionsClientIdRouteImport } from './routes/api/mcp.connections.$clientId'
+import { Route as ApiThemesIdDemoRouteImport } from './routes/api/themes.$id.demo'
 import { Route as ApiVercelOauthCallbackRouteImport } from './routes/api/vercel/oauth/callback'
 import { Route as ApiVercelOauthStartRouteImport } from './routes/api/vercel/oauth/start'
 import { Route as ApiAdmin2faEnrollConfirmRouteImport } from './routes/api/admin/2fa.enroll.confirm'
@@ -207,6 +209,11 @@ const ApiPublishRoute = ApiPublishRouteImport.update({
 const ApiResetRoute = ApiResetRouteImport.update({
   id: '/api/reset',
   path: '/api/reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiThemesRoute = ApiThemesRouteImport.update({
+  id: '/api/themes',
+  path: '/api/themes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUploadsRoute = ApiUploadsRouteImport.update({
@@ -462,6 +469,11 @@ const ApiMcpConnectionsClientIdRoute =
     path: '/api/mcp/connections/$clientId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiThemesIdDemoRoute = ApiThemesIdDemoRouteImport.update({
+  id: '/$id/demo',
+  path: '/$id/demo',
+  getParentRoute: () => ApiThemesRoute,
+} as any)
 const ApiVercelOauthCallbackRoute = ApiVercelOauthCallbackRouteImport.update({
   id: '/oauth/callback',
   path: '/oauth/callback',
@@ -537,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
+  '/api/themes': typeof ApiThemesRouteWithChildren
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
@@ -587,6 +600,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/providers/clear-cooldown': typeof ApiAdminProvidersClearCooldownRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRouteWithChildren
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
+  '/api/themes/$id/demo': typeof ApiThemesIdDemoRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
   '/api/admin/2fa/enroll/confirm': typeof ApiAdmin2faEnrollConfirmRoute
@@ -621,6 +635,7 @@ export interface FileRoutesByTo {
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
+  '/api/themes': typeof ApiThemesRouteWithChildren
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
@@ -671,6 +686,7 @@ export interface FileRoutesByTo {
   '/api/admin/providers/clear-cooldown': typeof ApiAdminProvidersClearCooldownRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRouteWithChildren
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
+  '/api/themes/$id/demo': typeof ApiThemesIdDemoRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
   '/api/admin/2fa/enroll/confirm': typeof ApiAdmin2faEnrollConfirmRoute
@@ -706,6 +722,7 @@ export interface FileRoutesById {
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
+  '/api/themes': typeof ApiThemesRouteWithChildren
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
@@ -756,6 +773,7 @@ export interface FileRoutesById {
   '/api/admin/providers/clear-cooldown': typeof ApiAdminProvidersClearCooldownRoute
   '/api/admin/users/$id': typeof ApiAdminUsersIdRouteWithChildren
   '/api/mcp/connections/$clientId': typeof ApiMcpConnectionsClientIdRoute
+  '/api/themes/$id/demo': typeof ApiThemesIdDemoRoute
   '/api/vercel/oauth/callback': typeof ApiVercelOauthCallbackRoute
   '/api/vercel/oauth/start': typeof ApiVercelOauthStartRoute
   '/api/admin/2fa/enroll/confirm': typeof ApiAdmin2faEnrollConfirmRoute
@@ -792,6 +810,7 @@ export interface FileRouteTypes {
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
+    | '/api/themes'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
@@ -842,6 +861,7 @@ export interface FileRouteTypes {
     | '/api/admin/providers/clear-cooldown'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
+    | '/api/themes/$id/demo'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
     | '/api/admin/2fa/enroll/confirm'
@@ -876,6 +896,7 @@ export interface FileRouteTypes {
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
+    | '/api/themes'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
@@ -926,6 +947,7 @@ export interface FileRouteTypes {
     | '/api/admin/providers/clear-cooldown'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
+    | '/api/themes/$id/demo'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
     | '/api/admin/2fa/enroll/confirm'
@@ -960,6 +982,7 @@ export interface FileRouteTypes {
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
+    | '/api/themes'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
@@ -1010,6 +1033,7 @@ export interface FileRouteTypes {
     | '/api/admin/providers/clear-cooldown'
     | '/api/admin/users/$id'
     | '/api/mcp/connections/$clientId'
+    | '/api/themes/$id/demo'
     | '/api/vercel/oauth/callback'
     | '/api/vercel/oauth/start'
     | '/api/admin/2fa/enroll/confirm'
@@ -1045,6 +1069,7 @@ export interface RootRouteChildren {
   ApiMeRoute: typeof ApiMeRoute
   ApiPublishRoute: typeof ApiPublishRouteWithChildren
   ApiResetRoute: typeof ApiResetRoute
+  ApiThemesRoute: typeof ApiThemesRouteWithChildren
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
   ApiWaitlistRoute: typeof ApiWaitlistRoute
@@ -1253,6 +1278,13 @@ declare module '@tanstack/react-router' {
       path: '/api/reset'
       fullPath: '/api/reset'
       preLoaderRoute: typeof ApiResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/themes': {
+      id: '/api/themes'
+      path: '/api/themes'
+      fullPath: '/api/themes'
+      preLoaderRoute: typeof ApiThemesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/uploads': {
@@ -1605,6 +1637,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMcpConnectionsClientIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/themes/$id/demo': {
+      id: '/api/themes/$id/demo'
+      path: '/$id/demo'
+      fullPath: '/api/themes/$id/demo'
+      preLoaderRoute: typeof ApiThemesIdDemoRouteImport
+      parentRoute: typeof ApiThemesRoute
+    }
     '/api/vercel/oauth/callback': {
       id: '/api/vercel/oauth/callback'
       path: '/oauth/callback'
@@ -1707,6 +1746,18 @@ const ApiPublishRouteChildren: ApiPublishRouteChildren = {
 
 const ApiPublishRouteWithChildren = ApiPublishRoute._addFileChildren(
   ApiPublishRouteChildren,
+)
+
+interface ApiThemesRouteChildren {
+  ApiThemesIdDemoRoute: typeof ApiThemesIdDemoRoute
+}
+
+const ApiThemesRouteChildren: ApiThemesRouteChildren = {
+  ApiThemesIdDemoRoute: ApiThemesIdDemoRoute,
+}
+
+const ApiThemesRouteWithChildren = ApiThemesRoute._addFileChildren(
+  ApiThemesRouteChildren,
 )
 
 interface ApiUploadsRouteChildren {
@@ -1834,6 +1885,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMeRoute: ApiMeRoute,
   ApiPublishRoute: ApiPublishRouteWithChildren,
   ApiResetRoute: ApiResetRoute,
+  ApiThemesRoute: ApiThemesRouteWithChildren,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
   ApiWaitlistRoute: ApiWaitlistRoute,
