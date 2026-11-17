@@ -3,6 +3,8 @@ import * as React from "react";
 import { apiClient, type ThemeSummary } from "@/lib/api-client";
 
 const FEELS = ["All", "Editorial", "Playable", "App-style", "3D"] as const;
+/** What each feel is called on screen. The stored values stay as they are. */
+const FEEL_LABEL: Record<string, string> = { All: "All", Editorial: "Classic", Playable: "Game-like", "App-style": "Looks like an app", "3D": "3D" };
 
 /** Pick a design language for the portfolio, or leave it to the AI. Themes are grouped by profession and tagged by feel. Paid themes show a tag; the server enforces the tier. */
 export function ThemePicker({ value, onChange }: { value: string | null; onChange: (id: string | null) => void }) {
@@ -39,7 +41,7 @@ export function ThemePicker({ value, onChange }: { value: string | null; onChang
             aria-pressed={feel === f}
             className={`rounded-full border px-2.5 py-0.5 text-[11px] ${feel === f ? "border-accent bg-accent/10" : "border-border"}`}
           >
-            {f}
+            {FEEL_LABEL[f]}
           </button>
         ))}
       </div>
@@ -55,7 +57,7 @@ export function ThemePicker({ value, onChange }: { value: string | null; onChang
                 onClick={() => onChange(t.id)}
                 title={t.name}
                 sub={t.tagline}
-                tag={`${t.feel}${t.tier === "paid" ? " · Paid" : ""}`}
+                tag={`${FEEL_LABEL[t.feel] ?? t.feel}${t.tier === "paid" ? " · Paid" : ""}`}
                 thumb={`/theme-thumbs/${t.id}.jpg`}
                 previewHref={`/theme-previews/${t.id}/index.html`}
               />

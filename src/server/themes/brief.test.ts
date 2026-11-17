@@ -4,7 +4,7 @@ import { designBriefFor } from "./brief";
 describe("designBriefFor", () => {
   it("includes the name, the brief and the fingerprint", () => {
     const b = designBriefFor("two-ink")!;
-    expect(b).toContain("Two Ink");
+    expect(b).toContain("Poster Pop");
     expect(b).toContain("risograph");
     expect(b).toContain("Design fingerprint");
     expect(b).toContain("every fact still comes from the resume");

@@ -4,19 +4,19 @@ Themes are design languages (see `adding-a-theme.md`). Names, free/paid tiers an
 
 | Id | Name | Profession | Feel | Tier | Derived from sample |
 |---|---|---|---|---|---|
-| paper-sprint | Paper Sprint | Product | Editorial | free | orig-01 |
-| wheat-brass | Wheat & Brass | Consulting | Editorial | free | orig-02 |
-| route-board | Route Board | Operations | App-style | free | orig-03 |
-| two-ink | Two Ink | Marketing | Editorial | free | orig-05 |
-| stream-shelf | Stream Shelf | Marketing | App-style | paid | cur-49 |
-| deep-signal | Deep Signal | Data | Playable | paid | orig-09 |
-| pixel-hall | Pixel Hall | HR | Playable | paid | cur-30 |
-| deal-stage | Deal Stage | Sales | Editorial | paid | cur-27 |
-| grid-ledger | Grid Ledger | Finance | App-style | paid | prd-10 |
-| atlas-desk | Atlas Desk | Founder's Office | App-style | paid | prd-08 |
-| play-desk | Play Desk | Founder's Office | 3D | paid | cur-12 |
-| mascot-guide | Mascot Guide | Sales | 3D | paid | cur-03 |
-| design-file | Design File | Product | App-style | paid | cur-48 |
+| paper-sprint | Sprint Wall | Product | Editorial | free | orig-01 |
+| wheat-brass | Boardroom | Consulting | Editorial | free | orig-02 |
+| route-board | Road Trip | Operations | App-style | free | orig-03 |
+| two-ink | Poster Pop | Marketing | Editorial | free | orig-05 |
+| stream-shelf | Binge Shelf | Marketing | App-style | paid | cur-49 |
+| deep-signal | Data Glow | Data | Playable | paid | orig-09 |
+| pixel-hall | Pixel Quest | HR | Playable | paid | cur-30 |
+| deal-stage | Movie Poster | Sales | Editorial | paid | cur-27 |
+| grid-ledger | Spreadsheet | Finance | App-style | paid | prd-10 |
+| atlas-desk | Map View | Founder's Office | App-style | paid | prd-08 |
+| play-desk | Mini World | Founder's Office | 3D | paid | cur-12 |
+| mascot-guide | Mascot | Sales | 3D | paid | cur-03 |
+| design-file | Design Canvas | Product | App-style | paid | cur-48 |
 
 ## Not yet verified
 No theme has been used to generate a portfolio from a real resume and viewed in a browser yet. Interactive and 3D briefs
@@ -27,7 +27,7 @@ Two samples imitate Google product UIs (grid-ledger, atlas-desk); the briefs for
 
 ## Sample sites
 
-Each theme has a rebranded sample site in `public/theme-previews/<id>/` (open `/theme-previews/<id>/index.html`, linked from every card on `/themes`). They are fictional people at a fictional company, with generated placeholder cards and neutral logos. They show the look only; the live app writes each user's page from their own resume. Known gaps: Route Board and Two Ink ask for a hero video that is not shipped (404, harmless), and tool names such as Figma or Jira appear as plain text.
+Each theme has a rebranded sample site in `public/theme-previews/<id>/` (open `/theme-previews/<id>/index.html`, linked from every card on `/themes`). They are fictional people at a fictional company, with generated placeholder cards and neutral logos. They show the look only; the live app writes each user's page from their own resume. Known gaps: Road Trip and Poster Pop ask for a hero video that is not shipped (404, harmless), and tool names such as Figma or Jira appear as plain text.
 
 ## Free and paid
 

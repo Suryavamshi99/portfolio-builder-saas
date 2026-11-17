@@ -73,7 +73,7 @@ void main(){
   // radial chromatic aberration
   vec2 d = (vUv-.5);
   vec2 ab = d*uAb*(.4+dot(d,d)*3.);
-  vec3 c = vec3(src(uv+ab,0.).r, src(uv,0.).g, src(glow-ab,0.).b);
+  vec3 c = vec3(src(uv+ab,0.).r, src(uv,0.).g, src(uv-ab,0.).b);
 
   // halation: mips 4 and 6 as a free blur, highlights only, tinted
   if (uHal > 0.001){

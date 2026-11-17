@@ -41,7 +41,7 @@ describe("theme roster", () => {
   });
 
   it("looks a theme up by id", () => {
-    expect(createRegistry(registry.list()).get("paper-sprint")?.name).toBe("Paper Sprint");
+    expect(createRegistry(registry.list()).get("paper-sprint")?.name).toBe("Sprint Wall");
     expect(registry.get("nope")).toBeUndefined();
   });
 });

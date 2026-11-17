@@ -135,7 +135,7 @@
       float bnd = exp(-(f*f)/(.03*.03));
       vec2 luv = uv + g*vec2(1.,-1.)*bnd*.02;               // refraction at the blob edge
       vec2 dd = vUv - .5; vec2 ab = dd*.0035*(.4 + dot(dd,dd)*3.) + g*bnd*.004;
-      vec3 c = vec3(raw(luv+ab, 0.).r, raw(luv, 0.).g, raw(lglow-ab, 0.).b);
+      vec3 c = vec3(raw(luv+ab, 0.).r, raw(luv, 0.).g, raw(luv-ab, 0.).b);
       vec3 hb = raw(luv, 4.)*.5 + raw(luv, 6.)*.5;           // halation from mips
       c += vec3(1., .62, .4)*max(lum(hb) - .45, 0.)*.7;
       c = pow(max(c + vec3(.015,.008,0.), 0.), vec3(1./1.04))*vec3(1.04, 1., .96);

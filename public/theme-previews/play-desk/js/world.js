@@ -82,7 +82,7 @@ export function createWorld({ canvas, stops, quality = 1, reduced = false }) {
   };
   const shape = new THREE.Shape(islandOutline(160).map(([x, z]) => new THREE.Vector2(x, -z)));
   const topGeo = new THREE.ShapeGeometry(shape, 8); topGeo.rotateX(-Math.PI / 2);
-  { const p = topGeo.attributes.position, uv = topGeo.attributes.glow; for (let i = 0; i < p.count; i++) glow.setXY(i, (p.getX(i) + SPAN / 2) / SPAN, 1 - (p.getZ(i) + SPAN / 2) / SPAN); }
+  { const p = topGeo.attributes.position, uv = topGeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + SPAN / 2) / SPAN, 1 - (p.getZ(i) + SPAN / 2) / SPAN); }
   const ground = new THREE.Mesh(topGeo, groundMat); ground.receiveShadow = true; scene.add(ground);
   const sideGeo = new THREE.ExtrudeGeometry(shape, { depth: 5, bevelEnabled: false, curveSegments: 4 }); sideGeo.rotateX(-Math.PI / 2); sideGeo.translate(0, -5.02, 0);
   scene.add(new THREE.Mesh(sideGeo, [lambert(PALETTE.sandSide), lambert(PALETTE.sandSide)]));
