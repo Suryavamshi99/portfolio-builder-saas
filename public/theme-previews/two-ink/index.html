@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zubin Kapadia · Brand & Growth Marketing</title>
+<meta name="description" content="">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#e7f6f1">
+<link rel="preload" href="fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/robotoflex-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="media/video/hero-creator-poster.jpg" as="image">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="is-loading">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="top">
+  <a class="nav-logo" href="#top" aria-label="Zubin Kapadia, back to top"><span class="mis" data-mis="ZUBIN KAPADIA">ZUBIN KAPADIA</span></a>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#reel">Work</a><a href="#brief">Brief me</a><a href="#meet">About</a><a href="#contact">Contact</a>
+  </nav>
+  <div class="nav-right">
+    <div class="swatches" role="radiogroup" aria-label="Campaign ink">
+      <button type="button" role="radio" data-theme-pick="masala" aria-label="Masala inks: magenta and saffron"><i></i><i></i></button>
+      <button type="button" role="radio" data-theme-pick="monsoon" aria-label="Monsoon inks: ink blue and teal"><i></i><i></i></button>
+      <button type="button" role="radio" data-theme-pick="night" aria-label="Night market inks: violet and lime"><i></i><i></i></button>
+    </div>
+    <a class="btn btn-ink nav-cta" href="#brief" data-press>Brief me</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO: the riso plate, the live brand word, the stickers -->
+  <section class="hero" id="hero" data-ink aria-label="Introduction">
+    <canvas class="plate" aria-hidden="true"></canvas>
+    <div class="plate-fallback" aria-hidden="true"></div>
+    <div class="hero-sheet" aria-hidden="true"></div>
+    <div class="hero-hud mono" aria-hidden="true">
+      <span class="hud-l"><svg class="reg-mark" viewBox="-20 -20 40 40" aria-hidden="true"><circle r="6"/><path d="M-18 0H-9M9 0H18M0 -18V-9M0 9V18"/></svg> Sheet 01 · two inks · <span id="ink-name">Masala</span></span>
+      <span class="hud-r">Pass <span id="passN">01</span> · off register <span id="mis-read">↔ +0.0  ↕ +0.0 mm</span> <svg class="reg-mark" viewBox="-20 -20 40 40" aria-hidden="true"><circle r="6"/><path d="M-18 0H-9M9 0H18M0 -18V-9M0 9V18"/></svg></span>
+    </div>
+    <div class="hero-copy">
+      <p class="eyebrow mono" data-intro><span class="tag">Campaign proof · <span id="hero-role"></span></span></p>
+      <h1 class="headline" id="headline">
+        <span class="hl-line hl-1" id="hl-before"></span>
+        <span class="hl-word-wrap"><span class="hl-word" id="hl-word" aria-live="polite"></span></span>
+        <span class="hl-line hl-2" id="hl-after"></span>
+      </h1>
+      <div class="tester" data-intro>
+        <label class="mono tester-label" for="brand-input" id="brand-label"></label>
+        <div class="tester-row">
+          <input id="brand-input" class="tester-input" type="text" maxlength="24" autocomplete="off" spellcheck="false">
+          <div class="presets" id="presets"></div>
+        </div>
+      </div>
+      <p class="hero-for" id="hero-for" hidden></p>
+    </div>
+    <div class="hero-foot mono" data-intro>
+      <span>Drag the print to misregister it · hover for the unprinted set</span>
+      <span class="hud-views"><span id="views-live">0</span> views since you arrived, at the Mile Line launch's pace</span>
+    </div>
+    <div class="stickers" id="stickers" aria-label="Numbers you can throw around"></div>
+    <div class="lens-tag mono" aria-hidden="true">Unprinted · on set</div>
+  </section>
+
+  <!-- velocity marquee -->
+  <section class="marquee" aria-label="Numbers and brands" data-ink>
+    <div class="mq-row" id="mq1"><div class="mq-track"></div></div>
+    <div class="mq-row mq-rev" id="mq2"><div class="mq-track"></div></div>
+  </section>
+
+  <!-- pitch: text lights up word by word with scroll -->
+  <section class="pitch" id="pitch" aria-labelledby="pitch-h">
+    <div class="pitch-pin">
+      <p class="kicker mono" id="pitch-h">The pitch</p>
+      <p class="pitch-text" id="pitch-text"></p>
+      <ol class="why" id="why"></ol>
+    </div>
+  </section>
+
+  <!-- campaign film strip: scroll scrubs the Mile Line launch in five beats -->
+  <section class="film" id="film" aria-labelledby="film-h">
+    <div class="film-pin">
+      <header class="film-head">
+        <p class="kicker mono">Case film · <span id="film-org"></span></p>
+        <h2 class="h2" id="film-h"></h2>
+      </header>
+      <div class="film-stage">
+        <div class="film-strip" id="film-strip"></div>
+      </div>
+      <div class="film-beats" id="film-beats"></div>
+      <div class="film-progress"><i id="film-bar"></i><span class="mono" id="film-count">01 / 05</span></div>
+    </div>
+  </section>
+
+  <!-- the reel: 8 projects as posts on a pinned horizontal rail -->
+  <section class="reel" id="reel" aria-labelledby="reel-h">
+    <div class="reel-pin">
+      <header class="reel-head">
+        <h2 class="h2" id="reel-h"></h2>
+        <p class="mono reel-count"><span id="reel-n">01</span> / <span id="reel-t">08</span></p>
+      </header>
+      <div class="reel-track" id="reel-track"></div>
+      <div class="reel-progress"><i id="reel-bar"></i></div>
+    </div>
+  </section>
+
+  <!-- signature: Brief me, the printing press -->
+  <section class="brief" id="brief" aria-labelledby="brief-h">
+    <header class="sec-head">
+      <p class="kicker mono">Signature · run the press</p>
+      <h2 class="h2" id="brief-h"></h2>
+      <p class="lede" id="brief-intro"></p>
+    </header>
+    <div class="brief-grid">
+      <form class="brief-form" id="brief-form" onsubmit="return false">
+        <fieldset><legend class="mono">01 · Goal</legend><div class="chips" id="goal-chips" role="radiogroup" aria-label="Goal"></div></fieldset>
+        <fieldset><legend class="mono">02 · <span id="budget-label"></span></legend>
+          <div class="budget"><input type="range" id="budget" aria-describedby="budget-out"><output id="budget-out" class="flapnum"></output></div>
+        </fieldset>
+        <fieldset><legend class="mono">03 · Channels you use</legend><div class="chips" id="chan-chips"></div></fieldset>
+        <button type="button" class="btn btn-ink btn-big" id="run-press" data-press><span>Run the press</span> <i aria-hidden="true">→</i></button>
+        <p class="mono brief-note" id="brief-note" aria-live="polite"></p>
+      </form>
+      <div class="press" id="press" aria-label="Campaign sketch">
+        <div class="press-machine" aria-hidden="true">
+          <div class="press-head"><span class="mono">ZUBIN-1 · two-drum duplicator</span><span class="press-light"></span></div>
+          <div class="press-drum"><i></i></div>
+        </div>
+        <div class="press-bed">
+          <article class="sheet" id="sheet" tabindex="-1">
+            <div class="sheet-empty mono">Pick a goal, a budget and your channels, then run the press.</div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- before / after -->
+  <section class="ba" id="compare" aria-labelledby="ba-h">
+    <header class="sec-head">
+      <p class="kicker mono">Before and after</p>
+      <h2 class="h2" id="ba-h"></h2>
+      <p class="lede" id="ba-intro"></p>
+    </header>
+    <div class="ba-frame" id="ba-frame" data-cursor="drag" data-cursor-label="Drag">
+      <div class="ba-pane ba-before" id="ba-before"></div>
+      <div class="ba-pane ba-after" id="ba-after"></div>
+      <div class="ba-handle" id="ba-handle" role="slider" tabindex="0" aria-label="Compare before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span>⟷</span></div>
+    </div>
+    <p class="mono ba-note" id="ba-note"></p>
+  </section>
+
+  <!-- the three full cases -->
+  <section class="cases" id="cases" aria-labelledby="cases-h">
+    <header class="sec-head"><p class="kicker mono">Read the full case</p><h2 class="h2" id="cases-h"></h2></header>
+    <div class="case-list" id="case-list"></div>
+  </section>
+
+  <!-- meet: giant name behind the cutout -->
+  <section class="meet" id="meet" aria-labelledby="meet-h">
+    <div class="meet-stage" data-ink>
+      <h2 class="meet-name" id="meet-h"><span class="mn-1" id="mn-1"></span><span class="mn-2" id="mn-2"></span></h2>
+      <img class="meet-cut" id="meet-cut" alt="" loading="lazy">
+      <p class="meet-tag mono" id="meet-tag"></p>
+    </div>
+    <div class="meet-body">
+      <div class="meet-about">
+        <p class="kicker mono">About</p>
+        <p class="big-p" id="about-intro"></p>
+        <p class="now" id="about-now"></p>
+        <ul class="values" id="values"></ul>
+      </div>
+      <div class="journey">
+        <p class="kicker mono" id="journey-h"></p>
+        <div class="jr-wrap"><svg class="jr-line" preserveAspectRatio="none" viewBox="0 0 10 100" aria-hidden="true"><path id="jr-path" d="M5 0 L5 100" /></svg><ol class="jr-list" id="journey"></ol></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- experience + education -->
+  <section class="cv" id="experience" aria-label="Experience and education">
+    <div class="cv-col"><h2 class="h3 mono" id="exp-h"></h2><div id="exp-list"></div></div>
+    <div class="cv-col"><h2 class="h3 mono" id="edu-h"></h2><div id="edu-list"></div><h3 class="h3 mono certs-h">Certifications</h3><ul class="certs" id="certs"></ul></div>
+  </section>
+
+  <!-- wins: stacked posters that fan out -->
+  <section class="wins" id="wins" aria-labelledby="wins-h">
+    <header class="sec-head"><p class="kicker mono">Hover the stack</p><h2 class="h2" id="wins-h"></h2></header>
+    <div class="win-stack" id="win-stack" data-cursor="view" data-cursor-label="Fan"></div>
+    <ol class="win-list" id="win-list"></ol>
+  </section>
+
+  <!-- skills + tools dock -->
+  <section class="skills" id="skills" aria-labelledby="skills-h">
+    <header class="sec-head"><p class="kicker mono">Kit</p><h2 class="h2" id="skills-h"></h2></header>
+    <div class="skill-cols" id="skill-cols"></div>
+    <div class="dock" id="dock" aria-label="Tools"></div>
+  </section>
+
+  <!-- outside work: flip cards that wiggle -->
+  <section class="outside" id="outside" aria-labelledby="out-h">
+    <header class="sec-head"><p class="kicker mono">Tap a card to flip it</p><h2 class="h2" id="out-h"></h2></header>
+    <div class="flip-row" id="flip-row"></div>
+  </section>
+
+  <!-- testimonials: torn notes -->
+  <section class="notes" id="testimonials" aria-labelledby="notes-h">
+    <header class="sec-head"><p class="kicker mono">Pinned to the board</p><h2 class="h2" id="notes-h"></h2></header>
+    <div class="note-row" id="note-row"></div>
+  </section>
+
+  <!-- contact -->
+  <section class="contact" id="contact" data-ink aria-labelledby="contact-h">
+    <p class="kicker mono" id="contact-h">Contact · can start <span id="avail"></span></p>
+    <button type="button" class="mail" id="mail" data-cursor="view" data-cursor-label="Copy"><span id="mail-text"></span></button>
+    <p class="mono mail-hint" id="mail-hint" aria-live="polite">Click to copy</p>
+    <div class="contact-grid" id="contact-grid"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-word" aria-hidden="true"><span class="mis" data-mis="ZUBIN KAPADIA">ZUBIN KAPADIA</span></div>
+  <div class="foot-row mono"><span id="foot-loc"></span><span id="demo-note"></span><span><a href="#top">Back to top ↑</a></span></div>
+</footer>
+
+<canvas class="ink" aria-hidden="true"></canvas>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script src="js/press.js"></script>
+<script src="js/core.js"></script>
+<script src="js/app.js"></script>
+<script src="/theme-previews/_edit-photos.js" data-site="two-ink" defer></script>
+</body>
+</html>

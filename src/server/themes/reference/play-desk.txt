@@ -1,0 +1,7 @@
+Fonts used: Amatic SC, Nunito
+Colour tokens: --plum-950 #17121b, --plum-900 #1d1721, --plum-800 #251f2b, --plum-700 #2f2836, --plum-600 #3b3243, --grid-mark #6f4bb8, --lime #d5ff95, --pink #ffceca, --sand #ef8f4f, --sand-dark #d9733a, --teal #2f9c97, --ink #ffffff
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, clip-path shapes, blend modes, backdrop blur, CSS keyframe animation, SVG filters or masks, reduced-motion handling
+Named animations: pulse
+Scripted behaviours: canvas 2D drawing, WebGL or three.js scene, scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, requestAnimationFrame loop, localStorage state, SVG charts drawn by script
+Script functions (hint at features): defaultChips, projectAnswer, orgAnswer, intro, owned, evidence, lessons, roles, weakest, hidden, projectList, education, awards, skills, contact, about, search, answer, createStore, ensure, renderText, applyTheme, createCar, place, step, render, loadContent, forCompany, forLine, renderRead
+Page outline (landmarks): section.intro, aside.panel

@@ -27,6 +27,7 @@ import {
   type JobRow,
 } from "./jobs";
 import { prepareGeneration } from "./prepare";
+import { designBriefFor } from "@/server/themes/brief";
 
 function llmJobError(e: unknown): JobError {
   if (e instanceof LlmAuthError) return { code: "byok_key_invalid", message: "Your API key was rejected by the provider" };
@@ -69,6 +70,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   const prepared = await prepareGeneration(admin, job.user_id, {
     resumeUploadId: job.resume_upload_id,
     instructions: job.params.instructions,
+    designBrief: designBriefFor(job.params.theme?.id),
   });
   if (!prepared.ok) return failJob(admin, job.id, { code: prepared.code, message: prepared.message });
 
@@ -127,7 +129,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     const input: BuildInput = {
       lines: resumeLines(prepared.resumeText),
       specifics: prepared.specifics,
-      instructions: job.params.instructions,
+      instructions: [designBriefFor(job.params.theme?.id), job.params.instructions].filter(Boolean).join("\n\n") || undefined,
       designIntensity: prepared.designIntensity,
       photoUrl: prepared.photoUrl,
       links: prepared.links,

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import type { ThemeRequest } from "@/server/themes/types";
 import { progressOf, type PipelineState } from "./pipeline/types";
 
 export type JobStatus = "queued" | "reading" | "writing" | "checking" | "saving" | "done" | "failed";
@@ -19,7 +20,7 @@ export interface JobRow {
   error: JobError | null;
   retry_at: string | null;
   resume_upload_id: string | null;
-  params: { instructions?: string; pipeline?: PipelineState };
+  params: { instructions?: string; pipeline?: PipelineState; theme?: ThemeRequest };
   provider: string | null;
   created_at: string;
   updated_at: string;
@@ -59,7 +60,7 @@ export function toApiJob(row: JobRow) {
 
 export async function createJob(
   admin: SupabaseClient,
-  job: { userId: string; source: JobSource; resumeUploadId: string; instructions?: string | undefined },
+  job: { userId: string; source: JobSource; resumeUploadId: string; instructions?: string | undefined; theme?: ThemeRequest | undefined },
 ): Promise<{ ok: true; job: JobRow } | { ok: false; activeJobId: string | null }> {
   // A job parked in the queue (waiting for free capacity) must never block a new build, from any source.
   await admin
@@ -82,7 +83,7 @@ export async function createJob(
       status: "reading",
       message: STATUS_MESSAGES.reading,
       resume_upload_id: job.resumeUploadId,
-      params: job.instructions ? { instructions: job.instructions } : {},
+      params: { ...(job.instructions ? { instructions: job.instructions } : {}), ...(job.theme ? { theme: job.theme } : {}) },
     })
     .select(COLUMNS)
     .single();

@@ -1,0 +1,7 @@
+Fonts used: Barlow Condensed, Inter Tight
+Colour tokens: --paper #EEEDE8, --paper-hi #F8F7F3, --ink #161C21, --steel #2E3A44, --fog #DFE0DB, --asphalt #11181D, --asphalt-2 #18222A, --orange #FF5A1F, --orange-hi #FF7A45, --orange-ink #C8410F, --on-dark #F0EFEA
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, clip-path shapes, blend modes, backdrop blur, 3D transforms, CSS keyframe animation, SVG filters or masks, custom cursor, reduced-motion handling
+Named animations: flow, ping, beat, cue
+Scripted behaviours: GSAP animation, scroll-triggered animation, smooth scrolling, keyboard controls, SVG charts drawn by script
+Script functions (hint at features): build, lerpLL, setCoords, paint, layoutLeader, openSheet, person, walkX, slotPt, legs, sequence, plan, render
+Page outline (landmarks): main#main, section#trip.trip, section#work.sec, section.sec, section#plan.sec, section.sec, section.sec, section#faq.sec, section#book.book, dialog#sheet.sheet

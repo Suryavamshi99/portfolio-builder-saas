@@ -1,0 +1,34 @@
+# Theme roster
+
+Themes are design languages (see `adding-a-theme.md`). Names, free/paid tiers and profession tags are working choices for the owner to confirm.
+
+| Id | Name | Profession | Feel | Tier | Derived from sample |
+|---|---|---|---|---|---|
+| paper-sprint | Sprint Wall | Product | Editorial | free | orig-01 |
+| wheat-brass | Boardroom | Consulting | Editorial | free | orig-02 |
+| route-board | Road Trip | Operations | App-style | free | orig-03 |
+| two-ink | Poster Pop | Marketing | Editorial | free | orig-05 |
+| stream-shelf | Binge Shelf | Marketing | App-style | paid | cur-49 |
+| deep-signal | Data Glow | Data | Playable | paid | orig-09 |
+| pixel-hall | Pixel Quest | HR | Playable | paid | cur-30 |
+| deal-stage | Movie Poster | Sales | Editorial | paid | cur-27 |
+| grid-ledger | Spreadsheet | Finance | App-style | paid | prd-10 |
+| atlas-desk | Map View | Founder's Office | App-style | paid | prd-08 |
+| play-desk | Mini World | Founder's Office | 3D | paid | cur-12 |
+| mascot-guide | Mascot | Sales | 3D | paid | cur-03 |
+| design-file | Design Canvas | Product | App-style | paid | cur-48 |
+
+## Not yet verified
+No theme has been used to generate a portfolio from a real resume and viewed in a browser yet. Interactive and 3D briefs
+(play-desk, pixel-hall, deep-signal) depend on the model writing a working one-file page; the free step-by-step path will
+mostly carry colours, fonts and layout, while the Gemini path can attempt the interaction.
+The sample sites embed a voice-agent widget and third-party libraries; none of that is used or shipped.
+Two samples imitate Google product UIs (grid-ledger, atlas-desk); the briefs forbid vendor names and logos.
+
+## Sample sites
+
+Each theme has a rebranded sample site in `public/theme-previews/<id>/` (open `/theme-previews/<id>/index.html`, linked from every card on `/themes`). They are fictional people at a fictional company, with generated placeholder cards and neutral logos. They show the look only; the live app writes each user's page from their own resume. Known gaps: Road Trip and Poster Pop ask for a hero video that is not shipped (404, harmless), and tool names such as Figma or Jira appear as plain text.
+
+## Free and paid
+
+The server checks the tier on every build (`checkThemeAccess`, called from `POST /api/generations`). Paid themes need paid access, but `hasPaidAccess` is true for everyone while `PAYMENTS_ENABLED` is false, so today every theme is open. The picker does not yet know the user's tier, so a free user can pick a paid card and only see the 402 after the build starts.

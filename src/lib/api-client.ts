@@ -60,6 +60,19 @@ export interface CreateGenerationBody {
     other?: { label: string; url: string }[] | undefined;
   } | undefined;
   instructions?: string | undefined;
+  /** A design language chosen in the gallery. Omit for a custom, model-designed page. */
+  theme?: { id: string } | undefined;
+}
+
+export interface ThemeSummary {
+  id: string;
+  name: string;
+  tagline: string;
+  profession: string;
+  feel: string;
+  tier: "free" | "paid";
+  palette: string[];
+  fonts: string[];
 }
 
 export interface CreateGenerationResponse {
@@ -253,6 +266,10 @@ export const apiClient = {
     return requestJson<{ ok: boolean }>(`/api/generations/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+  },
+
+  getThemes: async (): Promise<{ themes: ThemeSummary[] }> => {
+    return requestJson<{ themes: ThemeSummary[] }>("/api/themes");
   },
 
   getFreeStatus: async (): Promise<FreeStatusResponse> => {

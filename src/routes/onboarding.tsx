@@ -1,3 +1,4 @@
+import { ThemePicker } from "@/components/theme-picker";
 import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -67,6 +68,7 @@ const STEPS = [
   { step: 6, title: "Generate", icon: Sparkles },
 ] as const;
 
+
 function OnboardingWizard() {
   const navigate = useNavigate();
   const { refreshPortfolioStatus, portfolioReady } = useAuth();
@@ -81,6 +83,7 @@ function OnboardingWizard() {
   const [githubProjectLinks, setGithubProjectLinks] = React.useState<string[]>([]);
   const [otherLinks, setOtherLinks] = React.useState<{ label: string; url: string }[]>([]);
   const [designIntensity, setDesignIntensity] = React.useState<"minimal" | "bold">("minimal");
+  const [themeId, setThemeId] = React.useState<string | null>(null);
 
   // Step 5 & Generation method state
   const [selectedMethod, setSelectedMethod] = React.useState<GenerationMethod>("free");
@@ -364,6 +367,7 @@ function OnboardingWizard() {
         resumeUploadId: resumeUpload.id,
         otherSpecifics: otherSpecifics.trim() || undefined,
         designIntensity,
+        theme: themeId ? { id: themeId } : undefined,
         links: {
           linkedin: linkedinUrl.trim() || undefined,
           github: githubProfileUrl.trim() || undefined,
@@ -557,6 +561,8 @@ function OnboardingWizard() {
                 onDeleteSuccess={(id) => setVisualReferences((prev) => prev.filter((r) => r.id !== id))}
                 onBusyChange={setUploadBusy}
               />
+
+              <ThemePicker value={themeId} onChange={setThemeId} />
 
               <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5">
                 <div className="text-xs font-semibold text-foreground">Design intensity</div>

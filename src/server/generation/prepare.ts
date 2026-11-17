@@ -30,7 +30,7 @@ export type PreparedGeneration =
 export async function prepareGeneration(
   admin: SupabaseClient,
   userId: string,
-  opts: { resumeUploadId: string; instructions?: string | undefined; skipImages?: boolean },
+  opts: { resumeUploadId: string; instructions?: string | undefined; designBrief?: string | undefined; skipImages?: boolean },
 ): Promise<PreparedGeneration> {
   const { data: resumeRow } = await admin
     .from("uploads")
@@ -83,7 +83,7 @@ export async function prepareGeneration(
   const userMessage = buildPortfolioHtmlUserMessage({
     resumeText,
     otherSpecifics: specifics ?? undefined,
-    revisionInstructions: opts.instructions,
+    revisionInstructions: [opts.designBrief, opts.instructions].filter(Boolean).join("\n\n") || undefined,
     photoUrl,
     hasReferenceImages: images.length > 0,
     designIntensity,

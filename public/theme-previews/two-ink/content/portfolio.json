@@ -1,0 +1,1250 @@
+{
+ "demo": true,
+ "_note": "SAMPLE PERSONA. Zubin Kapadia is a fictional person. Every employer, school, client, campaign, number, award and testimonial here is invented. Swap in the real story, then set demo to false.",
+ "meta": {
+  "domain": "marketing",
+  "site_title": "Zubin Kapadia · Brand & Growth Marketing",
+  "description": "Brand and growth lead at Pinewick Paper & Print for six years, now studying at Millbrook School of Management and hoping to join a consumer brand in a brand or growth marketing seat.",
+  "theme": "editorial",
+  "noindex": true
+ },
+ "person": {
+  "first_name": "Zubin",
+  "last_name": "Kapadia",
+  "pronouns": "he/him",
+  "headline": "Brand marketer from a regional paper company, with a 38,000-follower stationery-counter page on the side",
+  "current": "Executive PGP in Brand & Growth Management, Millbrook School of Management, Stonebridge",
+  "looking_for": "Brand or growth marketing seats at consumer and D2C companies around Larchmont Falls, Stonebridge or Harrowgate",
+  "location": "Stonebridge, India (from Larchmont Falls)",
+  "available_from": "January 2027"
+ },
+ "contact": {
+  "email": "zubin.kapadia@example.com",
+  "phone": "+91 00000 00000",
+  "whatsapp": "+91 00000 00000",
+  "linkedin": "https://www.linkedin.com/in/example",
+  "calendly": "https://calendly.com/example",
+  "resume_pdf": "media/resume.pdf",
+  "instagram": "https://www.instagram.com/example",
+  "substack": "https://example.substack.com"
+ },
+ "pitch": {
+  "short": "Six years at Pinewick Paper & Print in Larchmont Falls taught me to write catalogues, then campaigns, then to decide which creators and formats earned the launch budget. On weekends I run a reel page about the valley's last independent stationery counters, 38,000 followers strong, and I try most of my ideas there before pitching them.",
+  "why_hire": [
+   "Six years at Pinewick, rising from coordinator to brand and growth lead with four reports, so I understand what a brief becomes on a shoot day and on a warehouse floor.",
+   "I ran a launch with 48 creators for a refillable gel pen: 4.8 million views within four weeks, and 28% of the first month's orders came through creator codes.",
+   "During an internship at Kettleby Pantry I pitted creator reels and the brand's usual ads on quick commerce and lowered cost per order by 19% in the test towns."
+  ],
+  "for_company_template": "Why {company}: {company} sells on Instagram and quick commerce, and that is exactly where my creator and content work pays off."
+ },
+ "about": {
+  "intro": "I grew up in Larchmont Falls and studied commerce at Ashgrove College, where I ran the posters for every society and got the print shop to give me a student rate. I joined Pinewick Paper & Print in 2019 as a marketing coordinator and stayed six years: first catalogues and price sheets, then campaigns, then the brand and growth team. Our regional manager, Gordie Pruitt, believed any problem could be solved with a four-letter acronym on a whiteboard, so I learned to bring a number as well as a slogan. In 2022 I started Shopfront Sundays, a reel series on the valley's last independent stationery counters. I joined Millbrook School of Management in 2025 to move to a brand where I own the budget as well as the content.",
+  "now": "Filming a Stonebridge edition of Shopfront Sundays each weekend, five-a-side football on Tuesday evenings, and a weekly newsletter called Copy That that takes apart one small-brand ad."
+ },
+ "journey": [
+  {
+   "year": "2019",
+   "title": "BCom (Marketing), Ashgrove College, Larchmont Falls",
+   "detail": "Graduated with a 8.4 CGPA. Ran publicity for the college fest and negotiated a student rate with the print shop."
+  },
+  {
+   "year": "2019",
+   "title": "Marketing Coordinator, Pinewick Paper & Print",
+   "detail": "Joined in July. First job: a catalogue that listed one A4 ream under three prices. Dennis Hale in accounts settled it with a rounding rule."
+  },
+  {
+   "year": "2021",
+   "title": "Marketing Executive, Pinewick",
+   "detail": "Took over the monthly price sheet, school-season mailers and the Pinewick Instagram page."
+  },
+  {
+   "year": "2022",
+   "title": "Senior Marketing Executive, Pinewick",
+   "detail": "Wrote the anniversary film 'Last Page'. Started Shopfront Sundays on Instagram."
+  },
+  {
+   "year": "2023",
+   "title": "Brand & Growth Lead, Pinewick",
+   "detail": "Led a team of four across stationery and school supplies. Ran the 48-creator Mile Line launch in 2024."
+  },
+  {
+   "year": "2025",
+   "title": "Executive PGP, Brand & Growth Management, Millbrook School of Management, Stonebridge",
+   "detail": "Marketing track. In term 1 I led a live project to rebrand a Stonebridge stationery webshop."
+  },
+  {
+   "year": "2026",
+   "title": "Brand Marketing Intern, Kettleby Pantry, Stonebridge",
+   "detail": "Ten weeks pitting creator reels and the brand's usual ads for a new oat bar on quick commerce."
+  }
+ ],
+ "education": [
+  {
+   "school": "Millbrook School of Management, Stonebridge",
+   "degree": "Executive PGP in Brand & Growth Management",
+   "years": "2025–2026",
+   "notes": "Marketing track. Greenlane Brand Challenge 2026 national finalist.",
+   "logo": "logos/orgs/crestfield.svg"
+  },
+  {
+   "school": "Ashgrove College, Larchmont Falls",
+   "degree": "Bachelor of Commerce (Marketing)",
+   "years": "2019",
+   "notes": "8.4 CGPA. Fest publicity lead.",
+   "logo": "logos/orgs/st-xaviers-mumbai.png"
+  },
+  {
+   "school": "Larchmont Falls Trade Guild",
+   "degree": "Certificate in Print and Packaging Marketing",
+   "years": "2019",
+   "notes": "Evening course, distinction.",
+   "logo": "logos/orgs/st-andrews-college.png"
+  }
+ ],
+ "experience": [
+  {
+   "org": "Kettleby Pantry",
+   "role": "Brand Marketing Intern",
+   "place": "Stonebridge",
+   "dates": "Apr 2026 – Jun 2026",
+   "points": [
+    "Designed and ran a three-week experiment: 18 creator reels versus brand ads for a new oat bar on quick commerce in Harrowgate and Stonebridge.",
+    "Creator reels earned a 2.8% click-through rate where brand ads earned 1.7%, and cost per order dropped 19% in the test towns."
+   ],
+   "logo": "logos/orgs/the-whole-truth.svg"
+  },
+  {
+   "org": "Pinewick Paper & Print",
+   "role": "Brand & Growth Lead, stationery and school supplies",
+   "place": "Larchmont Falls",
+   "dates": "Apr 2023 – Jun 2025",
+   "points": [
+    "Managed brand and growth for two product lines, supported by two copywriters, one designer and a creator manager.",
+    "Owned the 48-creator launch of a refillable gel pen: 4.8M views and 7,200 packs sold within 21 days."
+   ],
+   "logo": "logos/orgs/brandwave.png"
+  },
+  {
+   "org": "Pinewick Paper & Print",
+   "role": "Marketing Coordinator to Senior Marketing Executive",
+   "place": "Larchmont Falls",
+   "dates": "Jul 2019 – Mar 2023",
+   "points": [
+    "Wrote catalogues, price sheets, school-season mailers and the monthly content calendar.",
+    "Wrote 'Last Page', a 90-second anniversary film: 1.4M YouTube views and a Millrace Awards shortlist."
+   ],
+   "logo": "logos/orgs/brandwave.png"
+  }
+ ],
+ "projects": [
+  {
+   "slug": "glow-creators",
+   "title": "The Mile Line: 48 creators and one gel pen",
+   "org": "Pinewick Paper & Print",
+   "year": "2024",
+   "role": "Brand & Growth Lead",
+   "type": "Work",
+   "summary": "Pinewick was about to launch Longline, a refillable gel pen, in a market where every ad is a hand writing 'hello' in a swirl. We asked 48 micro-creators to draw a single unbroken line until the pen ran dry, and Wendell Odom in the warehouse measured each one with a tape.",
+   "result": "4.8M views in four weeks; 7,200 packs sold in 21 days; 28% of the first month's orders came with a creator code",
+   "thumbnail": "projects/glow-creators/thumb.jpg",
+   "has_page": true,
+   "tags": [
+    "Creator marketing",
+    "Launch",
+    "Stationery",
+    "Instagram"
+   ],
+   "duration": "10 weeks",
+   "team": "Brand lead, 2 copywriters, 1 creator manager, product manager",
+   "tools": [
+    "instagram",
+    "meta",
+    "googlesheets",
+    "adobepremierepro"
+   ],
+   "metrics": [
+    [
+     "48",
+     "creators in 5 towns"
+    ],
+    [
+     "4.8M",
+     "views in 4 weeks"
+    ],
+    [
+     "28%",
+     "orders via creator codes"
+    ]
+   ]
+  },
+  {
+   "slug": "pav-patrol",
+   "title": "Shopfront Sundays: reels from the valley's last stationery counters",
+   "org": "Own initiative",
+   "year": "2022–now",
+   "role": "Creator, shooter and editor",
+   "type": "Side project",
+   "summary": "One independent stationery counter per week, shot on a phone inside sixty minutes. Every reel starts with the owner's name and the number of years the counter has been open.",
+   "result": "38,000 followers, a 2.2M-view reel and nine paid brand collaborations",
+   "thumbnail": "projects/pav-patrol/thumb.jpg",
+   "has_page": true,
+   "tags": [
+    "Content",
+    "Instagram",
+    "Community",
+    "Retail"
+   ],
+   "duration": "Weekly since 2022",
+   "team": "Just me, plus a friend holding the second camera",
+   "tools": [
+    "instagram",
+    "davinciresolve",
+    "canva",
+    "googlesheets"
+   ],
+   "metrics": [
+    [
+     "38k",
+     "followers"
+    ],
+    [
+     "112",
+     "reels"
+    ],
+    [
+     "2.2M",
+     "views on the top reel"
+    ]
+   ]
+  },
+  {
+   "slug": "twt-creator-test",
+   "title": "Creator reels against brand ads for a new oat bar",
+   "org": "Kettleby Pantry (internship)",
+   "year": "2026",
+   "role": "Brand Marketing Intern",
+   "type": "Internship",
+   "summary": "A new oat bar flavour sold briskly on the brand's own site but crawled on quick-commerce apps. I designed a head-to-head of creator reels and the brand's ads, each reel pointing to the bar's listing on those apps.",
+   "result": "Cost per order down 19% in the test towns over three weeks",
+   "thumbnail": "projects/twt-creator-test/thumb.jpg",
+   "has_page": true,
+   "tags": [
+    "Growth",
+    "Quick commerce",
+    "Creators",
+    "Experiment"
+   ],
+   "duration": "10 weeks",
+   "team": "Intern, brand manager, performance marketer",
+   "tools": [
+    "meta",
+    "instagram",
+    "googlesheets",
+    "canva"
+   ],
+   "metrics": [
+    [
+     "2.8% vs 1.7%",
+     "click-through rate"
+    ],
+    [
+     "−19%",
+     "cost per order"
+    ],
+    [
+     "18",
+     "creators, 2 towns"
+    ]
+   ]
+  },
+  {
+   "slug": "dabba-film",
+   "title": "'Last Page': an anniversary film for Pinewick",
+   "org": "Pinewick Paper & Print",
+   "year": "2022",
+   "role": "Senior Marketing Executive (script)",
+   "type": "Work",
+   "summary": "A 90-second film following one box of notebooks from the Larchmont Falls mill to a student's hostel desk, with Tilly Brandt answering the phone in the first shot. I wrote the script and spent both shoot days on set.",
+   "result": "1.4M YouTube views; shortlisted at the Millrace Awards 2023",
+   "thumbnail": "projects/dabba-film/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Film",
+    "Scriptwriting",
+    "Brand"
+   ],
+   "duration": "5 weeks",
+   "team": "Creative director, art director, production house and me",
+   "tools": [
+    "youtube",
+    "adobepremierepro"
+   ],
+   "metrics": [
+    [
+     "90 s",
+     "film"
+    ],
+    [
+     "1.4M",
+     "YouTube views"
+    ],
+    [
+     "Shortlist",
+     "Millrace 2023"
+    ]
+   ]
+  },
+  {
+   "slug": "cloud-kitchen-rebrand",
+   "title": "Rebrand for a Stonebridge stationery webshop (live project)",
+   "org": "Millbrook School of Management live project",
+   "year": "2025",
+   "role": "Team lead, 4 people",
+   "type": "Live project",
+   "summary": "A four-range stationery webshop had product names like 'Combo 3' and catalogue pictures taken on a phone. We renamed everything, designed a new identity and reshot the range for its marketplace page.",
+   "result": "Product-page conversion climbed from 2.9% to 4.1% across six weeks",
+   "thumbnail": "projects/cloud-kitchen-rebrand/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Rebrand",
+    "E-commerce",
+    "Identity"
+   ],
+   "duration": "8 weeks",
+   "team": "4 classmates",
+   "tools": [
+    "figma",
+    "canva",
+    "shopify"
+   ],
+   "metrics": [
+    [
+     "2.9→4.1%",
+     "product-page conversion"
+    ],
+    [
+     "38",
+     "products renamed"
+    ],
+    [
+     "4",
+     "ranges"
+    ]
+   ]
+  },
+  {
+   "slug": "brandstorm",
+   "title": "Greenlane Brand Challenge 2026: refillable notebooks through local stationers",
+   "org": "Case competition",
+   "year": "2026",
+   "role": "Team of 3, pitch lead",
+   "type": "Case competition",
+   "summary": "Our idea: refillable notebook covers sold through neighbourhood stationers in tier-2 towns, with each stationer acting as the creator. Before the national round we interviewed 36 shop owners in Stonebridge and Harrowgate.",
+   "result": "National finalist, top 8 in India",
+   "thumbnail": "projects/brandstorm/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Case",
+    "Stationery",
+    "Go-to-market"
+   ],
+   "duration": "6 weeks",
+   "team": "3 classmates",
+   "tools": [
+    "figma",
+    "miro",
+    "googlesheets"
+   ],
+   "metrics": [
+    [
+     "Top 8",
+     "in India"
+    ],
+    [
+     "36",
+     "shop interviews"
+    ],
+    [
+     "3",
+     "person team"
+    ]
+   ]
+  },
+  {
+   "slug": "copy-that",
+   "title": "Copy That: one small-brand ad, broken down every week",
+   "org": "LinkedIn newsletter",
+   "year": "2024–now",
+   "role": "Writer",
+   "type": "Writing",
+   "summary": "A short weekly post about one regional brand's ad: what the line says, who it was aimed at, and the test I would run next.",
+   "result": "58 issues, 9,400 subscribers",
+   "thumbnail": "projects/copy-that/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Writing",
+    "Copy",
+    "Brand"
+   ],
+   "duration": "Weekly since 2024",
+   "team": "Solo",
+   "tools": [
+    "linkedin",
+    "notion",
+    "canva"
+   ],
+   "metrics": [
+    [
+     "58",
+     "issues"
+    ],
+    [
+     "9.4k",
+     "subscribers"
+    ],
+    [
+     "15k",
+     "avg. impressions"
+    ]
+   ]
+  },
+  {
+   "slug": "mu-fest",
+   "title": "Marketing for the Millbrook campus fest",
+   "org": "Millbrook School of Management marketing club",
+   "year": "2025",
+   "role": "Marketing lead, team of 6",
+   "type": "Club",
+   "summary": "Five weeks, ₹32,000 and a two-day fest to fill. The bulk of the money paid student creators at 30 Larch Valley colleges and gave each college its own WhatsApp referral code.",
+   "result": "1,850 registrations from 30 colleges; 41% came through referral codes",
+   "thumbnail": "projects/mu-fest/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Events",
+    "Referral",
+    "Student marketing"
+   ],
+   "duration": "5 weeks",
+   "team": "6 club members",
+   "tools": [
+    "instagram",
+    "whatsapp",
+    "canva",
+    "googlesheets"
+   ],
+   "metrics": [
+    [
+     "1,850",
+     "registrations"
+    ],
+    [
+     "41%",
+     "via referral codes"
+    ],
+    [
+     "₹32k",
+     "total budget"
+    ]
+   ]
+  }
+ ],
+ "project_pages": {
+  "glow-creators": {
+   "context": "Longline is a refillable gel pen that Pinewick launched in March 2024. Pen ads here usually show a swirl on a notebook page, and the company's last launch reels managed 0.8% engagement. Regional manager Gordie Pruitt's brief was one line on a whiteboard: 'LAUNCH = L.O.U.D.'. We wanted something that survived without an acronym.",
+   "problem": "Buyers assume a refillable pen dies mid-exam and do not trust ink claims. We were after a format that proved the pen lasted, that creators could film at home, and that looked nothing like other pen ads.",
+   "my_role": "Brand & Growth Lead: idea, creator brief and launch plan were mine",
+   "dates": "Jan – Apr 2024",
+   "what_i_did": [
+    "Trialled the format on two creators and on myself: draw an unbroken line along a roll of till paper until the pen gives up, then measure it.",
+    "Chose 48 micro-creators with 10k to 80k followers across Larchmont Falls, Stonebridge, Harrowgate, Ashgrove and Millbrook, ranked by the save rate of their last 20 posts rather than follower count.",
+    "Wrote a single-page brief: three mandatory shots, no script, and a banned-word list that included 'smooth' and 'buttery'.",
+    "Waited 72 hours, then boosted only the six strongest reels using the 40% of paid budget I had kept back.",
+    "Kept a weekly tracker of views, saves and code-linked orders for Pinewick and the agency to go through each Monday, with Wendell checking the line lengths."
+   ],
+   "decisions": [
+    {
+     "choice": "Forty-eight small voices, not two famous ones",
+     "why": "The same money bought 48 hands and 48 handwriting styles, and stationery micro-creators saved posts about three times as often."
+    },
+    {
+     "choice": "Keep the moment the ink fades",
+     "why": "Reels in which the creator watched the line thin out near the end were saved more than tidy ones, so every creator was asked to leave that bit in."
+    },
+    {
+     "choice": "Park 40% of paid spend for three days",
+     "why": "Nobody could predict which creators would land. A three-day wait let the money follow reels people were already saving."
+    }
+   ],
+   "results": [
+    {
+     "metric": "Views",
+     "value": "4.8M",
+     "note": "organic and boosted, first four weeks"
+    },
+    {
+     "metric": "Packs sold",
+     "value": "7,200",
+     "note": "in the first 21 days, Pinewick webshop"
+    },
+    {
+     "metric": "Orders via creator codes",
+     "value": "28%",
+     "note": "of first-month webshop orders"
+    }
+   ],
+   "learned": "Rough till-paper reels shot at kitchen tables reached a 3.9% save rate. Pinewick's polished studio films reached 1.2%.",
+   "next": "Apply the idea to refills: a mid-term 'is it still going?' check at colleges and offices, where pen loyalty is actually decided.",
+   "images": [
+    "projects/glow-creators/thumb.jpg",
+    "projects/glow-creators/tiers.jpg",
+    "photos/candid-shoot-set.jpg"
+   ]
+  },
+  "pav-patrol": {
+   "context": "Shopfront Sundays began in 2022 as a way to practise shooting and editing in my own time. Each week it features one stationery counter in the Larch Valley, and since 2025 a Stonebridge one as well.",
+   "problem": "Local shop pages mostly post prices and offers. Owners said they felt reduced to a stock list, and the reels blurred together, so I looked for a format that people would pass on for the owner's sake as much as the shelves.",
+   "my_role": "Creator, shooter and editor",
+   "dates": "Mar 2022 – now",
+   "what_i_did": [
+    "Fixed the format: under 40 seconds, owner's name and opening year in the first frame, plus a line the owner said, quoted as spoken.",
+    "Filmed each reel in under an hour with a phone and small gimbal, and cut it in DaVinci Resolve on Sunday mornings.",
+    "Recorded every reel in a spreadsheet: hook, length, shop type, and views, saves and shares for the next seven days.",
+    "From 2023 accepted paid collaborations under one rule: a brand reel after every four counter reels, and brands never appear inside a counter reel."
+   ],
+   "decisions": [
+    {
+     "choice": "No prices, no offers",
+     "why": "Once I stopped filming the stock list, owners relaxed and posted the reels on their own pages."
+    },
+    {
+     "choice": "Open on the person, not the shelf",
+     "why": "My logs show owner-first reels earned 2.4 times the shares of shelf-first ones."
+    }
+   ],
+   "results": [
+    {
+     "metric": "Followers",
+     "value": "38,000",
+     "note": "since March 2022, no paid promotion"
+    },
+    {
+     "metric": "Top reel",
+     "value": "2.2M views",
+     "note": "a pencil-sharpener repair counter on Mill Street, Larchmont Falls"
+    },
+    {
+     "metric": "Paid collaborations",
+     "value": "9",
+     "note": "a notebook maker, an ink brand and a cold-brew brand"
+    }
+   ],
+   "learned": "For a small page, shares beat views. Shares bring back followers who stay, whereas explore-page views mostly vanish.",
+   "next": "Publish the shared map of counters that followers keep requesting, and build a Stonebridge series the same way.",
+   "images": [
+    "projects/pav-patrol/thumb.jpg",
+    "projects/pav-patrol/shares.jpg",
+    "photos/hobby-street-food.jpg"
+   ]
+  },
+  "twt-creator-test": {
+   "context": "Kettleby Pantry brought out a new oat bar flavour in early 2026. The brand's own site sold it well, yet on quick-commerce apps, where new shoppers first meet the brand, it crawled.",
+   "problem": "Brand-made ads for the bar earned a 1.7% click-through on Instagram, while the cost of each quick-commerce order in Harrowgate and Stonebridge sat well above target.",
+   "my_role": "Brand Marketing Intern: designed the test and wrote the creator brief",
+   "dates": "Apr – Jun 2026",
+   "what_i_did": [
+    "Read 300 reviews and comments about the bar to learn how buyers describe it; 'tastes like a biscuit' and 'keeps me going till lunch' appeared most.",
+    "Gave 18 fitness and food creators in Harrowgate and Stonebridge using a two-line hook lifted from those comments, with no script.",
+    "Agreed with the performance team to run creator reels and brand ads side by side for three weeks, sharing budget, audience and landing page.",
+    "Followed the funnel from views through to orders in a single spreadsheet, and filmed two creator sessions personally.",
+    "Gave the marketing head a readout proposing to shift 30% of the quick-commerce budget into creator reels."
+   ],
+   "decisions": [
+    {
+     "choice": "Borrow the buyers' vocabulary",
+     "why": "The brand wrote about ingredients; buyers wrote about taste first. Taste-led hooks won within a week."
+    },
+    {
+     "choice": "Identical budget and audience in each arm",
+     "why": "Otherwise targeting, not creative, could explain any difference."
+    }
+   ],
+   "results": [
+    {
+     "metric": "Click-through rate",
+     "value": "2.8% vs 1.7%",
+     "note": "creator reels against brand ads, 3 weeks"
+    },
+    {
+     "metric": "Cost per order",
+     "value": "−19%",
+     "note": "quick-commerce orders, test towns"
+    },
+    {
+     "metric": "Repeat orders",
+     "value": "1 in 5",
+     "note": "creator-led buyers, within 30 days"
+    }
+   ],
+   "learned": "Reels with the least polish performed best. Creators who ate the bar on their walk to work outdid those who staged a flat lay.",
+   "next": "Try the winning hooks as quick-commerce banner ads, where creator faces have not appeared yet.",
+   "images": [
+    "projects/twt-creator-test/thumb.jpg",
+    "projects/twt-creator-test/ab-test.jpg",
+    "photos/candid-creator-shoot.jpg"
+   ]
+  }
+ },
+ "wins": [
+  {
+   "title": "Millrace Awards shortlist",
+   "detail": "2023, for the anniversary film 'Last Page', with the Pinewick team.",
+   "image": "photos/achievement-awards-night.jpg"
+  },
+  {
+   "title": "Greenlane Brand Challenge national finalist",
+   "detail": "2026, one of the top 8 teams in India, alongside two Millbrook classmates.",
+   "image": "photos/event-brandstorm-finalists.jpg"
+  },
+  {
+   "title": "Pinewick Golden Ream award",
+   "detail": "2024, for the 48-creator Mile Line launch. Gordie Pruitt presented it and added an acronym.",
+   "image": "photos/achievement-agency-award.jpg"
+  },
+  {
+   "title": "7,200 packs in 21 days",
+   "detail": "Longline pen launch with 48 creators, Pinewick 2024.",
+   "image": "photos/candid-shoot-set.jpg"
+  },
+  {
+   "title": "Best project, Brand Management course",
+   "detail": "Millbrook School of Management, term 3, for the readout of the quick-commerce creator experiment.",
+   "image": "photos/event-mu-classroom.jpg"
+  }
+ ],
+ "skills": {
+  "Brand": [
+   "Positioning",
+   "Campaign planning",
+   "Copywriting (English, Hindi, Hinglish)",
+   "Scriptwriting",
+   "Creator programmes"
+  ],
+  "Growth": [
+   "Meta Ads",
+   "Google Ads",
+   "Funnel analysis",
+   "Creative A/B tests",
+   "GA4 and Shopify reports"
+  ],
+  "Make": [
+   "Shooting on phone",
+   "Premiere Pro",
+   "DaVinci Resolve",
+   "Photoshop",
+   "Canva and Figma"
+  ]
+ },
+ "certifications": [
+  {
+   "name": "Meta Certified Digital Marketing Associate",
+   "issuer": "Meta",
+   "year": "2021"
+  },
+  {
+   "name": "Google Ads Video Certification",
+   "issuer": "Google",
+   "year": "2022"
+  },
+  {
+   "name": "Content Marketing Certification",
+   "issuer": "HubSpot Academy",
+   "year": "2020"
+  }
+ ],
+ "outside": [
+  {
+   "title": "Shopfront reels",
+   "detail": "Shopfront Sundays, every Sunday since 2022. 112 reels, mostly the Larch Valley, now a Stonebridge series too.",
+   "image": "photos/hobby-street-food.jpg"
+  },
+  {
+   "title": "Five-a-side football",
+   "detail": "Tuesday nights in the Pinewick warehouse car park for five years, refereed by Wendell Odom with philosophical commentary. Now in the Millbrook campus league.",
+   "image": "photos/hobby-football.jpg"
+  },
+  {
+   "title": "Live gigs",
+   "detail": "Since 2019 I have logged every gig I attend. The tally is 61, including the Larchmont Riverside Fest in 2024 and 2025.",
+   "image": "photos/candid-festival.jpg"
+  }
+ ],
+ "values": [
+  "Film a scrappy version on my own phone before drafting the brief.",
+  "Keep some budget in reserve until the first numbers arrive.",
+  "Bring a number to every slogan."
+ ],
+ "testimonials": [
+  {
+   "quote": "Zubin never handed over a line without asking who would film it and where. Within two years the creators phoned him directly rather than the account team.",
+   "name": "Priya Raman",
+   "role": "Head of People, Pinewick Paper & Print",
+   "relation": "Colleague, 2019–2025"
+  },
+  {
+   "quote": "After his reel, students kept turning up for two months asking for the sharpener I repair. Zubin returned and filmed the queue.",
+   "name": "Hemant Dixit",
+   "role": "Runs a stationery counter on Mill Street, Larchmont Falls",
+   "relation": "Featured on Shopfront Sundays, 2023"
+  },
+  {
+   "quote": "His test was built so nobody could argue with the outcome, and he even filmed two of the reels. We shifted budget on the strength of his readout.",
+   "name": "Nadine Ostrow",
+   "role": "Brand Manager, Kettleby Pantry",
+   "relation": "Internship mentor, 2026"
+  }
+ ],
+ "media": {
+  "headshot": "photos/headshot.jpg",
+  "cutout": "photos/cutout.png",
+  "professional": "photos/professional-arms.jpg",
+  "professional_alt": "photos/event-mu-classroom.jpg",
+  "candids": [
+   "photos/candid-shoot-set.jpg",
+   "photos/candid-festival.jpg",
+   "photos/candid-creator-shoot.jpg",
+   "photos/hobby-street-food.jpg"
+  ],
+  "event": "photos/event-mu-classroom.jpg",
+  "gallery": [
+   {
+    "src": "photos/headshot.jpg",
+    "caption": "Headshot",
+    "ratio": "1:1",
+    "kind": "profile"
+   },
+   {
+    "src": "photos/professional-arms.jpg",
+    "caption": "Half-body, arms folded",
+    "ratio": "3:4",
+    "kind": "profile"
+   },
+   {
+    "src": "photos/cutout.png",
+    "caption": "Cutout (transparent)",
+    "ratio": "portrait",
+    "kind": "profile"
+   },
+   {
+    "src": "photos/event-mu-classroom.jpg",
+    "caption": "Presenting the creator-test readout, Millbrook School of Management classroom",
+    "ratio": "3:2",
+    "kind": "event"
+   },
+   {
+    "src": "photos/candid-shoot-set.jpg",
+    "caption": "On set for the Longline pen launch film, Pinewick 2024",
+    "ratio": "3:2",
+    "kind": "candid"
+   },
+   {
+    "src": "photos/candid-festival.jpg",
+    "caption": "Larchmont Riverside Fest with friends",
+    "ratio": "4:3",
+    "kind": "candid"
+   },
+   {
+    "src": "photos/candid-creator-shoot.jpg",
+    "caption": "Shooting a creator reel in Harrowgate, Kettleby Pantry internship",
+    "ratio": "16:9",
+    "kind": "project"
+   },
+   {
+    "src": "photos/achievement-awards-night.jpg",
+    "caption": "Millrace Awards night with the Pinewick team, 2023",
+    "ratio": "16:9",
+    "kind": "achievement"
+   },
+   {
+    "src": "photos/event-brandstorm-finalists.jpg",
+    "caption": "Greenlane Brand Challenge 2026 national finalists",
+    "ratio": "16:9",
+    "kind": "achievement"
+   },
+   {
+    "src": "photos/achievement-agency-award.jpg",
+    "caption": "Golden Ream award at the Pinewick town hall, 2024",
+    "ratio": "4:3",
+    "kind": "achievement"
+   },
+   {
+    "src": "photos/hobby-street-food.jpg",
+    "caption": "Filming Shopfront Sundays at a stationery counter, Larchmont Falls",
+    "ratio": "3:4",
+    "kind": "hobby"
+   },
+   {
+    "src": "photos/hobby-football.jpg",
+    "caption": "Tuesday five-a-side, warehouse car park",
+    "ratio": "3:2",
+    "kind": "hobby"
+   }
+  ]
+ },
+ "logo_note": "Company, college and tool logos are placeholders or tool marks used for illustration; replace them with your own.",
+ "tools": [
+  {
+   "name": "Instagram",
+   "logo": "logos/skills/instagram.svg"
+  },
+  {
+   "name": "Meta Ads Manager",
+   "logo": "logos/skills/meta.svg"
+  },
+  {
+   "name": "Google Ads",
+   "logo": "logos/skills/googleads.svg"
+  },
+  {
+   "name": "Google Analytics 4",
+   "logo": "logos/skills/googleanalytics.svg"
+  },
+  {
+   "name": "YouTube",
+   "logo": "logos/skills/youtube.svg"
+  },
+  {
+   "name": "Shopify",
+   "logo": "logos/skills/shopify.svg"
+  },
+  {
+   "name": "Google Sheets",
+   "logo": "logos/skills/googlesheets.svg"
+  },
+  {
+   "name": "Premiere Pro",
+   "logo": "logos/skills/adobepremierepro.svg"
+  },
+  {
+   "name": "DaVinci Resolve",
+   "logo": "logos/skills/davinciresolve.svg"
+  },
+  {
+   "name": "Photoshop",
+   "logo": "logos/skills/adobephotoshop.svg"
+  },
+  {
+   "name": "Canva",
+   "logo": "logos/skills/canva.svg"
+  },
+  {
+   "name": "Figma",
+   "logo": "logos/skills/figma.svg"
+  },
+  {
+   "name": "Notion",
+   "logo": "logos/skills/notion.svg"
+  },
+  {
+   "name": "Miro",
+   "logo": "logos/skills/miro.svg"
+  },
+  {
+   "name": "LinkedIn",
+   "logo": "logos/skills/linkedin.svg"
+  },
+  {
+   "name": "Mailchimp",
+   "logo": "logos/skills/mailchimp.svg"
+  },
+  {
+   "name": "WhatsApp Business",
+   "logo": "logos/skills/whatsapp.svg"
+  },
+  {
+   "name": "Semrush",
+   "logo": "logos/skills/semrush.svg"
+  }
+ ],
+ "hero": {
+  "line_before": "Zubin can make",
+  "line_after": "the one people talk about at",
+  "default_word": "Your brand",
+  "input_label": "Type your brand",
+  "input_placeholder": "Your brand here",
+  "presets": [
+   "Gel pen",
+   "Planner",
+   "Copy paper",
+   "Sticky notes"
+  ],
+  "stickers": [
+   {
+    "big": "38k",
+    "small": "followers on Shopfront Sundays",
+    "shape": "burst"
+   },
+   {
+    "big": "4.8M",
+    "small": "views, 48-creator launch",
+    "shape": "circle"
+   },
+   {
+    "big": "Millrace",
+    "small": "shortlist, 2023",
+    "shape": "ticket"
+   },
+   {
+    "big": "−19%",
+    "small": "cost per order",
+    "shape": "circle"
+   },
+   {
+    "big": "Jan '27",
+    "small": "available from",
+    "shape": "burst"
+   }
+  ],
+  "line_accent": "lunch."
+ },
+ "stats_strip": [
+  {
+   "value": "4.8M",
+   "label": "views in four weeks",
+   "from": "Mile Line launch, 48 creators"
+  },
+  {
+   "value": "28%",
+   "label": "of first-month orders came with a creator code",
+   "from": "Mile Line launch"
+  },
+  {
+   "value": "38k",
+   "label": "followers, no paid promotion",
+   "from": "Shopfront Sundays"
+  },
+  {
+   "value": "2.8%",
+   "label": "click-through for creator reels; brand ads managed 1.7%",
+   "from": "Kettleby Pantry"
+  },
+  {
+   "value": "−19%",
+   "label": "cost per quick-commerce order",
+   "from": "Kettleby Pantry"
+  },
+  {
+   "value": "4.1%",
+   "label": "webshop product-page conversion, up from 2.9%",
+   "from": "Webshop rebrand"
+  },
+  {
+   "value": "1.4M",
+   "label": "YouTube views for 'Last Page'",
+   "from": "Pinewick"
+  },
+  {
+   "value": "9.4k",
+   "label": "newsletter subscribers",
+   "from": "Copy That"
+  },
+  {
+   "value": "1,850",
+   "label": "fest registrations from 30 colleges",
+   "from": "Millbrook School of Management"
+  }
+ ],
+ "rebrand_compare": {
+  "project": "cloud-kitchen-rebrand",
+  "title": "Same shop, new listing",
+  "intro": "Slide the handle. Left is the marketplace listing the webshop started with; right is what my team built in eight weeks, with new product names, a fresh identity and reshot photos.",
+  "before": {
+   "label": "Before",
+   "brand": "Paper store",
+   "tagline": "Stationery · Office supplies · Bulk",
+   "conversion": "2.9%",
+   "items": [
+    {
+     "name": "Notebook A5 Ruled (Pack)",
+     "price": "₹349"
+    },
+    {
+     "name": "Gel Pen Set Blue",
+     "price": "₹279"
+    },
+    {
+     "name": "Combo 3",
+     "price": "₹299"
+    }
+   ]
+  },
+  "after": {
+   "label": "After",
+   "brand": "Quire & Co",
+   "tagline": "Stationery · Stonebridge",
+   "conversion": "4.1%",
+   "items": [
+    {
+     "name": "The Monday Notebook, ruled A5, pack of 2",
+     "price": "₹349"
+    },
+    {
+     "name": "Ten Blue Pens That Do Not Run Out Mid-Exam",
+     "price": "₹279"
+    },
+    {
+     "name": "Notebook + Pen + Sticky Flags, for one desk",
+     "price": "₹299"
+    }
+   ]
+  },
+  "note": "Product-page conversion on the marketplace over six weeks. 38 products renamed across 4 ranges."
+ },
+ "brief_me": {
+  "title": "Brief me",
+  "intro": "Choose a goal, a budget and your channels. The sketch that prints is assembled from my earlier work: the nearest case, the format I would open with and the figure I would track.",
+  "goals": [
+   {
+    "id": "awareness",
+    "label": "Awareness",
+    "metric": "Saves plus shares for every 1,000 views",
+    "metric_why": "Reach is cheap on Reels. Saves and shares show people want to return to the post."
+   },
+   {
+    "id": "launch",
+    "label": "Launch",
+    "metric": "Creator-code orders during the first 30 days",
+    "metric_why": "Each creator gets tied to sales, so extra spend backs the ones that actually sell."
+   },
+   {
+    "id": "sales",
+    "label": "Sales",
+    "metric": "Cost per order compared with your own ads",
+    "metric_why": "Give both the same budget and audience, and any difference is down to the creative alone."
+   }
+  ],
+  "channels": [
+   {
+    "id": "creators",
+    "label": "Instagram creators"
+   },
+   {
+    "id": "qcom",
+    "label": "Quick-commerce ads"
+   },
+   {
+    "id": "film",
+    "label": "YouTube film"
+   },
+   {
+    "id": "referral",
+    "label": "WhatsApp referrals"
+   },
+   {
+    "id": "content",
+    "label": "Own page or newsletter"
+   }
+  ],
+  "budget": {
+   "min": 1,
+   "max": 100,
+   "default": 15,
+   "unit": "₹ lakh",
+   "label": "Budget for the first eight weeks"
+  },
+  "holdback": {
+   "share": 0.4,
+   "text": "kept in reserve for 72 hours, then pushed behind whatever is already working"
+  },
+  "bands": [
+   {
+    "max": 5,
+    "plan": "Small budget: start with 10 to 15 micro-creators chosen by save rate, and skip the production shoot."
+   },
+   {
+    "max": 30,
+    "plan": "Medium budget: roughly 25 to 50 micro-creators spread over four or five towns, plus a head-to-head against your own ads."
+   },
+   {
+    "max": 100,
+    "plan": "Large budget: a full creator programme and one hero film, which is then chopped into the ads that earn their keep."
+   }
+  ],
+  "cases": [
+   {
+    "slug": "glow-creators",
+    "goals": {
+     "awareness": 2,
+     "launch": 3,
+     "sales": 1
+    },
+    "channels": [
+     "creators",
+     "film"
+    ],
+    "budget": [
+     5,
+     60
+    ],
+    "format": "A visible challenge that micro-creators film at home, like the unbroken-line pen reel",
+    "first_step": "Film the format yourself and with two creators before any brief gets written."
+   },
+   {
+    "slug": "twt-creator-test",
+    "goals": {
+     "awareness": 1,
+     "launch": 2,
+     "sales": 3
+    },
+    "channels": [
+     "creators",
+     "qcom"
+    ],
+    "budget": [
+     2,
+     40
+    ],
+    "format": "Creator reels whose hooks come straight from buyer reviews, linking to the quick-commerce listing",
+    "first_step": "Go through your latest 300 reviews and comments and collect the phrases buyers repeat."
+   },
+   {
+    "slug": "pav-patrol",
+    "goals": {
+     "awareness": 3,
+     "launch": 1,
+     "sales": 1
+    },
+    "channels": [
+     "content",
+     "creators"
+    ],
+    "budget": [
+     1,
+     10
+    ],
+    "format": "A weekly series with a fixed first frame that always starts with a person",
+    "first_step": "Fix the format rules, then log each post's first seven days in a single sheet."
+   },
+   {
+    "slug": "dabba-film",
+    "goals": {
+     "awareness": 3,
+     "launch": 2,
+     "sales": 0
+    },
+    "channels": [
+     "film"
+    ],
+    "budget": [
+     20,
+     100
+    ],
+    "format": "A 90-second film that follows one ordinary object on its journey",
+    "first_step": "Draft three one-line story options and try each as a rough phone cut."
+   },
+   {
+    "slug": "mu-fest",
+    "goals": {
+     "awareness": 2,
+     "launch": 2,
+     "sales": 1
+    },
+    "channels": [
+     "referral",
+     "creators"
+    ],
+    "budget": [
+     1,
+     5
+    ],
+    "format": "Student or community creators, each group with its own referral code",
+    "first_step": "Hand every group a unique code so you can tell which one fills the room."
+   },
+   {
+    "slug": "cloud-kitchen-rebrand",
+    "goals": {
+     "awareness": 1,
+     "launch": 1,
+     "sales": 3
+    },
+    "channels": [
+     "qcom"
+    ],
+    "budget": [
+     1,
+     15
+    ],
+    "format": "Rename and reshoot the listing before paying for more traffic",
+    "first_step": "Export conversion for every product and begin with the ten weakest."
+   },
+   {
+    "slug": "copy-that",
+    "goals": {
+     "awareness": 2,
+     "launch": 0,
+     "sales": 0
+    },
+    "channels": [
+     "content"
+    ],
+    "budget": [
+     1,
+     5
+    ],
+    "format": "A weekly post built on one structure that readers learn to expect",
+    "first_step": "Draft six issues before publishing the first."
+   }
+  ]
+ },
+ "sections": {
+  "work": "The reel: eight things I made",
+  "brief": "Brief me",
+  "cases": "Three cases, in full",
+  "compare": "Before and after",
+  "about": "About",
+  "journey": "How I got here",
+  "experience": "Experience",
+  "education": "Education",
+  "wins": "Wins",
+  "skills": "Skills and tools",
+  "outside": "Outside work",
+  "testimonials": "What people say",
+  "contact": "Contact"
+ },
+ "film": {
+  "project": "glow-creators",
+  "title": "48 creators, one pen, scrubbed in five beats",
+  "beats": [
+   {
+    "label": "The brief",
+    "from": "context",
+    "image": "projects/glow-creators/thumb.jpg"
+   },
+   {
+    "label": "Tested on myself first",
+    "from": "what_i_did.0",
+    "image": "photos/candid-shoot-set.jpg"
+   },
+   {
+    "label": "48 creators, picked by save rate",
+    "from": "what_i_did.1",
+    "image": "projects/glow-creators/tiers.jpg"
+   },
+   {
+    "label": "40% of paid kept back for 72 hours",
+    "from": "decisions.2",
+    "poster": [
+     "40%",
+     "kept back for 72 hours"
+    ]
+   },
+   {
+    "label": "What it did",
+    "from": "results",
+    "poster": [
+     "4.8M",
+     "views in four weeks"
+    ]
+   }
+  ]
+ }
+}

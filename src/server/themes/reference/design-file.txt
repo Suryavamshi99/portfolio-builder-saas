@@ -1,0 +1,7 @@
+Fonts used: Inter Tight, Plex Mono
+Colour tokens: --chrome #ffffff, --chrome-line #e6e6e6, --chrome-ink #1e1e1e, --chrome-mute #7a7a7a, --chrome-hover #f2f2f2, --canvas #e9e7e2, --dot #cfccc5, --select #0d99ff, --select-soft #e5f4ff, --section #f4f2ee, --paper #fbf8f2, --ink #141414, --mute #5c5a55, --rule #d9d5cc, --red #e5322d, --lime #dfff7a
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, backdrop blur, CSS keyframe animation
+Named animations: slideIn, slideBack, hs
+Scripted behaviours: scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, requestAnimationFrame loop, hash or history routing, SVG charts drawn by script
+Script functions (hint at features): layout, eyebrow, shortName, chips, aboutHTML, experienceHTML, projectHTML, winsHTML, skillsHTML, contactHTML, frameHTML, buildPins, build, drawNoodles, view, apply, render, setCam, zoomAt, fitTarget, flyTo, fitAll, fitFrame, select, deselect, setLayer, evidenceFor, head, propsFor, pageProps
+Page outline (landmarks): header.topbar, nav#mstrip.mstrip, aside.panel, aside.panel, main#viewport.viewport, section#read.readview

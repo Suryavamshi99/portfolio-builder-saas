@@ -1,0 +1,7 @@
+Fonts used: Syne, Inter, IBM Plex Mono, Newsreader
+Colour tokens: --paper #f4f1ea, --paper-2 #ebe6da, --ink #15171c, --ink-2 #1f222a, --blue #2f5cf0, --hl #ffe14d, --muted #5f6372, --muted-d #9a9eab
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, scroll snap, clip-path shapes, blend modes, backdrop blur, 3D transforms, CSS keyframe animation, marquee or ticker motion, SVG filters or masks, custom cursor, reduced-motion handling
+Named animations: pulse, bob, blink
+Scripted behaviours: WebGL or three.js scene, GSAP animation, scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, requestAnimationFrame loop, SVG charts drawn by script
+Script functions (hint at features): split, xray, xrayNumber, createPlate, mapCover
+Page outline (landmarks): header#nav.nav, main#main, section#top.hero, section#how.how, section#work.cases, section#device.device, section#number.number, section#backlog.backlog, section#index.index, section#journey.journey, section#cv.cv, section#wins.wins, section#skills.skills, section#people.people, section#contact.contact, footer#foot.foot

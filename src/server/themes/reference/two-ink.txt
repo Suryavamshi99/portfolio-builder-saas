@@ -1,0 +1,7 @@
+Colour tokens: --paper #f6f1e7, --a #e2007a, --b #ff7a1a, --ink #1a0f14
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, scroll snap, clip-path shapes, blend modes, backdrop blur, 3D transforms, CSS keyframe animation, marquee or ticker motion, SVG filters or masks, custom cursor, reduced-motion handling
+Named animations: grain, blink, roll
+Scripted behaviours: WebGL or three.js scene, GSAP animation, scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, requestAnimationFrame loop, localStorage state, SVG charts drawn by script
+Script functions (hint at features): loupes, setWord, measure, axes, stickerSize, obstacles, stStep, wiggle, plan, sheetHTML, mailto, paintTheme, makeGL, spawnTrail, splash, blobInput, blobStep, InkField, RisoPlate
+Page outline (landmarks): header#top.nav, nav.nav-links, main#main, section#hero.hero, section.marquee, section#pitch.pitch, section#film.film, header.film-head, section#reel.reel, header.reel-head, section#brief.brief, header.sec-head, article#sheet.sheet, section#compare.ba, header.sec-head, section#cases.cases, header.sec-head, section#meet.meet, section#experience.cv, section#wins.wins, header.sec-head, section#skills.skills, header.sec-head, section#outside.outside
+Heading classes: h1.headline, h2.h2, h2.h2, h2.h2, h2.h2, h2.h2

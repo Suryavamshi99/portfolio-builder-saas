@@ -23,6 +23,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ThemesRouteImport } from './routes/themes'
 import { Route as TokenRouteImport } from './routes/token'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
@@ -32,6 +33,7 @@ import { Route as ApiGenerationsRouteImport } from './routes/api/generations'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as ApiPublishRouteImport } from './routes/api/publish'
 import { Route as ApiResetRouteImport } from './routes/api/reset'
+import { Route as ApiThemesRouteImport } from './routes/api/themes'
 import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVercelRouteImport } from './routes/api/vercel'
 import { Route as ApiWaitlistRouteImport } from './routes/api/waitlist'
@@ -162,6 +164,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ThemesRoute = ThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TokenRoute = TokenRouteImport.update({
   id: '/token',
   path: '/token',
@@ -207,6 +214,11 @@ const ApiPublishRoute = ApiPublishRouteImport.update({
 const ApiResetRoute = ApiResetRouteImport.update({
   id: '/api/reset',
   path: '/api/reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiThemesRoute = ApiThemesRouteImport.update({
+  id: '/api/themes',
+  path: '/api/themes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUploadsRoute = ApiUploadsRouteImport.update({
@@ -528,6 +540,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/themes': typeof ThemesRoute
   '/token': typeof TokenRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
@@ -537,6 +550,7 @@ export interface FileRoutesByFullPath {
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
+  '/api/themes': typeof ApiThemesRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
@@ -612,6 +626,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/themes': typeof ThemesRoute
   '/token': typeof TokenRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
@@ -621,6 +636,7 @@ export interface FileRoutesByTo {
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
+  '/api/themes': typeof ApiThemesRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
@@ -697,6 +713,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/themes': typeof ThemesRoute
   '/token': typeof TokenRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
@@ -706,6 +723,7 @@ export interface FileRoutesById {
   '/api/me': typeof ApiMeRoute
   '/api/publish': typeof ApiPublishRouteWithChildren
   '/api/reset': typeof ApiResetRoute
+  '/api/themes': typeof ApiThemesRoute
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vercel': typeof ApiVercelRouteWithChildren
   '/api/waitlist': typeof ApiWaitlistRoute
@@ -783,6 +801,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/terms'
+    | '/themes'
     | '/token'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
@@ -792,6 +811,7 @@ export interface FileRouteTypes {
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
+    | '/api/themes'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
@@ -867,6 +887,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/terms'
+    | '/themes'
     | '/token'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
@@ -876,6 +897,7 @@ export interface FileRouteTypes {
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
+    | '/api/themes'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
@@ -951,6 +973,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/terms'
+    | '/themes'
     | '/token'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
@@ -960,6 +983,7 @@ export interface FileRouteTypes {
     | '/api/me'
     | '/api/publish'
     | '/api/reset'
+    | '/api/themes'
     | '/api/uploads'
     | '/api/vercel'
     | '/api/waitlist'
@@ -1036,6 +1060,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StudioRoute: typeof StudioRoute
   TermsRoute: typeof TermsRoute
+  ThemesRoute: typeof ThemesRoute
   TokenRoute: typeof TokenRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
@@ -1045,6 +1070,7 @@ export interface RootRouteChildren {
   ApiMeRoute: typeof ApiMeRoute
   ApiPublishRoute: typeof ApiPublishRouteWithChildren
   ApiResetRoute: typeof ApiResetRoute
+  ApiThemesRoute: typeof ApiThemesRoute
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVercelRoute: typeof ApiVercelRouteWithChildren
   ApiWaitlistRoute: typeof ApiWaitlistRoute
@@ -1192,6 +1218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/themes': {
+      id: '/themes'
+      path: '/themes'
+      fullPath: '/themes'
+      preLoaderRoute: typeof ThemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/token': {
       id: '/token'
       path: '/token'
@@ -1253,6 +1286,13 @@ declare module '@tanstack/react-router' {
       path: '/api/reset'
       fullPath: '/api/reset'
       preLoaderRoute: typeof ApiResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/themes': {
+      id: '/api/themes'
+      path: '/api/themes'
+      fullPath: '/api/themes'
+      preLoaderRoute: typeof ApiThemesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/uploads': {
@@ -1823,6 +1863,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StudioRoute: StudioRoute,
   TermsRoute: TermsRoute,
+  ThemesRoute: ThemesRoute,
   TokenRoute: TokenRoute,
   DotwellKnownOauthAuthorizationServerRoute:
     DotwellKnownOauthAuthorizationServerRoute,
@@ -1834,6 +1875,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMeRoute: ApiMeRoute,
   ApiPublishRoute: ApiPublishRouteWithChildren,
   ApiResetRoute: ApiResetRoute,
+  ApiThemesRoute: ApiThemesRoute,
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVercelRoute: ApiVercelRouteWithChildren,
   ApiWaitlistRoute: ApiWaitlistRoute,

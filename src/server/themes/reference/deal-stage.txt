@@ -1,0 +1,8 @@
+Fonts used: Poiret One, Big Shoulders, Bricolage
+Colour tokens: --ink #141210, --cream #f4ecdc, --gold #d9a441, --brick #d1504e, --plum #5c2b3d, --violet #a35bb6, --grass #3f9142, --cobalt #4183c6, --teal #27957d, --orange #de7a3e, --pink #de6d89, --mustard #cf9a25
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, scroll snap, clip-path shapes, blend modes, CSS keyframe animation, custom cursor, reduced-motion handling
+Named animations: grain, sway, spin
+Scripted behaviours: canvas 2D drawing, smooth scrolling, requestAnimationFrame loop, SVG charts drawn by script
+Script functions (hint at features): openCurtain, look, peek, frame, tileHTML, tagHTML, startEye, place, morph, unmorph, hoverTarget, blink, tick, chart
+Page outline (landmarks): header#bar.bar, nav#nav.nav, main#top, section#hero.scene, section#dive.scene, section#about.scene, section#deals.scene, aside#peek.peek, section#record.scene, section#journey.scene, section#wins.scene, section#outside.scene, section#contact.scene
+Heading classes: h1.name, h2.cut, h2.cut, h2.cut, h2.cut, h2.cut
