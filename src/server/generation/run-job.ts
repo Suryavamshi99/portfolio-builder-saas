@@ -28,9 +28,6 @@ import {
 } from "./jobs";
 import { prepareGeneration } from "./prepare";
 import { registry } from "@/server/themes/registry";
-import { runThemedBuild } from "@/server/themes/run";
-import type { ModelCall } from "@/server/themes/content";
-import { callOpenAICompatible } from "@/server/llm/openai-compatible";
 
 function llmJobError(e: unknown): JobError {
   if (e instanceof LlmAuthError) return { code: "byok_key_invalid", message: "Your API key was rejected by the provider" };
@@ -63,6 +60,12 @@ export async function runJob(admin: SupabaseClient, jobId: string): Promise<void
   }
 }
 
+/** The chosen theme's design direction, or undefined for a custom build. */
+function designBriefFor(job: JobRow): string | undefined {
+  const theme = job.params.theme ? registry.get(job.params.theme.id) : undefined;
+  return theme ? `Follow this design language ("${theme.name}"). Use it for look, layout and interaction only; every fact still comes from the resume.\n${theme.brief}` : undefined;
+}
+
 async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   // A step-by-step build that is being continued keeps its own progress message.
   if (!job.params.pipeline) await setStatus(admin, job.id, "reading");
@@ -73,6 +76,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   const prepared = await prepareGeneration(admin, job.user_id, {
     resumeUploadId: job.resume_upload_id,
     instructions: job.params.instructions,
+    designBrief: designBriefFor(job),
   });
   if (!prepared.ok) return failJob(admin, job.id, { code: prepared.code, message: prepared.message });
 
@@ -88,36 +92,6 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   let warnings: string[];
   let model: string;
   let source: "gemini" | "free";
-
-  if (job.params.theme && (job.source === "gemini" || job.source === "free")) {
-    const manifest = registry.getReady(job.params.theme.id);
-    const template = manifest ? registry.template(manifest.id) : undefined;
-    if (!manifest || !template) return failJob(admin, job.id, { code: "theme_unavailable", message: "That theme isn't available. Pick another or build a custom page." });
-    const modelCall = await themeModelCall(admin, job);
-    await setStatus(admin, job.id, "writing");
-    const built = await runThemedBuild({
-      manifest,
-      template,
-      request: job.params.theme,
-      resumeText: prepared.resumeText,
-      referenceText: [prepared.referenceText, ...Object.values(job.params.theme.answers ?? {})].join("\n"),
-      finalize,
-      model: modelCall,
-    });
-    if (!built.ok) {
-      await recordGeneration(admin, job.user_id, job.resume_upload_id, "failed");
-      return failJob(admin, job.id, { code: built.code, message: CHECK_FAILED[built.code], details: built.details });
-    }
-    await setStatus(admin, job.id, "saving");
-    await savePortfolioVersion(admin, job.user_id, {
-      html: built.html,
-      source: job.source,
-      model: `theme:${manifest.id}`,
-      warnings: [...built.warnings, ...built.declined.map((d) => `Not applied: ${d}`)],
-    });
-    await recordGeneration(admin, job.user_id, job.resume_upload_id, "succeeded");
-    return completeJob(admin, job.id);
-  }
 
   if (job.source === "gemini") {
     source = "gemini";
@@ -161,7 +135,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     const input: BuildInput = {
       lines: resumeLines(prepared.resumeText),
       specifics: prepared.specifics,
-      instructions: job.params.instructions,
+      instructions: [designBriefFor(job), job.params.instructions].filter(Boolean).join("\n\n") || undefined,
       designIntensity: prepared.designIntensity,
       photoUrl: prepared.photoUrl,
       links: prepared.links,
@@ -200,24 +174,4 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   await savePortfolioVersion(admin, job.user_id, { html, source, model, warnings });
   await recordGeneration(admin, job.user_id, job.resume_upload_id, "succeeded");
   await completeJob(admin, job.id);
-}
-
-/** One bounded text call for a themed build: the user's Gemini key, or the first free provider with budget left. */
-async function themeModelCall(admin: SupabaseClient, job: JobRow): Promise<ModelCall | undefined> {
-  if (job.source === "gemini") {
-    const { data: keyRow } = await admin.from("byok_keys").select("encrypted_key, nonce").eq("user_id", job.user_id).eq("provider", "google").maybeSingle();
-    if (!keyRow) return undefined;
-    const apiKey = decryptSecret(byteaToBuffer(keyRow.encrypted_key), byteaToBuffer(keyRow.nonce));
-    return async (system, user) => (await callLlmProvider("google", { apiKey, systemPrompt: system, userMessage: user, images: [] })).text;
-  }
-  const day = budgetDay();
-  for (const p of getFreeChain()) {
-    const apiKey = process.env[p.apiKeyEnv]?.trim();
-    if (!apiKey) continue;
-    const { data } = await admin.rpc("claim_provider_budget", { p_provider: p.id, p_day: day, p_limit: p.dailyRequestBudget });
-    if (data !== true) continue;
-    return async (system, user, maxTokens) =>
-      (await callOpenAICompatible({ apiKey, systemPrompt: system, userMessage: user, images: [], baseUrl: p.baseUrl, model: p.model, maxOutputTokens: maxTokens, timeoutMs: 60_000, extraBody: p.extraBody })).text;
-  }
-  return undefined;
 }

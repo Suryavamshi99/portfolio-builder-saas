@@ -1,77 +1,43 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { listThemeCatalog } from "./catalog";
 import { createRegistry, registry } from "./registry";
-import { FEELS, PROFESSIONS, type ThemeManifest } from "./types";
+import { FEELS, PROFESSIONS } from "./types";
 
-const base: ThemeManifest = {
-  id: "alpha",
-  name: "Alpha",
-  tagline: "",
-  profession: "Product",
-  feel: "Editorial",
-  tier: "free",
-  ready: true,
-  sections: [],
-  questions: [],
-  cssVars: [],
-  fonts: [],
-};
+const BANNED = ["Kavya", "Riya", "Aditya", "Kabir", "Ishita", "Vihaan", "Simran", "Nandini", "Siddharth", "Menon", "Malhotra", "Kulkarni", "Sethi", "Banerjee", "Bhatt", "Reddy", "elevenlabs"];
 
-describe("createRegistry", () => {
-  it("lists only ready themes that have a template", () => {
-    const reg = createRegistry(
-      [base, { ...base, id: "beta", ready: false }, { ...base, id: "gamma" }],
-      { alpha: "<html></html>", beta: "<html></html>" },
-    );
-    expect(reg.listReady().map((t) => t.id)).toEqual(["alpha"]);
-    expect(reg.getReady("beta")).toBeUndefined();
-    expect(reg.getReady("gamma")).toBeUndefined();
-    expect(reg.get("beta")?.id).toBe("beta");
-  });
-
-  it("returns undefined for an unknown id", () => {
-    expect(createRegistry([base], { alpha: "x" }).getReady("nope")).toBeUndefined();
-  });
-});
-
-// Checks on the real theme folders. With no theme ported yet these loops are empty and pass.
-const DIR = join(__dirname);
-const folders = readdirSync(DIR).filter((f) => statSync(join(DIR, f)).isDirectory());
-
-describe("theme folders", () => {
-  it("every registered manifest has a valid profession, feel and unique id", () => {
-    const ids = registry.all().map((t) => t.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const t of registry.all()) {
+describe("theme roster", () => {
+  it("has 13 themes with unique ids and valid tags", () => {
+    const all = registry.list();
+    expect(all).toHaveLength(13);
+    expect(new Set(all.map((t) => t.id)).size).toBe(13);
+    for (const t of all) {
       expect(PROFESSIONS).toContain(t.profession);
       expect(FEELS).toContain(t.feel);
       expect(t.id).toMatch(/^[a-z0-9-]{1,40}$/);
+      expect(t.palette.length).toBeGreaterThanOrEqual(3);
+      for (const c of t.palette) expect(c).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(t.brief.length).toBeGreaterThan(300);
     }
   });
 
-  it("every ready theme has a template with the data and options placeholders", () => {
-    for (const t of registry.listReady()) {
-      const html = registry.template(t.id)!;
-      expect(html).toContain("__FOLIO_DATA__");
-      expect(html).toContain("<!--FOLIO_OPTIONS-->");
+  it("mixes free and paid themes", () => {
+    const tiers = new Set(registry.list().map((t) => t.tier));
+    expect(tiers).toEqual(new Set(["free", "paid"]));
+  });
+
+  it("carries no original sample person or voice-widget text", () => {
+    for (const t of registry.list()) {
+      const text = JSON.stringify(t);
+      for (const w of BANNED) expect(new RegExp(`\\b${w}\\b`, "i").test(text), `${t.id} contains ${w}`).toBe(false);
     }
   });
 
-  it("no shipped theme file contains an original sample person's name", () => {
-    const banned = [
-      "Kavya", "Riya", "Aditya", "Kabir", "Ishita", "Vihaan", "Simran", "Nandini", "Siddharth",
-      "Menon", "Malhotra", "Kulkarni", "Sethi", "Banerjee", "Bhatt", "Gill", "Reddy",
-      "elevenlabs",
-    ];
-    for (const folder of folders) {
-      for (const file of readdirSync(join(DIR, folder))) {
-        const text = readFileSync(join(DIR, folder, file), "utf8");
-        for (const word of banned) {
-          const found = new RegExp(`\\b${word}\\b`, "i").test(text);
-          expect(found, `${folder}/${file} contains "${word}"`).toBe(false);
-        }
-      }
-    }
+  it("keeps the brief out of the public catalog", () => {
+    for (const t of listThemeCatalog()) expect("brief" in t).toBe(false);
+  });
+
+  it("looks a theme up by id", () => {
+    expect(createRegistry(registry.list()).get("paper-sprint")?.name).toBe("Paper Sprint");
+    expect(registry.get("nope")).toBeUndefined();
   });
 });

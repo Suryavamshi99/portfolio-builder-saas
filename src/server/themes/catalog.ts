@@ -1,22 +1,9 @@
 import { registry } from "./registry";
-import type { ThemeManifest } from "./types";
+import type { Theme } from "./types";
 
-export interface CatalogTheme {
-  id: string;
-  name: string;
-  tagline: string;
-  profession: ThemeManifest["profession"];
-  feel: ThemeManifest["feel"];
-  tier: ThemeManifest["tier"];
-  sections: ThemeManifest["sections"];
-  questions: ThemeManifest["questions"];
-  cssVars: ThemeManifest["cssVars"];
-  fonts: string[];
-}
+/** What the gallery needs. The brief stays on the server. */
+export type CatalogTheme = Omit<Theme, "brief">;
 
 export function listThemeCatalog(): CatalogTheme[] {
-  return registry.listReady().map((t) => ({
-    id: t.id, name: t.name, tagline: t.tagline, profession: t.profession, feel: t.feel, tier: t.tier,
-    sections: t.sections, questions: t.questions, cssVars: t.cssVars, fonts: t.fonts,
-  }));
+  return registry.list().map(({ brief: _brief, ...rest }) => rest);
 }
