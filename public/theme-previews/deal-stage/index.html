@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Harleen Bedi · Enterprise Sales</title>
+<meta name="description" content="Six years in B2B paper and packaging sales, from the inside desk at Pinewick Paper & Print to Account Executive. Now finishing a diploma at Ashgrove Institute of Commerce and looking for an enterprise sales role.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23f4ecdc' stroke='%23141210' stroke-width='5'/%3E%3Crect x='28' y='18' width='8' height='28' rx='4' fill='%23141210'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/poiret-one.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body class="home">
+<a class="skip" href="#deals">Skip to the deals</a>
+
+<!-- theatre chrome: frame, grain, curtains -->
+<div class="frame" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="drape l"></div><div class="drape r"></div>
+  <svg class="valance" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 0H1440V70 Q1404 112 1368 70 Q1332 112 1296 70 Q1260 112 1224 70 Q1188 112 1152 70 Q1116 112 1080 70 Q1044 112 1008 70 Q972 112 936 70 Q900 112 864 70 Q828 112 792 70 Q756 112 720 70 Q684 112 648 70 Q612 112 576 70 Q540 112 504 70 Q468 112 432 70 Q396 112 360 70 Q324 112 288 70 Q252 112 216 70 Q180 112 144 70 Q108 112 72 70 Q36 112 0 70Z" fill="#1f8f3f"/><path d="M0 58H1440" stroke="#41d9d7" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round"/></svg>
+</div>
+
+<header class="bar" id="bar">
+  <a class="me" href="#top">Harleen Bedi</a>
+  <nav class="nav" id="nav" aria-label="Sections">
+    <a href="#deals">Deals</a><a href="#record">Record</a><a href="#journey">Journey</a><a href="#wins">Wins</a><a href="#contact">Contact</a><a class="all" href="all.html">Read it all</a>
+  </nav>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">Menu</button>
+</header>
+
+<main id="top">
+  <!-- 1. hero -->
+  <section class="scene hero" id="hero" style="--bg:var(--brick)">
+    <p class="kicker" id="kicker">The account book of</p>
+    <h1 class="name"><span>Harleen</span> <span>Bedi</span></h1>
+    <div class="hero-body">
+      <div class="hero-left">
+        <p class="headline" id="headline"></p>
+        <p class="avail" id="avail"></p>
+        <p class="why" id="why" hidden></p>
+        <p class="hero-cta"><a class="pill" href="#deals">See the deals</a> <a class="pill ghost" id="heroMail" href="#contact">Email me</a></p>
+      </div>
+      <figure class="who" aria-hidden="true" id="who"></figure>
+      <ul class="hero-facts" id="heroFacts"></ul>
+    </div>
+    <p class="cue" aria-hidden="true">Scroll</p>
+  </section>
+
+  <!-- 2. dive into the eye -->
+  <section class="scene dive pin" id="dive" style="--bg:var(--plum)" aria-label="Six years in three lines">
+    <div class="sticky">
+      <svg class="rings" id="rings" viewBox="-300 -300 600 600" aria-hidden="true"></svg>
+      <ol class="dive-lines" id="diveLines"></ol>
+    </div>
+  </section>
+
+  <!-- 3. hi -->
+  <section class="scene hi" id="about" style="--bg:var(--violet)">
+    <h2 class="cut" id="hiWord" aria-label="Hi, I'm Harleen"></h2>
+    <div class="hi-grid">
+      <figure class="window tilt-l"><img id="hiPhoto" alt="" width="600" height="800"></figure>
+      <div class="hi-text">
+        <p class="lede" id="intro"></p>
+        <p id="now"></p>
+        <p class="small" id="where"></p>
+        <ul class="values" id="values"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. the account book: signature -->
+  <section class="scene deals" id="deals" style="--bg:var(--grass)">
+    <div class="deals-head">
+      <h2 class="cut small-cut">The account book</h2>
+      <p class="hint" id="dealHint"></p>
+    </div>
+    <div class="deals-grid">
+      <div class="ledger" id="ledger"></div>
+      <aside class="peek" id="peek" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <!-- 5. record -->
+  <section class="scene record" id="record" style="--bg:var(--cobalt)">
+    <h2 class="cut small-cut">The record</h2>
+    <div class="record-grid">
+      <div class="quota card-ink" id="quota"></div>
+      <div class="exp" id="exp"></div>
+    </div>
+    <div class="record-low">
+      <div><h3 class="lbl">Education</h3><ul class="edu" id="edu"></ul></div>
+      <div><h3 class="lbl">Skills</h3><div class="skills" id="skills"></div></div>
+      <div><h3 class="lbl">Certifications</h3><ul class="certs" id="certs"></ul></div>
+    </div>
+  </section>
+
+  <!-- 6. journey train -->
+  <section class="scene journey pin" id="journey" style="--bg:var(--teal)">
+    <div class="sticky">
+      <h2 class="cut small-cut based">From Dehradun, now in Larchmont Falls</h2>
+      <div class="rail" id="rail" data-qa-scroll><div class="train" id="train"></div></div>
+      <div class="track" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- 7. wins and references -->
+  <section class="scene wins" id="wins" style="--bg:var(--orange)">
+    <h2 class="cut small-cut">Wins</h2>
+    <div class="win-grid" id="winGrid"></div>
+    <h2 class="cut small-cut refs-h">What people say</h2>
+    <div class="quotes" id="quotes"></div>
+  </section>
+
+  <!-- 8. outside -->
+  <section class="scene outside" id="outside" style="--bg:var(--pink)">
+    <h2 class="cut small-cut">After hours</h2>
+    <div class="out-grid" id="outGrid"></div>
+  </section>
+
+  <!-- 9. contact -->
+  <section class="scene contact" id="contact" style="--bg:var(--mustard)">
+    <button class="rope" id="rope" aria-label="Pull the rope: close the curtain and go back to the start"><svg viewBox="0 0 60 420" aria-hidden="true"><path d="M30 0V300" stroke="#141210" stroke-width="7" stroke-dasharray="10 5"/><path d="M30 0V300" stroke="#41d9d7" stroke-width="3"/><circle cx="30" cy="306" r="13" fill="#141210"/><path d="M14 318h32l8 92H6z" fill="#141210"/><path d="M14 330h32M12 350h36M10 372h40M8 394h44" stroke="#41d9d7" stroke-width="2"/></svg></button>
+    <div class="contact-in">
+      <img class="headshot" id="headshot" alt="" width="240" height="240">
+      <h2 class="cut">Get in touch</h2>
+      <p class="contact-line" id="contactLine"></p>
+      <ul class="links" id="links"></ul>
+      <p class="small fine" id="fine"></p>
+    </div>
+  </section>
+</main>
+
+<!-- the eye cursor -->
+<div class="eye" id="eye" aria-hidden="true">
+  <svg class="ring" viewBox="0 0 120 120"><defs><path id="ringPath" d="M60 60 m-47 0 a47 47 0 1 1 94 0 a47 47 0 1 1 -94 0"/></defs><text><textPath href="#ringPath" id="ringText">SCROLL · SCROLL · SCROLL · SCROLL ·</textPath></text></svg>
+  <div class="lens" id="lens">
+    <div class="ball"><i class="pupil" id="pupil"></i><i class="lid"></i></div>
+    <div class="tile" id="tile"></div>
+  </div>
+  <div class="tag" id="tag"></div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

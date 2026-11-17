@@ -24,3 +24,7 @@ No theme has been used to generate a portfolio from a real resume and viewed in 
 mostly carry colours, fonts and layout, while the Gemini path can attempt the interaction.
 The sample sites embed a voice-agent widget and third-party libraries; none of that is used or shipped.
 Two samples imitate Google product UIs (grid-ledger, atlas-desk); the briefs forbid vendor names and logos.
+
+## Sample sites
+
+Each theme has a rebranded sample site in `public/theme-previews/<id>/` (open `/theme-previews/<id>/index.html`, linked from every card on `/themes`). They are fictional people at a fictional company, with generated placeholder cards and neutral logos. They show the look only; the live app writes each user's page from their own resume. Known gaps: Route Board and Two Ink ask for a hero video that is not shipped (404, harmless), and tool names such as Figma or Jira appear as plain text.

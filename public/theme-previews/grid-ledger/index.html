@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Cover - Pranav Shah – Portfolio - Workbook</title>
+<meta name="description" content="Pranav Shah's finance portfolio, built as a working spreadsheet workbook: one tab per model. Sample persona, fictional people and numbers.">
+<link rel="preload" href="fonts/roboto-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/gsans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/icons.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/sheets.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 66'%3E%3Cpath d='M29 0H4.5A4.5 4.5 0 0 0 0 4.5v57A4.5 4.5 0 0 0 4.5 66h39a4.5 4.5 0 0 0 4.5-4.5V19z' fill='%230F9D58'/%3E%3Cpath d='M29 0v14.5a4.5 4.5 0 0 0 4.5 4.5H48z' fill='%2387CEAC'/%3E%3Cpath d='M12 31v18h24V31zm10.5 15H15v-4.5h7.5zm0-7.5H15V34h7.5zM33 46h-7.5v-4.5H33zm0-7.5h-7.5V34H33z' fill='%23fff'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app" class="loading">
+<!-- Document header (desktop) -->
+<header class="docbar d-only">
+  <a class="sheets-ic" href="#gid=cover" aria-label="Workbook, back to the Cover tab">
+    <svg viewBox="0 0 48 66" width="27" height="37" aria-hidden="true"><path d="M29 0H4.5A4.5 4.5 0 0 0 0 4.5v57A4.5 4.5 0 0 0 4.5 66h39a4.5 4.5 0 0 0 4.5-4.5V19z" fill="#700f9d"/><path d="M29 0v14.5a4.5 4.5 0 0 0 4.5 4.5H48z" fill="#b887ce"/><path d="M12 31v18h24V31zm10.5 15H15v-4.5h7.5zm0-7.5H15V34h7.5zM33 46h-7.5v-4.5H33zm0-7.5h-7.5V34H33z" fill="#ffffff"/></svg>
+  </a>
+  <div class="doc-mid">
+    <div class="doc-title">
+      <h1 class="title" title="Pranav Shah – Portfolio">Pranav Shah – Portfolio</h1>
+      <button class="icon-btn sm" id="star" aria-label="Star"><span class="ms">star</span></button>
+      <button class="icon-btn sm" aria-label="Move" data-tb="locked"><span class="ms">drive_file_move</span></button>
+      <span class="savestate" id="savestate"><span class="ms">cloud_done</span>His figures</span>
+    </div>
+    <nav class="menubar" aria-label="Menu">
+      <button class="mb" data-menu="File">File</button><button class="mb" data-menu="Edit">Edit</button><button class="mb" data-menu="View">View</button><button class="mb" data-menu="Insert">Insert</button><button class="mb" data-menu="Format">Format</button><button class="mb" data-menu="Data">Data</button><button class="mb" data-menu="Tools">Tools</button><button class="mb" data-menu="Extensions">Extensions</button><button class="mb" data-menu="Help">Help</button>
+    </nav>
+  </div>
+  <div class="doc-right">
+    <button class="icon-btn" id="hist-btn" aria-label="Version history: his career" title="Version history (his career)"><span class="ms">history</span></button>
+    <button class="icon-btn" id="cmt-btn" aria-label="Comments: testimonials" title="Comments (testimonials)"><span class="ms">comment</span></button>
+    <button class="share" id="share-btn"><span class="ms">lock</span>Share</button>
+    <button class="avatar" id="avatar" aria-label="Pranav Shah"><img src="media/photos/headshot.jpg" alt="" width="32" height="32"></button>
+  </div>
+</header>
+
+<!-- Mobile app bar -->
+<header class="mbar m-only">
+  <a class="icon-btn" href="#gid=cover" aria-label="Back to Cover"><span class="ms">arrow_back</span></a>
+  <div class="m-title"><b>Pranav Shah – Portfolio</b><small>Workbook · sample persona</small></div>
+  <button class="icon-btn" id="m-cmt" aria-label="Comments"><span class="ms">mode_comment</span></button>
+  <button class="icon-btn" id="m-share" aria-label="Share: contact Pranav"><span class="ms">person_add</span></button>
+  <button class="icon-btn" id="m-more" aria-label="More options"><span class="ms">more_vert</span></button>
+</header>
+
+<!-- Toolbar -->
+<div class="toolbar d-only" role="toolbar" aria-label="Toolbar">
+  <label class="msearch"><span class="ms">search</span><input id="menu-search" placeholder="Menus" aria-label="Search the menus" autocomplete="off"></label>
+  <button class="tbb" data-tb="undo" title="Undo (⌘Z)" aria-label="Undo"><span class="ms">undo</span></button>
+  <button class="tbb" data-tb="redo" title="Redo (⌘Y)" aria-label="Redo"><span class="ms">redo</span></button>
+  <button class="tbb" data-tb="print" title="Print (⌘P)" aria-label="Print"><span class="ms">print</span></button>
+  <button class="tbb" data-tb="locked" title="Paint format" aria-label="Paint format"><span class="ms">format_paint</span></button>
+  <button class="tbb wide" data-tb="zoom" title="Zoom" aria-label="Zoom"><span id="zoom-l">100%</span><span class="ms">arrow_drop_down</span></button>
+  <i class="sep"></i>
+  <button class="tbb" data-tb="cur" title="Format as ₹ cr" aria-label="Format as currency"><span class="ms">currency_rupee</span></button>
+  <button class="tbb" data-tb="pct" title="Format as percent" aria-label="Format as percent"><span class="ms">percent</span></button>
+  <button class="tbb" data-tb="dec" title="Decrease decimal places" aria-label="Decrease decimal places"><span class="ms">decimal_decrease</span></button>
+  <button class="tbb" data-tb="inc" title="Increase decimal places" aria-label="Increase decimal places"><span class="ms">decimal_increase</span></button>
+  <button class="tbb wide" data-tb="fmt" title="More formats" aria-label="More formats"><span class="t123">123</span><span class="ms">arrow_drop_down</span></button>
+  <i class="sep"></i>
+  <button class="tbb wide font" data-tb="locked" title="Font" aria-label="Font">Roboto<span class="ms">arrow_drop_down</span></button>
+  <i class="sep"></i>
+  <span class="fsize"><button class="tbb" data-tb="locked" aria-label="Decrease font size"><span class="ms">remove</span></button><span class="fs-n">10</span><button class="tbb" data-tb="locked" aria-label="Increase font size"><span class="ms">add</span></button></span>
+  <i class="sep"></i>
+  <button class="tbb" data-tb="bold" title="Bold (⌘B)" aria-label="Bold"><span class="ms">format_bold</span></button>
+  <button class="tbb" data-tb="italic" title="Italic (⌘I)" aria-label="Italic"><span class="ms">format_italic</span></button>
+  <button class="tbb" data-tb="strike" title="Strikethrough" aria-label="Strikethrough"><span class="ms">format_strikethrough</span></button>
+  <button class="tbb" data-tb="locked" title="Text colour" aria-label="Text colour"><span class="ms">format_color_text</span></button>
+  <i class="sep"></i>
+  <button class="tbb" data-tb="locked" title="Fill colour" aria-label="Fill colour"><span class="ms">format_color_fill</span></button>
+  <button class="tbb" data-tb="locked" title="Borders" aria-label="Borders"><span class="ms">border_all</span></button>
+  <button class="tbb" data-tb="locked" title="Merge cells" aria-label="Merge cells"><span class="ms">cell_merge</span></button>
+  <i class="sep"></i>
+  <button class="tbb" data-tb="locked" title="Horizontal align" aria-label="Horizontal align"><span class="ms">format_align_left</span></button>
+  <button class="tbb" data-tb="locked" title="Vertical align" aria-label="Vertical align"><span class="ms">vertical_align_bottom</span></button>
+  <button class="tbb" data-tb="locked" title="Text wrapping" aria-label="Text wrapping"><span class="ms">wrap_text</span></button>
+  <i class="sep"></i>
+  <button class="tbb" data-tb="link" title="Copy link to this cell" aria-label="Copy link to this cell"><span class="ms">link</span></button>
+  <button class="tbb" data-tb="comment" title="Comments" aria-label="Comments"><span class="ms">add_comment</span></button>
+  <button class="tbb" data-tb="chart" title="Charts on this tab" aria-label="Charts on this tab"><span class="ms">insert_chart</span></button>
+  <button class="tbb" data-tb="filter" title="Filter" aria-label="Filter"><span class="ms">filter_alt</span></button>
+  <button class="tbb" data-tb="fn" title="Functions" aria-label="Functions"><span class="ms">functions</span></button>
+  <span class="grow"></span>
+  <a class="tbb wide rv" href="read.html" title="Plain résumé view"><span class="ms">description</span>Résumé view</a>
+</div>
+
+<!-- Formula bar -->
+<div class="fbar" id="fbar">
+  <div class="nb"><input id="namebox" aria-label="Name box" spellcheck="false" autocomplete="off"><button id="namebox-dd" class="icon-btn xs" aria-label="Named ranges"><span class="ms">arrow_drop_down</span></button></div>
+  <i class="sep"></i>
+  <span class="fx-ic" aria-hidden="true"><i>f</i>x</span>
+  <div class="fx-view" id="fx-view" role="textbox" aria-readonly="true" aria-label="Formula bar"></div>
+  <span class="fx-meta"><span id="fx-fmt"></span><span id="fx-hint"></span></span>
+</div>
+
+<div class="work">
+  <div class="gridwrap" id="gridwrap" tabindex="0" data-qa-scroll aria-label="Spreadsheet grid">
+    <div class="gin" id="gin"><p class="loadmsg">Loading workbook…</p></div>
+  </div>
+  <aside class="side" id="side" hidden aria-labelledby="side-t"></aside>
+  <nav class="rail d-only" aria-label="Side panels">
+    <button id="rail-case" data-panel="case" title="Case notes" aria-label="Case notes"><span class="ms">sticky_note_2</span></button>
+    <button data-panel="comments" title="Comments" aria-label="Comments"><span class="ms">comment</span></button>
+    <button data-panel="history" title="Version history (career)" aria-label="Version history"><span class="ms">history</span></button>
+    <button data-panel="names" title="Named ranges" aria-label="Named ranges"><span class="ms">view_list</span></button>
+  </nav>
+  <div class="findbox" id="findbox" hidden role="search"><span class="ms">search</span><input id="find-in" placeholder="Find in workbook" aria-label="Find in workbook" autocomplete="off"><span id="find-n" class="mute"></span><button class="icon-btn xs" id="find-up" aria-label="Previous"><span class="ms">expand_less</span></button><button class="icon-btn xs" id="find-dn" aria-label="Next"><span class="ms">expand_more</span></button><button class="icon-btn xs" id="find-x" aria-label="Close"><span class="ms">close</span></button></div>
+</div>
+
+<!-- Mobile formula bar -->
+<div class="mfx m-only" id="mfx"><span class="mfx-name" id="mfx-name">A1</span><span class="fx-ic" aria-hidden="true"><i>f</i>x</span><input id="mfx-in" aria-label="Cell contents" readonly><button class="icon-btn xs" id="mfx-ok" aria-label="Apply"><span class="ms">check</span></button></div>
+
+<!-- Sheet tabs -->
+<footer class="tabbar">
+  <button class="icon-btn" id="addtab" aria-label="Add sheet"><span class="ms">add</span></button>
+  <button class="icon-btn" id="alltabs" aria-label="All sheets"><span class="ms">menu</span></button>
+  <div class="tabs" id="tabs" role="tablist" data-qa-scroll></div>
+  <button class="icon-btn xs d-only" id="tabs-l" aria-label="Scroll tabs left"><span class="ms">chevron_left</span></button>
+  <button class="icon-btn xs d-only" id="tabs-r" aria-label="Scroll tabs right"><span class="ms">chevron_right</span></button>
+  <button class="sumchip" id="sumchip" hidden></button>
+  <button class="explore" id="explore" aria-label="Case notes"><span class="ms">sticky_note_2</span><span class="d-only">Case notes</span></button>
+</footer>
+<button class="mcase m-only" id="mcase" hidden><span class="ms">sticky_note_2</span>Case notes</button>
+<div class="legal">A portfolio by Pranav Shah, built as a working spreadsheet workbook. Not affiliated with any spreadsheet product. <span>Fictional persona: every person, deal and number here is made up.</span> <a href="read.html">Résumé view</a></div>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="dialog-wrap" id="dialog" hidden></div>
+<div class="cellcard" id="cellcard" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="coach" id="coach" role="dialog" aria-live="polite" hidden></div>
+
+<script src="js/engine.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/workbook.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

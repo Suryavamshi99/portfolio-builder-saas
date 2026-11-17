@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arjun Mistry · everything on one page</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#141414">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .read { max-width: 760px; margin: 0 auto; padding: 90px 20px 120px; }
+  .read h1 { font-size: clamp(36px, 6vw, 56px); letter-spacing: -.03em; margin: 0 0 8px; line-height: 1; }
+  .read h2 { font-size: 26px; margin: 56px 0 14px; letter-spacing: -.01em; border-top: 1px solid #2a2a2a; padding-top: 28px; }
+  .read h3 { font-size: 19px; margin: 34px 0 6px; }
+  .read h4 { font-size: 14px; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin: 18px 0 6px; }
+  .read p, .read li { color: #dddddd; line-height: 1.6; font-size: 16px; }
+  .read .lede { font-size: 19px; color: #ffffff; }
+  .read .small { color: var(--muted); font-size: 14px; }
+  .read ul { padding-left: 20px; }
+  .read .proj { scroll-margin-top: 80px; }
+  .read .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+  .read .facts div { background: #1f1f1f; border-radius: 6px; padding: 10px 12px; }
+  .read .facts b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1; }
+  .read .facts span { font-size: 12.5px; color: #bbbbbb; }
+  .read img.thumb { width: 100%; border-radius: 6px; margin: 8px 0 4px; aspect-ratio: 16/10; object-fit: cover; }
+  .read .head { display: flex; gap: 20px; align-items: center; margin-bottom: 18px; }
+  .read .head img { width: 96px; height: 96px; border-radius: 10px; object-fit: cover; }
+  .read .toc { columns: 2; font-size: 15px; padding-left: 20px; }
+  .read .toc a { color: #dddddd; }
+  .back { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: rgba(20,20,20,.96); display: flex; align-items: center; gap: 16px; padding: 0 var(--gutter); z-index: 10; border-bottom: 1px solid #222222; }
+  .back a.lnk { color: #dddddd; font-size: 14px; }
+  @media (max-width: 600px) { .read .facts { grid-template-columns: 1fr; } .read .toc { columns: 1; } }
+</style>
+</head>
+<body>
+<div class="back"><a class="wordmark" href="index.html" style="font-size:28px">ARJUN<span>.</span>TV</a><a class="lnk" href="index.html">Back to the trailers</a></div>
+<main class="read" id="read"><p>Loading...</p></main>
+<script type="module">
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const d = await (await fetch('content/portfolio.json')).json();
+const P = d.person, C = d.contact;
+const proj = d.projects.map(p => {
+  const g = d.project_pages[p.slug] || {};
+  return `<section class="proj" id="${p.slug}">
+    <h3>${esc(p.title)}</h3>
+    <p class="small">${esc(p.org)} · ${esc(p.year)} · ${esc(g.my_role || p.role)} · ${esc(p.duration)}</p>
+    <img class="thumb" src="media/${esc(p.thumbnail)}" alt="" loading="lazy">
+    <div class="facts">${(g.results || []).map(r => `<div><b>${esc(r.value)}</b><span>${esc(r.metric)}, ${esc(r.note)}</span></div>`).join('')}</div>
+    <h4>Context</h4><p>${esc(g.context)}</p>
+    <h4>Problem</h4><p>${esc(g.problem)}</p>
+    <h4>What I did</h4><ul>${(g.what_i_did || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <h4>Decisions</h4><ul>${(g.decisions || []).map(x => `<li><strong>${esc(x.choice)}.</strong> ${esc(x.why)}</li>`).join('')}</ul>
+    <h4>What I learned</h4><p>${esc(g.learned)}</p>
+    ${g.next ? `<h4>Next</h4><p>${esc(g.next)}</p>` : ''}
+  </section>`;
+}).join('');
+document.getElementById('read').innerHTML = `
+  <div class="head"><img src="media/${esc(d.media.headshot)}" alt="Arjun Mistry"><div><h1>${esc(P.first_name)} ${esc(P.last_name)}</h1><p class="small" style="margin:0">${esc(P.current)}</p></div></div>
+  <p class="lede">${esc(d.pitch.short)}</p>
+  <p>${esc(P.looking_for)}. Available from ${esc(P.available_from)}.</p>
+  <p><a href="mailto:${esc(C.email)}">${esc(C.email)}</a> · <a href="${esc(C.linkedin)}">LinkedIn</a> · <a href="media/resume.pdf">CV (PDF)</a></p>
+  <h2>Why hire him</h2><ul>${d.pitch.why_hire.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+  <h2>Projects</h2><ul class="toc">${d.projects.map(p => `<li><a href="#${p.slug}">${esc(d.streaming.short_titles[p.slug])}</a></li>`).join('')}</ul>
+  ${proj}
+  <h2>Experience</h2>${d.experience.map(x => `<h3>${esc(x.role)}, ${esc(x.org)}</h3><p class="small">${esc(x.place)} · ${esc(x.dates)}</p><ul>${x.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>`).join('')}
+  <h2>Education</h2>${d.education.map(e => `<h3>${esc(e.degree)}</h3><p class="small">${esc(e.school)} · ${esc(e.years)}</p><p>${esc(e.notes)}</p>`).join('')}
+  <h2>Wins</h2><ul>${d.wins.map(w => `<li><strong>${esc(w.title)}.</strong> ${esc(w.detail)}</li>`).join('')}</ul>
+  <h2>Skills</h2>${Object.entries(d.skills).map(([k, v]) => `<p><strong>${esc(k)}:</strong> ${v.map(esc).join(', ')}</p>`).join('')}
+  <p><strong>Tools:</strong> ${d.tools.map(t => esc(t.name)).join(', ')}</p>
+  <p><strong>Certificates:</strong> ${d.certifications.map(c => `${esc(c.name)} (${esc(c.issuer)}, ${esc(c.year)})`).join('; ')}</p>
+  <h2>What people say</h2>${d.testimonials.map(t => `<p>"${esc(t.quote)}"<br><span class="small">${esc(t.name)}, ${esc(t.role)}. ${esc(t.relation)}</span></p>`).join('')}
+  <h2>About</h2><p>${esc(d.about.intro)}</p><p>${esc(d.about.now)}</p>
+  <h2>Contact</h2><p><a href="mailto:${esc(C.email)}">${esc(C.email)}</a> · <a href="${esc(C.linkedin)}">LinkedIn</a> · <a href="${esc(C.calendly)}">Book 20 minutes</a></p>`;
+const jump = () => { if (location.hash) document.querySelector(location.hash)?.scrollIntoView(); };
+jump(); document.fonts.ready.then(jump); addEventListener('load', jump);
+</script>
+</body>
+</html>

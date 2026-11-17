@@ -23,6 +23,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ThemesRouteImport } from './routes/themes'
 import { Route as TokenRouteImport } from './routes/token'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
@@ -161,6 +162,11 @@ const StudioRoute = StudioRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThemesRoute = ThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TokenRoute = TokenRouteImport.update({
@@ -534,6 +540,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/themes': typeof ThemesRoute
   '/token': typeof TokenRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
@@ -619,6 +626,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/themes': typeof ThemesRoute
   '/token': typeof TokenRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
@@ -705,6 +713,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/themes': typeof ThemesRoute
   '/token': typeof TokenRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
@@ -792,6 +801,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/terms'
+    | '/themes'
     | '/token'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
@@ -877,6 +887,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/terms'
+    | '/themes'
     | '/token'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
@@ -962,6 +973,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/terms'
+    | '/themes'
     | '/token'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
@@ -1048,6 +1060,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StudioRoute: typeof StudioRoute
   TermsRoute: typeof TermsRoute
+  ThemesRoute: typeof ThemesRoute
   TokenRoute: typeof TokenRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
@@ -1203,6 +1216,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/themes': {
+      id: '/themes'
+      path: '/themes'
+      fullPath: '/themes'
+      preLoaderRoute: typeof ThemesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/token': {
@@ -1843,6 +1863,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StudioRoute: StudioRoute,
   TermsRoute: TermsRoute,
+  ThemesRoute: ThemesRoute,
   TokenRoute: TokenRoute,
   DotwellKnownOauthAuthorizationServerRoute:
     DotwellKnownOauthAuthorizationServerRoute,

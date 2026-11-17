@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case · Zubin Kapadia</title>
+<meta name="description" content="">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#e7f6f1">
+<link rel="preload" href="fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="pj">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="top">
+  <a class="nav-logo" href="index.html" aria-label="Zubin Kapadia, home"><span class="mis" data-mis="ZUBIN KAPADIA">ZUBIN KAPADIA</span></a>
+  <nav class="nav-links" aria-label="Site"><a href="index.html#reel">All work</a><a href="index.html#brief">Brief me</a><a href="index.html#contact">Contact</a></nav>
+  <div class="nav-right">
+    <div class="swatches" role="radiogroup" aria-label="Campaign ink">
+      <button type="button" role="radio" data-theme-pick="masala" aria-label="Masala inks: magenta and saffron"><i></i><i></i></button>
+      <button type="button" role="radio" data-theme-pick="monsoon" aria-label="Monsoon inks: ink blue and teal"><i></i><i></i></button>
+      <button type="button" role="radio" data-theme-pick="night" aria-label="Night market inks: violet and lime"><i></i><i></i></button>
+    </div>
+    <a class="btn btn-ink nav-cta" href="index.html#reel" data-press>Back to the reel</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero pj-hero" id="hero" data-ink aria-label="Case title">
+    <canvas class="plate" aria-hidden="true"></canvas>
+    <div class="plate-fallback" aria-hidden="true"></div>
+    <div class="hero-hud mono" aria-hidden="true"><span class="hud-l"><svg class="reg-mark" viewBox="-20 -20 40 40" aria-hidden="true"><circle r="6"/><path d="M-18 0H-9M9 0H18M0 -18V-9M0 9V18"/></svg> Proof of case <span id="pj-no"></span></span><span class="hud-r" id="pj-dates"></span></div>
+    <div class="pj-copy">
+      <a class="kicker mono back" href="index.html#reel">← All work</a>
+      <h1 class="pj-title" id="pj-title"></h1>
+      <p class="pj-sum" id="pj-sum"></p>
+      <dl class="pj-meta" id="pj-meta"></dl>
+    </div>
+    <div class="hero-foot mono"><span>Drag the print to misregister it · hover for the unprinted image</span><span id="pj-tags"></span></div>
+    <div class="lens-tag mono" aria-hidden="true">Unprinted</div>
+  </section>
+
+  <section class="pj-results" aria-label="Results"><div class="pj-res-row" id="pj-res"></div></section>
+
+  <section class="pj-cp" aria-label="Context and problem">
+    <div class="pj-cp-col"><p class="kicker mono">Context</p><p class="pj-read" id="pj-context"></p></div>
+    <div class="pj-cp-col"><p class="kicker mono">Problem</p><p class="pj-read" id="pj-problem"></p></div>
+  </section>
+
+  <section class="pj-steps" id="steps" aria-labelledby="steps-h">
+    <div class="pj-steps-pin">
+      <header class="reel-head"><h2 class="h2" id="steps-h">What I did</h2><p class="mono reel-count"><span id="st-n">01</span> / <span id="st-t">05</span></p></header>
+      <div class="pj-steps-track" id="pj-steps"></div>
+      <div class="reel-progress"><i id="st-bar"></i></div>
+    </div>
+  </section>
+
+  <section class="outside pj-dec" aria-labelledby="dec-h">
+    <header class="sec-head"><p class="kicker mono">Tap a card to see why</p><h2 class="h2" id="dec-h">Decisions</h2></header>
+    <div class="flip-row" id="pj-dec"></div>
+  </section>
+
+  <section class="pj-gallery" aria-label="Images"><div class="pj-gal" id="pj-gal"></div></section>
+
+  <section class="notes" aria-label="What I learned and what I'd do next"><div class="note-row pj-notes" id="pj-notes"></div></section>
+
+  <section class="pj-tools" aria-label="Tools"><p class="kicker mono">Tools</p><div class="dock" id="pj-tools"></div></section>
+
+  <section class="contact pj-next" data-ink aria-label="Next case">
+    <p class="kicker mono">Next case</p>
+    <a class="mail pj-next-link" id="pj-next" href="#" data-cursor="view" data-cursor-label="Next"></a>
+    <p class="mono mail-hint"><a href="index.html#brief">Or brief me on yours →</a></p>
+  </section>
+</main>
+<footer class="foot">
+  <div class="foot-word" aria-hidden="true"><span class="mis" data-mis="ZUBIN KAPADIA">ZUBIN KAPADIA</span></div>
+  <div class="foot-row mono"><span id="foot-loc"></span><span id="demo-note"></span><span><a href="index.html">Home</a></span></div>
+</footer>
+<canvas class="ink" aria-hidden="true"></canvas>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script src="js/press.js"></script>
+<script src="js/core.js"></script>
+<script src="js/project.js"></script>
+</body>
+</html>

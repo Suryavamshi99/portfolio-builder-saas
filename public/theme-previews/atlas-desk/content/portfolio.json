@@ -1,0 +1,1157 @@
+{
+  "demo": true,
+  "_note": "SAMPLE PERSONA. Dev Oberoi is a made-up person. Every employer, school, colleague, project, figure and testimonial here is invented. Swap it all out before going live, then set demo to false.",
+  "meta": {
+    "domain": "founders-office",
+    "site_title": "Dev Oberoi · Founder's Office & Strategy",
+    "description": "Ran a campus thesis-binding kiosk, then spent four years on operations and strategy at Pinewick Paper & Print. Now on a PGP at Ravenmoor Institute of Management and open to chief of staff, founder's office and strategy roles.",
+    "theme": "editorial",
+    "noindex": true
+  },
+  "person": {
+    "first_name": "Dev",
+    "last_name": "Oberoi",
+    "pronouns": "he/him",
+    "headline": "Founder's office generalist who closed his own campus venture and then opened the first Print Desks for Pinewick Paper & Print",
+    "current": "PGP in Business Management & Operations, Ravenmoor Institute of Management, Ravenmoor",
+    "looking_for": "Chief of staff, founder's office or strategy & ops seats at Series A–C startups in Larchmont Falls, Ravenmoor or Ferrywick",
+    "location": "Ravenmoor, India (from Fernhollow)",
+    "available_from": "January 2027"
+  },
+  "contact": {
+    "email": "dev.oberoi@example.com",
+    "phone": "+91 00000 00000",
+    "whatsapp": "+91 00000 00000",
+    "linkedin": "https://www.linkedin.com/in/example",
+    "calendly": "https://calendly.com/example",
+    "resume_pdf": "media/resume.pdf",
+    "substack": "https://example.substack.com"
+  },
+  "pitch": {
+    "short": "I ran a thesis-binding kiosk for two years and closed it when the rush-job numbers stopped adding up. At Pinewick Paper & Print I built the order tools and town-launch plans that a confident regional manager, a very competitive top salesperson and a deadpan senior accountant all agreed to use. What I do best is turn a founder's priorities into a weekly rhythm that survives a motivational poster.",
+    "why_hire": [
+      "I know a business from the inside: Bindwell handled 2,400 jobs and took ₹7.4 lakh before I closed it and published the numbers behind that call.",
+      "At Pinewick I led the operations side of the first Print Desk launch in Thistledown: 1,240 small-business accounts live in 16 weeks, 62% reordering within 30 days.",
+      "In my Tallowfield Freight internship I set up the weekly review and quarterly OKRs for six teams; the founder still runs both."
+    ],
+    "for_company_template": "Why {company}: I would like to work alongside {company}'s founders on the cross-team problems nobody owns yet, which is where my operations and launch experience helps most."
+  },
+  "about": {
+    "intro": "I grew up in Fernhollow and studied commerce at Fernhollow College of Commerce. After graduating, a friend and I started Bindwell, a binding and photocopy kiosk for students' theses and project reports. It handled 2,400 jobs in 22 months and then I closed it, because every overnight rush job lost money. In 2021 I joined Pinewick Paper & Print in Larchmont Falls on the order desk, moved to the regional strategy and operations team in 2023 and led operations for the first Print Desk town launch. I started the PGP at Ravenmoor Institute of Management in 2025 to step into a founder's office job, and spent the summer interning at Tallowfield Freight.",
+    "now": "Writing The Back Office Bulletin on Sundays, dropping blitz games at a Ravenmoor café on Saturdays and out on the ridge road by 5 am when I manage it."
+  },
+  "journey": [
+    {
+      "year": "2016",
+      "title": "Class XII, Elmstead Higher Secondary School, Fernhollow",
+      "detail": "CBSE, 90.2%. Treasurer of the debating society and a regular on the school chess team."
+    },
+    {
+      "year": "2016–2019",
+      "title": "B.Com (Hons), Fernhollow College of Commerce",
+      "detail": "CGPA 7.8. Member of the entrepreneurship cell; wrote the budget for the annual fest on two sheets of paper."
+    },
+    {
+      "year": "2019–2021",
+      "title": "Co-founder, Bindwell (campus binding kiosk)",
+      "detail": "2,400 jobs across three Fernhollow campuses. Closed in June 2021 with a published post-mortem."
+    },
+    {
+      "year": "2021",
+      "title": "Operations Associate, Pinewick Paper & Print, Larchmont Falls",
+      "detail": "Order desk for small-business accounts. Built the Order Desk Tracker."
+    },
+    {
+      "year": "2023",
+      "title": "Strategy & Operations Associate, Pinewick Paper & Print",
+      "detail": "Joined the regional expansion team. Led launch operations for the first Print Desk in Thistledown, then the Ashgrove playbook."
+    },
+    {
+      "year": "2025",
+      "title": "PGP, Business Management & Operations, Ravenmoor Institute of Management",
+      "detail": "Second place among 22 teams at the venture course demo day, with Reorder Slip. Started The Back Office Bulletin."
+    },
+    {
+      "year": "2026",
+      "title": "Founder's Office Intern, Tallowfield Freight, Larchmont Falls",
+      "detail": "Ten weeks setting up the weekly review and quarterly OKRs."
+    }
+  ],
+  "education": [
+    {
+      "school": "Ravenmoor Institute of Management, Ravenmoor",
+      "degree": "PGP in Business Management & Operations",
+      "years": "2025–2026",
+      "notes": "Strategy and venture track. Placed second of 22 teams at the venture course demo day."
+    },
+    {
+      "school": "Fernhollow College of Commerce, Fernhollow",
+      "degree": "B.Com (Hons)",
+      "years": "2016–2019",
+      "notes": "CGPA 7.8. Entrepreneurship cell."
+    },
+    {
+      "school": "Elmstead Higher Secondary School, Fernhollow",
+      "degree": "Class XII (CBSE), Commerce",
+      "years": "2016",
+      "notes": "90.2%"
+    }
+  ],
+  "experience": [
+    {
+      "org": "Tallowfield Freight",
+      "role": "Founder's Office Intern",
+      "place": "Larchmont Falls",
+      "dates": "Apr 2026 – Jun 2026",
+      "points": [
+        "Set up a weekly review for six teams: one dashboard, one page per team and a fixed 60-minute agenda.",
+        "Ran the Q3 OKR round with the founder and six team leads: 18 key results, each with a single owner."
+      ]
+    },
+    {
+      "org": "Pinewick Paper & Print",
+      "role": "Strategy & Operations Associate, Regional Expansion",
+      "place": "Larchmont Falls and Thistledown",
+      "dates": "Apr 2023 – Jun 2025",
+      "points": [
+        "Led launch operations for the first Print Desk in Thistledown: 1,240 small-business accounts live in 16 weeks.",
+        "Wrote the town launch playbook that put Ashgrove live in 9 weeks rather than 16."
+      ]
+    },
+    {
+      "org": "Pinewick Paper & Print",
+      "role": "Operations Associate, Order Desk",
+      "place": "Larchmont Falls",
+      "dates": "Jul 2021 – Mar 2023",
+      "points": [
+        "Built the Order Desk Tracker on Airtable, Zapier and Slack; 38 people on the order desk, in sales and in the warehouse opened it every day.",
+        "Cut median order-to-dispatch time for small-business accounts in my pod from 5.4 to 3.2 days."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "slug": "threadly-operating-cadence",
+      "title": "A weekly review and OKRs for Tallowfield Freight",
+      "org": "Tallowfield Freight (internship)",
+      "year": "2026",
+      "role": "Founder's Office Intern",
+      "type": "Internship",
+      "summary": "Tallowfield's founder sat through two and a half hours of Monday reporting from six teams in six formats, much of it read off a whiteboard with eleven marker colours. I put in one shared dashboard, a single page per team and a quarterly OKR round.",
+      "result": "Review cut from about 150 minutes to 60; actions closed on time rose from 38% to 81% over 8 weeks",
+      "thumbnail": "projects/threadly-cadence/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "Operating cadence",
+        "OKRs",
+        "Founder's office"
+      ],
+      "duration": "10 weeks",
+      "team": "Me, the founder, 6 team leads",
+      "tools": [
+        "googlesheets",
+        "looker",
+        "notion",
+        "slack"
+      ],
+      "metrics": [
+        [
+          "150→60m",
+          "weekly review"
+        ],
+        [
+          "38→81%",
+          "actions closed on time"
+        ],
+        [
+          "18",
+          "key results, one owner each"
+        ]
+      ]
+    },
+    {
+      "slug": "thistledown-launch",
+      "title": "Opening the first Pinewick Print Desks in Thistledown",
+      "org": "Pinewick Paper & Print",
+      "year": "2023–24",
+      "role": "Strategy & Ops Associate (launch ops lead)",
+      "type": "Work",
+      "summary": "Pinewick wanted to find out if walk-in Print Desks and standing paper orders would work for small businesses outside Larchmont Falls. Gordie Pruitt named it Operation P.R.I.N.T. on a whiteboard; I took the operations side of the first town: market mapping, a route team of 7, account onboarding and three months of service.",
+      "result": "1,240 accounts live in 16 weeks; 62% reordering within 30 days",
+      "thumbnail": "projects/thistledown-launch/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "New-city launch",
+        "Field ops",
+        "Playbook"
+      ],
+      "duration": "16 weeks to launch, plus 3 months of follow-up",
+      "team": "Me, 1 town manager, 7 route reps, 2 sales leads from Marla Finch's team",
+      "tools": [
+        "googlesheets",
+        "metabase",
+        "airtable",
+        "whatsapp"
+      ],
+      "metrics": [
+        [
+          "1,240",
+          "accounts live"
+        ],
+        [
+          "62%",
+          "reordering within 30 days"
+        ],
+        [
+          "16→9 wk",
+          "launch time for Ashgrove"
+        ]
+      ]
+    },
+    {
+      "slug": "second-sem",
+      "title": "Bindwell: a campus binding kiosk, and why I closed it",
+      "org": "Own startup",
+      "year": "2019–21",
+      "role": "Co-founder",
+      "type": "Own venture",
+      "summary": "A friend and I ran a photocopy-and-binding kiosk for theses and project reports on three Fernhollow campuses. Volume grew while every overnight rush job lost money, so when we closed I put the numbers in a post-mortem.",
+      "result": "2,400 jobs and ₹7.4 lakh of sales across 22 months; shut in June 2021",
+      "thumbnail": "projects/second-sem/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "0 to 1",
+        "Unit economics",
+        "Post-mortem"
+      ],
+      "duration": "22 months",
+      "team": "2 co-founders, 3 student helpers",
+      "tools": [
+        "googlesheets",
+        "whatsapp",
+        "canva"
+      ],
+      "metrics": [
+        [
+          "2,400",
+          "jobs"
+        ],
+        [
+          "₹308",
+          "average job"
+        ],
+        [
+          "−₹27",
+          "per rush job"
+        ]
+      ]
+    },
+    {
+      "slug": "activation-tracker",
+      "title": "Order Desk Tracker: a no-code tool 38 people used daily",
+      "org": "Pinewick Paper & Print",
+      "year": "2022",
+      "role": "Operations Associate (built it)",
+      "type": "No-code tool",
+      "summary": "Pinewick's small-business orders were scattered over four spreadsheets, one of them Dennis Hale's, plus a pile of Slack threads. I built a single Airtable tracker that pings Slack through Zapier, so each stalled order got an owner and a next step.",
+      "result": "Median order-to-dispatch time in my pod down from 5.4 to 3.2 days; adopted by 3 more pods",
+      "thumbnail": "projects/activation-tracker/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "No-code",
+        "Process design",
+        "Ops tooling"
+      ],
+      "duration": "5 weeks to build, in daily use for 2 years",
+      "team": "Solo, with 2 team leads and Wendell Odom's warehouse crew",
+      "tools": [
+        "airtable",
+        "zapier",
+        "slack"
+      ],
+      "metrics": [
+        [
+          "38",
+          "daily users"
+        ],
+        [
+          "5.4→3.2",
+          "days to dispatch"
+        ],
+        [
+          "4→1",
+          "trackers"
+        ]
+      ]
+    },
+    {
+      "slug": "market-khata",
+      "title": "Reorder Slip: a reorder reminder for neighbourhood stationers",
+      "org": "Ravenmoor Institute of Management venture course",
+      "year": "2025",
+      "role": "Team lead, 4 people",
+      "type": "Venture course",
+      "summary": "Small stationery shops in Ferrywick run out of their best-sellers because reorders live in a notebook and a memory. We interviewed 26 shop owners, built a clickable prototype that sends a WhatsApp reorder reminder with a one-tap order link, and pitched it at demo day.",
+      "result": "Placed 2nd of 22 teams at demo day; 6 shops ran the prototype for 3 weeks",
+      "thumbnail": "projects/market-khata/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "Venture",
+        "Field research",
+        "Pitch"
+      ],
+      "duration": "8 weeks",
+      "team": "4 classmates",
+      "tools": [
+        "figma",
+        "glide",
+        "whatsapp"
+      ],
+      "metrics": [
+        [
+          "26",
+          "shop interviews"
+        ],
+        [
+          "2nd",
+          "of 22 teams"
+        ],
+        [
+          "6",
+          "shops on the pilot"
+        ]
+      ]
+    },
+    {
+      "slug": "cloud-kitchen-pnl",
+      "title": "Zone-level P&L for a Ravenmoor delivery brand",
+      "org": "Ravenmoor Institute of Management live project",
+      "year": "2025",
+      "role": "Team member, 3 people",
+      "type": "Live project",
+      "summary": "Inkwell Express, a stationery delivery brand with seven delivery zones, only tracked profit for the whole company. We rebuilt profit zone by zone from order data, and two zones turned out to lose money on each order once courier fees and free-delivery codes were counted.",
+      "result": "The founder shut one zone and trimmed free-delivery codes in another; contribution margin rose 3.8 points the following month",
+      "thumbnail": "projects/cloud-kitchen-pnl/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "P&L",
+        "Unit economics",
+        "Live project"
+      ],
+      "duration": "6 weeks",
+      "team": "3 classmates",
+      "tools": [
+        "googlesheets",
+        "looker"
+      ],
+      "metrics": [
+        [
+          "7",
+          "zones modelled"
+        ],
+        [
+          "2",
+          "zones losing money"
+        ],
+        [
+          "+3.8 pts",
+          "contribution margin"
+        ]
+      ]
+    },
+    {
+      "slug": "monday-review",
+      "title": "The Back Office Bulletin",
+      "org": "Newsletter",
+      "year": "2025–now",
+      "role": "Writer",
+      "type": "Writing",
+      "summary": "A fortnightly newsletter on the unglamorous tools that keep small companies running: the spreadsheet, the checklist, the handover note. Each issue is built on one interview, from receptionists and accountants as often as founders.",
+      "result": "20 issues, 1,400 subscribers, 15 interviews",
+      "thumbnail": "projects/monday-review/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "Writing",
+        "Operating cadence"
+      ],
+      "duration": "Fortnightly since Aug 2025",
+      "team": "Solo",
+      "tools": [
+        "substack",
+        "notion"
+      ],
+      "metrics": [
+        [
+          "20",
+          "issues"
+        ],
+        [
+          "1,400",
+          "subscribers"
+        ],
+        [
+          "52%",
+          "open rate"
+        ]
+      ]
+    }
+  ],
+  "project_pages": {
+    "threadly-operating-cadence": {
+      "context": "Tallowfield Freight is a Larchmont Falls courier and haulage firm with a dispatch hub, two depots and a growing fleet. By 2026 six teams reported to the founder, and the Monday meeting was the one place they all sat together.",
+      "problem": "Every team reported in its own format. The meeting ran close to two and a half hours, nothing was recorded, and only 38% of Monday's commitments had been delivered a week later.",
+      "what_i_did": [
+        "Observed three meetings and timed every topic, noting which ones ended in a decision. 61% of the clock went on settling what the figures meant.",
+        "Agreed 12 common metrics with the six leads, then wired a Looker Studio dashboard to the existing Sheets and dispatch exports.",
+        "Swapped the whiteboard tour for a single Notion page per team: three figures, what moved, and what they need from the founder.",
+        "Fixed the agenda at 60 minutes and logged every action in Slack with a named owner and a due date.",
+        "Ran the Q3 OKR round: wrote the company objectives alongside the founder, then refined key results with each lead until every one had one owner."
+      ],
+      "decisions": [
+        {
+          "choice": "Settle the numbers before the meeting",
+          "why": "Most of the clock went on disputing definitions. With one dashboard as the source, the discussion could open on decisions."
+        },
+        {
+          "choice": "One page per team, sent the evening before",
+          "why": "The founder read the updates on Sunday night anyway, so taking the reading out of the room freed the most time."
+        },
+        {
+          "choice": "Three company objectives, not one per team",
+          "why": "Team OKRs written alone had overlapped. Three shared objectives made the leads agree who owned what."
+        }
+      ],
+      "results": [
+        {
+          "metric": "Weekly review length",
+          "value": "150 → 60 min",
+          "note": "average of the last 4 weeks of the internship"
+        },
+        {
+          "metric": "Actions closed on time",
+          "value": "38% → 81%",
+          "note": "over 8 weeks, counted in the Slack action log"
+        },
+        {
+          "metric": "Key results with one owner",
+          "value": "18 of 18",
+          "note": "Q3 2026 OKRs"
+        }
+      ],
+      "learned": "Two weeks went on the dashboard; persuading six leads to share one definition of 'delivered on time' took three more. The rhythm only held once the founder stopped taking verbal updates in the room.",
+      "next": "Give the depots a monthly review of their own, since their figures shift too slowly for a weekly slot.",
+      "images": [
+        "projects/threadly-cadence/thumb.jpg",
+        "projects/threadly-cadence/review-time.jpg",
+        "photos/candid-founder-whiteboard.jpg"
+      ],
+      "my_role": "Founder's Office Intern, owned the review rhythm and the OKR cycle",
+      "dates": "Apr – Jun 2026"
+    },
+    "thistledown-launch": {
+      "context": "In 2023 Pinewick's regional manager, Gordie Pruitt, wanted to know whether small shops, schools and clinics outside Larchmont Falls would buy standing orders of paper and printing from a Pinewick Print Desk instead of the cheap online stationers they already used. Thistledown, a river town where Pinewick kept a small depot, was the first test.",
+      "problem": "There was no playbook. Nobody knew which districts to start in, how many route reps we needed, or why accounts that signed up would keep reordering. Marla Finch was sure it was a sales problem; Dennis Hale was sure it was a rounding problem.",
+      "what_i_did": [
+        "Scored 14 market districts in Thistledown on small-business density and trade mix, and chose four to open first: Mill Street, Tanner's Row, Canal Road and Hobbs Lane.",
+        "Hired and trained a route team of seven with the town manager and Priya Raman in HR, and set daily visit targets by district.",
+        "Onboarded accounts through one shared sheet and a WhatsApp group per district, and repaired the three points where credit approval kept stalling, after Dennis agreed a single rounding rule for invoices.",
+        "Phoned 110 accounts that skipped their first reorder and sorted the reasons into categories.",
+        "Wrote the launch playbook from the Thistledown data, which the team used for Ashgrove."
+      ],
+      "decisions": [
+        {
+          "choice": "Start with clinics and schools",
+          "why": "They reorder on a calendar and their bills were larger than a corner shop's, so a reliable delivery slot and one monthly invoice mattered more to them than the lowest price per ream."
+        },
+        {
+          "choice": "A day-7 visit for every new account",
+          "why": "Accounts that lapsed nearly always hit trouble in week one: a delivery left at the wrong door or an invoice they could not decode. A day-7 visit fixed that before they drifted back to their old supplier."
+        }
+      ],
+      "results": [
+        {
+          "metric": "Accounts live",
+          "value": "1,240",
+          "note": "in 16 weeks, four districts"
+        },
+        {
+          "metric": "Reordering within 30 days",
+          "value": "62%",
+          "note": "up from 47% during the launch's first month"
+        },
+        {
+          "metric": "Ashgrove launch time",
+          "value": "9 weeks",
+          "note": "vs 16 for Thistledown, using the playbook"
+        }
+      ],
+      "learned": "Whether an account stayed was settled in its first week. Those whose first delivery arrived complete, with an invoice they could read, mostly stayed; the rest mostly left. Tilly Brandt, who answers the front desk phone, had said as much a month before my numbers did.",
+      "next": "Test whether a text message with the delivery photo and invoice could replace the day-7 visit in towns where route teams are expensive.",
+      "images": [
+        "projects/thistledown-launch/thumb.jpg",
+        "projects/thistledown-launch/cohort.jpg",
+        "photos/candid-launch-market.jpg"
+      ],
+      "my_role": "Strategy & Ops Associate, led launch operations",
+      "dates": "Sep 2023 – Mar 2024"
+    },
+    "second-sem": {
+      "context": "Final-year students at Fernhollow College of Commerce and two other campuses had to print and bind a thesis, and the campus copy shop took a week. Most students started three days before the deadline and wanted it overnight.",
+      "problem": "Printing and binding was cheap to do when students planned ahead. The open question was whether the kiosk could survive once most jobs arrived as overnight rushes.",
+      "what_i_did": [
+        "Ran a kiosk at the library gate with two second-hand binding machines bought from a closing print shop, and priced walk-in jobs at ₹150–400 depending on pages.",
+        "Took jobs by WhatsApp and a booking sheet, with every job tracked in Google Sheets.",
+        "Tracked contribution margin per job every month, split by walk-in and overnight rush.",
+        "When exams went online in 2020, thesis volumes dropped but the rush jobs stayed. A part-time night-shift hire for half a year only added to the cost.",
+        "Closed in June 2021 after paying every helper and supplier, selling the machines and writing up our figures in a public post-mortem."
+      ],
+      "decisions": [
+        {
+          "choice": "Keep walk-in prices and charge for rush",
+          "why": "Walk-in jobs made ₹46 each; rush jobs lost money. A ₹120 rush fee cut overnight jobs by half."
+        },
+        {
+          "choice": "Close instead of raising money",
+          "why": "All the growth was in overnight rush jobs, and each lost ₹27 once paper waste, overtime and reprints were counted. Fresh funding would only have lost money faster."
+        }
+      ],
+      "results": [
+        {
+          "metric": "Jobs",
+          "value": "2,400",
+          "note": "over 22 months"
+        },
+        {
+          "metric": "Sales",
+          "value": "₹7.4 lakh",
+          "note": "average job ₹308"
+        },
+        {
+          "metric": "Margin per rush job",
+          "value": "−₹27",
+          "note": "after paper waste, overtime and 9% reprints"
+        }
+      ],
+      "learned": "I should have split margin by job type in month one. For nearly twelve months we cheered rising volume that came entirely from the job type that lost money.",
+      "next": "Starting over, I would build a planned-orders business: one kiosk per campus, booking slots and a fixed rush fee from the first day.",
+      "images": [
+        "projects/second-sem/thumb.jpg",
+        "projects/second-sem/unit-economics.jpg",
+        "photos/achievement-thrift-stall.jpg"
+      ],
+      "my_role": "Co-founder, ran purchasing, operations and finance",
+      "dates": "Aug 2019 – Jun 2021"
+    },
+    "activation-tracker": {
+      "context": "I spent 2021 to 2023 as an Operations Associate on Pinewick's order desk in Larchmont Falls, handling small-business accounts between sales, finance and the warehouse.",
+      "problem": "Order status for small-business accounts sat in four spreadsheets, one of them Dennis Hale's, and in Slack threads. When an order stalled, no one could say whose move it was.",
+      "what_i_did": [
+        "Replaced the four spreadsheets with a single Airtable base, once Dennis and I had settled which column stays his.",
+        "Connected Zapier to Slack so a stalled order raised an alert naming its owner and the next step.",
+        "Built it solo over five weeks, with two team leads and an hour a week of Wendell Odom's time on warehouse statuses."
+      ],
+      "results": [
+        {
+          "metric": "Daily users",
+          "value": "38",
+          "note": "people on the order desk, in sales and in the warehouse"
+        },
+        {
+          "metric": "Median days to dispatch",
+          "value": "5.4 → 3.2",
+          "note": "in my pod"
+        },
+        {
+          "metric": "Trackers",
+          "value": "4 → 1",
+          "note": "taken up by 3 more pods and still running 2 years on"
+        }
+      ],
+      "images": [
+        "projects/activation-tracker/thumb.jpg"
+      ],
+      "my_role": "Operations Associate, built it",
+      "dates": "2022",
+      "decisions": [
+        {
+          "choice": "One tracker instead of four spreadsheets",
+          "why": "Order status lived in four places. In one Airtable tracker, every order had one row and one status."
+        },
+        {
+          "choice": "Slack alerts that name an owner for each stalled order",
+          "why": "Zapier posted a Slack alert whenever an order stalled, naming the person who had to move it next."
+        }
+      ],
+      "learned": "What shifted the number was naming an owner and a next move for every stalled order: median dispatch time in my pod dropped from 5.4 to 3.2 days. Meetings now get the same treatment, with each decision recorded alongside who owns it and by when.",
+      "visual": {
+        "type": "beforeafter",
+        "title": "Median days from order to dispatch, my pod",
+        "before": 5.4,
+        "after": 3.2,
+        "unit": "days",
+        "beforeLabel": "Before the tracker",
+        "afterLabel": "With the tracker"
+      }
+    },
+    "market-khata": {
+      "context": "Small stationery shops in Ferrywick reorder from wholesalers by phone and from memory, and lose sales when a best-seller runs out. We took this on for the Ravenmoor Institute of Management venture course in 2025.",
+      "problem": "Could a shop owner get a timely reorder prompt on the phone she already uses, without changing how she buys from her wholesaler?",
+      "what_i_did": [
+        "Ran the four-person team across eight weeks.",
+        "Interviewed 26 shop owners at Ferrywick Wholesale Market.",
+        "Made a clickable Figma and Glide prototype: a reminder that lands on WhatsApp with a one-tap order link.",
+        "Piloted the prototype with six shops for three weeks.",
+        "Presented it on demo day for the venture course."
+      ],
+      "results": [
+        {
+          "metric": "Shop interviews",
+          "value": "26",
+          "note": "at Ferrywick Wholesale Market"
+        },
+        {
+          "metric": "Demo day",
+          "value": "2nd of 22 teams",
+          "note": "Ravenmoor Institute of Management venture course"
+        },
+        {
+          "metric": "Pilot",
+          "value": "6 shops",
+          "note": "used the prototype for 3 weeks"
+        }
+      ],
+      "images": [
+        "projects/market-khata/thumb.jpg",
+        "photos/achievement-pitch-stage.jpg"
+      ],
+      "my_role": "Team lead, 4 people",
+      "dates": "2025",
+      "decisions": [
+        {
+          "choice": "Reminders on WhatsApp, with an order link",
+          "why": "Shop owners already take orders and payments on WhatsApp. The prototype sends the reminder there, so the reorder is one tap."
+        },
+        {
+          "choice": "Put the prototype in front of shops before demo day",
+          "why": "Six shops used it for three weeks, which let the pitch show actual behaviour instead of a slide of good intentions."
+        }
+      ],
+      "learned": "Three weeks of real use by six shops gave the pitch something concrete. We placed second among 22 teams.",
+      "visual": {
+        "type": "funnel",
+        "title": "From interviews to demo day",
+        "steps": [
+          {
+            "value": "26",
+            "label": "shops interviewed"
+          },
+          {
+            "value": "6",
+            "label": "shops on the 3-week pilot"
+          },
+          {
+            "value": "2nd",
+            "label": "of 22 teams on demo day"
+          }
+        ]
+      }
+    },
+    "cloud-kitchen-pnl": {
+      "context": "Inkwell Express, a Ravenmoor stationery delivery brand, ran seven delivery zones but reported one company-wide profit figure. Our team of three took it on as a six-week live project for Ravenmoor Institute of Management.",
+      "problem": "Looking only at the whole company's profit, the founder had no way to tell which zones paid their way.",
+      "what_i_did": [
+        "Modelled profit for all seven zones from order data, using Google Sheets with a Looker Studio view on top.",
+        "Spotted two zones that lost money per order once courier fees and free-delivery codes were charged against them.",
+        "Presented the zone figures to the founder."
+      ],
+      "results": [
+        {
+          "metric": "Zones modelled",
+          "value": "7",
+          "note": "one P&L each"
+        },
+        {
+          "metric": "Zones losing money",
+          "value": "2",
+          "note": "on every order"
+        },
+        {
+          "metric": "Contribution margin",
+          "value": "+3.8 pts",
+          "note": "the following month, once the founder shut one zone and trimmed free-delivery codes in another"
+        }
+      ],
+      "images": [
+        "projects/cloud-kitchen-pnl/thumb.jpg"
+      ],
+      "my_role": "Team member, 3 people",
+      "dates": "2025",
+      "decisions": [
+        {
+          "choice": "Profit worked out zone by zone",
+          "why": "The whole-company figure hid the spread. Cutting order data by zone showed who earned their keep."
+        },
+        {
+          "choice": "Count courier fees and free-delivery codes on every order",
+          "why": "Courier fees and codes are billed per order, and they are what sent two of the seven zones under water."
+        }
+      ],
+      "learned": "With figures cut by zone the call was easy: the founder shut one zone and trimmed codes in another. It echoes Bindwell: watch margin by channel from day one.",
+      "visual": {
+        "type": "zones",
+        "title": "Contribution per order, by zone",
+        "zones": 7,
+        "losing": 2,
+        "note": "Illustrative shape, not drawn to scale: 7 zones, 2 under zero after courier fees and free-delivery codes."
+      }
+    },
+    "monday-review": {
+      "context": "The Back Office Bulletin is a fortnightly newsletter about the quiet tools that keep small companies going. It began in August 2025 and gets written on Sundays.",
+      "problem": "I wanted to understand how small companies really stay organised, so every issue rests on a conversation with someone who does that work: an accountant, a receptionist, a warehouse foreman or a founder.",
+      "what_i_did": [
+        "Launched it in August 2025, midway through the PGP.",
+        "Built the issues around interviews: 15 so far, including a front-desk lead who schedules a 140-person office from one sticky note.",
+        "Wrote on Sundays about the tool, who owns it and what breaks.",
+        "Sent each issue out on a two-week cycle, with research notes filed in Notion.",
+        "Published 20 issues so far."
+      ],
+      "results": [
+        {
+          "metric": "Issues",
+          "value": "20",
+          "note": "fortnightly since Aug 2025"
+        },
+        {
+          "metric": "Subscribers",
+          "value": "1,400",
+          "note": "52% open rate"
+        },
+        {
+          "metric": "Interviews",
+          "value": "15",
+          "note": "founders, accountants and front-desk leads"
+        }
+      ],
+      "images": [
+        "projects/monday-review/thumb.jpg"
+      ],
+      "my_role": "Writer",
+      "dates": "Aug 2025 – now",
+      "decisions": [
+        {
+          "choice": "Build issues on interviews",
+          "why": "Each issue follows how a real person runs a real tool, so it describes the actual spreadsheet and the actual handover."
+        },
+        {
+          "choice": "Every two weeks, written on Sundays",
+          "why": "Issues go out fortnightly and get written on Sundays, so the PGP workload is not disturbed."
+        }
+      ],
+      "learned": "A fixed publishing schedule is a rhythm in itself. It has produced 20 issues for 1,400 subscribers at a 52% open rate, and the most forwarded one covered a receptionist's call log.",
+      "visual": {
+        "type": "issues",
+        "title": "20 issues, published fortnightly since August 2025",
+        "count": 20
+      }
+    }
+  },
+  "wins": [
+    {
+      "title": "Second place at venture demo day",
+      "detail": "Ravenmoor Institute of Management, 2025, with Reorder Slip.",
+      "image": "photos/achievement-pitch-stage.jpg"
+    },
+    {
+      "title": "Pinewick Employee of the Quarter",
+      "detail": "Q1 2024, for the Thistledown launch. The trophy was a brass paperweight Gordie Pruitt had engraved with 'Teamwork' twice.",
+      "image": "photos/achievement-payloom-award.jpg"
+    },
+    {
+      "title": "1,240 accounts live in Thistledown",
+      "detail": "Print Desk launch, Pinewick Paper & Print, 2023–24.",
+      "image": "photos/candid-launch-market.jpg"
+    },
+    {
+      "title": "2,400 jobs at Bindwell",
+      "detail": "Campus binding kiosk, 2019–21, before I closed it.",
+      "image": "photos/achievement-thrift-stall.jpg"
+    },
+    {
+      "title": "Internship readout to the cohort",
+      "detail": "Picked to present the Tallowfield review rhythm in class, Ravenmoor Institute of Management, 2026.",
+      "image": "photos/event-mu-classroom.jpg"
+    }
+  ],
+  "skills": {
+    "Strategy & ops": [
+      "Operating rhythm and OKRs",
+      "Weekly business reviews",
+      "Town and market launches",
+      "Unit economics and route P&L",
+      "Process and handover design"
+    ],
+    "Analysis": [
+      "Spreadsheet modelling (Excel, Sheets)",
+      "SQL (basic)",
+      "Metabase",
+      "Looker Studio",
+      "Cohort and reorder analysis"
+    ],
+    "Build": [
+      "Airtable",
+      "Zapier",
+      "Glide",
+      "Notion",
+      "Slack workflows"
+    ]
+  },
+  "certifications": [
+    {
+      "name": "Certified Operations Planner (COP)",
+      "issuer": "Northfield Operations Council",
+      "year": "2025"
+    },
+    {
+      "name": "Project Delivery Practitioner",
+      "issuer": "Brightwater Learning",
+      "year": "2022"
+    },
+    {
+      "name": "Founder Foundations",
+      "issuer": "Kestrel Startup Lab",
+      "year": "2020"
+    }
+  ],
+  "outside": [
+    {
+      "title": "Blitz chess",
+      "detail": "Blitz games at a café meetup in Ravenmoor most Saturdays. Rated about 1,790 online, taught the basics at lunch by Wendell Odom, and still weak in endgames.",
+      "image": "photos/hobby-chess.jpg"
+    },
+    {
+      "title": "Kite flying at Uttarayan",
+      "detail": "Each January from my uncle's terrace in old Fernhollow. I travel home for it yearly, PGP or not.",
+      "image": "photos/candid-uttarayan.jpg"
+    },
+    {
+      "title": "Cycling",
+      "detail": "Sunday rides on the ridge road outside Ravenmoor with two classmates. March 2026 brought my first century ride of 100 km.",
+      "image": "photos/hobby-cycling.jpg"
+    }
+  ],
+  "values": [
+    "Put the decision in writing, with an owner and a date.",
+    "Settle the numbers before the meeting starts.",
+    "Try the small version in one town or one team first."
+  ],
+  "testimonials": [
+    {
+      "quote": "Dev ran Thistledown like it was his own business. In week five the launch slipped, and by 8 am he was on Mill Street with the route team and had the cause on a one-page sheet by lunch. I had it framed for the break room.",
+      "name": "Gordon \"Gordie\" Pruitt",
+      "role": "Regional Manager, Pinewick Paper & Print",
+      "relation": "His manager, 2023–2025"
+    },
+    {
+      "quote": "My accounts used to sit in the order queue until I phoned someone. After his tracker I stopped phoning and started winning, which I resent. He still gave me the Thistledown playbook, the most annoying thing a rival has ever done.",
+      "name": "Marla Finch",
+      "role": "Senior Account Executive, Pinewick Paper & Print",
+      "relation": "Colleague and friendly rival, 2021–2025"
+    },
+    {
+      "quote": "Our Monday review used to swallow the morning and a good part of the afternoon's goodwill. Dev fixed the numbers first, then the agenda. Months later nobody has asked to go back.",
+      "name": "Hollis Greaves",
+      "role": "Chief of Staff, Tallowfield Freight",
+      "relation": "Internship mentor, 2026"
+    }
+  ],
+  "media": {
+    "headshot": "photos/headshot.jpg",
+    "cutout": "photos/cutout.png",
+    "professional": "photos/professional-arms.jpg",
+    "professional_alt": "photos/achievement-pitch-stage.jpg",
+    "candids": [
+      "photos/candid-launch-market.jpg",
+      "photos/candid-uttarayan.jpg",
+      "photos/candid-founder-whiteboard.jpg",
+      "photos/achievement-thrift-stall.jpg"
+    ],
+    "gallery": [
+      {
+        "src": "photos/headshot.jpg",
+        "caption": "Headshot",
+        "ratio": "1:1",
+        "kind": "profile"
+      },
+      {
+        "src": "photos/professional-arms.jpg",
+        "caption": "Half-body, arms folded",
+        "ratio": "3:4",
+        "kind": "profile"
+      },
+      {
+        "src": "photos/cutout.png",
+        "caption": "Cutout (transparent)",
+        "ratio": "portrait",
+        "kind": "profile"
+      },
+      {
+        "src": "photos/event-mu-classroom.jpg",
+        "caption": "Presenting his internship readout, Ravenmoor Institute classroom",
+        "ratio": "3:2",
+        "kind": "event"
+      },
+      {
+        "src": "photos/candid-launch-market.jpg",
+        "caption": "Launch week on Mill Street, Thistledown, Pinewick Print Desk",
+        "ratio": "16:9",
+        "kind": "candid"
+      },
+      {
+        "src": "photos/candid-uttarayan.jpg",
+        "caption": "Uttarayan on the terrace, Fernhollow",
+        "ratio": "3:2",
+        "kind": "candid"
+      },
+      {
+        "src": "photos/candid-founder-whiteboard.jpg",
+        "caption": "Mapping out the Q3 OKRs at the whiteboard, Tallowfield internship",
+        "ratio": "4:3",
+        "kind": "project"
+      },
+      {
+        "src": "photos/achievement-thrift-stall.jpg",
+        "caption": "A Bindwell kiosk day at the library gate, 2020",
+        "ratio": "4:3",
+        "kind": "project"
+      },
+      {
+        "src": "photos/achievement-pitch-stage.jpg",
+        "caption": "Pitching Reorder Slip at venture course demo day",
+        "ratio": "16:9",
+        "kind": "achievement"
+      },
+      {
+        "src": "photos/achievement-payloom-award.jpg",
+        "caption": "Employee of the Quarter, Pinewick town hall, 2024",
+        "ratio": "1:1",
+        "kind": "achievement"
+      },
+      {
+        "src": "photos/hobby-chess.jpg",
+        "caption": "Saturday blitz at a café",
+        "ratio": "4:3",
+        "kind": "hobby"
+      },
+      {
+        "src": "photos/hobby-cycling.jpg",
+        "caption": "Sunday ride near Ravenmoor",
+        "ratio": "3:2",
+        "kind": "hobby"
+      }
+    ],
+    "event": "photos/event-mu-classroom.jpg"
+  },
+  "logo_note": "Tool logos are the real marks of the software the persona uses and belong to their owners. Employers and schools are fictional and carry no logos.",
+  "tools": [
+    {
+      "name": "Google Sheets",
+      "logo": "logos/skills/googlesheets.svg"
+    },
+    {
+      "name": "Apps Script",
+      "logo": "logos/skills/googleappsscript.svg"
+    },
+    {
+      "name": "Looker Studio",
+      "logo": "logos/skills/looker.svg"
+    },
+    {
+      "name": "Metabase",
+      "logo": "logos/skills/metabase.svg"
+    },
+    {
+      "name": "SQL (Postgres)",
+      "logo": "logos/skills/postgresql.svg"
+    },
+    {
+      "name": "Airtable",
+      "logo": "logos/skills/airtable.svg"
+    },
+    {
+      "name": "Zapier",
+      "logo": "logos/skills/zapier.svg"
+    },
+    {
+      "name": "Glide",
+      "logo": "logos/skills/glide.svg"
+    },
+    {
+      "name": "Notion",
+      "logo": "logos/skills/notion.svg"
+    },
+    {
+      "name": "Slack",
+      "logo": "logos/skills/slack.svg"
+    },
+    {
+      "name": "Jira",
+      "logo": "logos/skills/jira.svg"
+    },
+    {
+      "name": "Miro",
+      "logo": "logos/skills/miro.svg"
+    },
+    {
+      "name": "Figma",
+      "logo": "logos/skills/figma.svg"
+    },
+    {
+      "name": "Shopify",
+      "logo": "logos/skills/shopify.svg"
+    },
+    {
+      "name": "Canva",
+      "logo": "logos/skills/canva.svg"
+    },
+    {
+      "name": "WhatsApp Business",
+      "logo": "logos/skills/whatsapp.svg"
+    },
+    {
+      "name": "Substack",
+      "logo": "logos/skills/substack.svg"
+    }
+  ],
+  "board": {
+    "_note": "The stickers on the hero board. Each one points at a project and one of its metrics (index into that project's metrics list), so the proof always matches the case study. 'needs' links a sticker to the 'Hiring for' buttons.",
+    "hint": "Peel a sticker for the proof",
+    "needs": [
+      {
+        "id": "cadence",
+        "label": "Operating cadence"
+      },
+      {
+        "id": "launch",
+        "label": "New launches"
+      },
+      {
+        "id": "economics",
+        "label": "Unit economics"
+      },
+      {
+        "id": "tooling",
+        "label": "Ops tooling"
+      }
+    ],
+    "stickers": [
+      {
+        "id": "review",
+        "text": "Weekly review",
+        "shape": "ticket",
+        "project": "threadly-operating-cadence",
+        "metric": 0,
+        "needs": [
+          "cadence"
+        ]
+      },
+      {
+        "id": "okrs",
+        "text": "OKRs",
+        "shape": "badge",
+        "project": "threadly-operating-cadence",
+        "metric": 2,
+        "needs": [
+          "cadence"
+        ]
+      },
+      {
+        "id": "launch",
+        "text": "City launch",
+        "sub": "Thistledown · 16 weeks",
+        "shape": "barcode",
+        "project": "thistledown-launch",
+        "metric": 0,
+        "needs": [
+          "launch"
+        ]
+      },
+      {
+        "id": "playbook",
+        "text": "Playbook",
+        "shape": "star",
+        "project": "thistledown-launch",
+        "metric": 2,
+        "needs": [
+          "launch"
+        ]
+      },
+      {
+        "id": "shut",
+        "text": "Closed it down",
+        "shape": "oval",
+        "project": "second-sem",
+        "metric": 2,
+        "needs": [
+          "economics"
+        ]
+      },
+      {
+        "id": "nocode",
+        "text": "No-code",
+        "shape": "bolt",
+        "project": "activation-tracker",
+        "metric": 0,
+        "needs": [
+          "tooling"
+        ]
+      },
+      {
+        "id": "pnl",
+        "text": "Zone P&L",
+        "shape": "stamp",
+        "project": "cloud-kitchen-pnl",
+        "metric": 2,
+        "needs": [
+          "economics"
+        ]
+      },
+      {
+        "id": "demo",
+        "text": "Demo day",
+        "shape": "burst",
+        "project": "market-khata",
+        "metric": 1,
+        "needs": [
+          "launch"
+        ]
+      },
+      {
+        "id": "monday",
+        "text": "Back Office Bulletin",
+        "shape": "pill",
+        "project": "monday-review",
+        "metric": 1,
+        "needs": [
+          "cadence"
+        ]
+      }
+    ]
+  },
+  "about_frames": [
+    {
+      "image": "photos/candid-founder-whiteboard.jpg",
+      "caption": "Founder's Office Intern, Tallowfield Freight (2026)",
+      "alt": "Dev at a whiteboard with a colleague at Tallowfield Freight, sketching the Q3 objectives"
+    },
+    {
+      "image": "photos/candid-launch-market.jpg",
+      "caption": "Strategy & Ops Associate, Pinewick (2023–2025)",
+      "alt": "Dev handing a Pinewick Print Desk order pad to a shopkeeper on Mill Street during launch week"
+    },
+    {
+      "image": "photos/achievement-thrift-stall.jpg",
+      "caption": "Co-founder, Bindwell (2019–2021)",
+      "alt": "Dev at a Bindwell campus kiosk day"
+    }
+  ]
+}

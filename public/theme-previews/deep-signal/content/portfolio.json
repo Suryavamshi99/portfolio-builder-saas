@@ -1,0 +1,1140 @@
+{
+ "demo": true,
+ "_note": "SAMPLE PERSONA. Mitali Sen is invented. Pinewick Paper & Print, Larchmont Falls and all other firms, schools and colleagues named here are fictional, and so are the roles, projects, figures and quotes. Swap in your own details first, and only then mark demo as false.",
+ "meta": {
+  "domain": "data",
+  "site_title": "Mitali Sen · Data & Analytics",
+  "description": "Statistics graduate with five years of sales and fulfilment analytics at Pinewick Paper & Print, now on a PGP at Alder Hall School of Management and seeking an analytics lead or data science position.",
+  "theme": "editorial",
+  "noindex": true
+ },
+ "person": {
+  "first_name": "Mitali",
+  "last_name": "Sen",
+  "pronouns": "she/her",
+  "headline": "Analyst who spent five years asking what the numbers at a paper company actually count",
+  "current": "PGP in Technology & Business Management, Alder Hall School of Management, Chennai",
+  "looking_for": "Analytics lead, data science or product analytics positions in retail, supply chain or B2B commerce, Chennai or Larchmont Falls",
+  "location": "Chennai, India (from Larchmont Falls)",
+  "available_from": "January 2027"
+ },
+ "contact": {
+  "email": "mitali.sen@example.com",
+  "phone": "+91 00000 00000",
+  "whatsapp": "+91 00000 00000",
+  "linkedin": "https://www.linkedin.com/in/example",
+  "calendly": "https://calendly.com/example",
+  "resume_pdf": "media/resume.pdf",
+  "github": "https://github.com/example",
+  "dataarena": "https://www.dataarena.com/example",
+  "substack": "https://example.substack.com"
+ },
+ "pitch": {
+  "short": "I studied statistics at Fernhollow, then spent five years in Pinewick Paper & Print's sales and fulfilment analytics team, mostly on delivery promises and pricing tests. I reach for a model only once a simple rule has failed, and I read the sample sizes before the headline.",
+  "why_hire": [
+   "Five years of sales and fulfilment analytics at Pinewick Paper & Print, rising from business analyst to senior analyst, with SQL, Python and Snowflake as daily tools.",
+   "I rebuilt the dispatch-time estimate behind every delivery promise and rolled it out depot by depot: mean absolute error fell from 5.8 to 4.1 hours in the five pilot depots.",
+   "I ran the test review that Pinewick's four sales pods used for a year: 52 tests reviewed, 6 caught with broken customer splits before Marla Finch's team could celebrate them."
+  ],
+  "for_company_template": "Why {company}: forecasting and pricing tests at {company} are where careful reading of data decides what ships, and that is what I enjoy."
+ },
+ "about": {
+  "intro": "I grew up in Larchmont Falls, where the paper mill whistle doubled as the school bell, and studied statistics at Fernhollow University. In 2020 I became a business analyst at Pinewick Paper & Print, at a desk beside Dennis Hale's rounding-rules binder, and I stayed five years. Two questions took up nearly all of it: were our delivery promises honest, and were our promotion tests telling the truth? I began a PGP at Alder Hall School of Management in 2025, since leading an analytics team needs more than clean SQL.",
+  "now": "Wrapping up a public notebook on the Larchmont river gauges, singing with a small choir on Sunday evenings, and being beaten by the Sunday cryptic more often than not."
+ },
+ "journey": [
+  {
+   "year": "2017",
+   "title": "Class XII, Eastbrook High School, Larchmont Falls",
+   "detail": "Science stream with mathematics, 93.6%. Member of the school quiz team."
+  },
+  {
+   "year": "2017–2020",
+   "title": "B.Sc (Hons) Statistics, Fernhollow University",
+   "detail": "CGPA 8.6. Dissertation on predicting spring river levels in the Larchmont valley using seasonal ARIMA."
+  },
+  {
+   "year": "2020",
+   "title": "Business Analyst, Pinewick Paper & Print, Larchmont Falls",
+   "detail": "Sales and fulfilment analytics. Started from home in the lockdown; relocated to head office in 2021, where Tilly Brandt on reception explained how everything really works."
+  },
+  {
+   "year": "2022",
+   "title": "Promoted to Senior Business Analyst",
+   "detail": "Fulfilment and pricing analytics: delivery promises, depot waiting times and test design."
+  },
+  {
+   "year": "2023",
+   "title": "Rebuilt the dispatch-time estimate",
+   "detail": "Depot-by-depot rollout across five pilot depots, then the whole northern region and two southern depots."
+  },
+  {
+   "year": "2025",
+   "title": "PGP, Technology & Business Management, Alder Hall School of Management, Chennai",
+   "detail": "Published a notebook on river gauges during the first term break."
+  },
+  {
+   "year": "2026",
+   "title": "Data Science Intern, Brightfold Office Direct, Chennai",
+   "detail": "Ten weeks on predicting which standing orders will lapse, and what to do about it."
+  }
+ ],
+ "education": [
+  {
+   "school": "Alder Hall School of Management, Chennai",
+   "degree": "PGP in Technology & Business Management",
+   "years": "2025–2026",
+   "notes": "Data and analytics track. Runner-up at the Term 3 datathon.",
+   "logo": "logos/orgs/crestfield.svg"
+  },
+  {
+   "school": "Fernhollow University",
+   "degree": "B.Sc (Hons), Statistics",
+   "years": "2017–2020",
+   "notes": "CGPA 8.6",
+   "logo": "logos/orgs/lakeview-university.svg"
+  },
+  {
+   "school": "Eastbrook High School, Larchmont Falls",
+   "degree": "Class XII, Science",
+   "years": "2017",
+   "notes": "93.6%",
+   "logo": "logos/orgs/south-point.jpg"
+  }
+ ],
+ "experience": [
+  {
+   "org": "Brightfold Office Direct",
+   "role": "Data Science Intern",
+   "place": "Chennai",
+   "dates": "Apr 2026 – Jun 2026",
+   "points": [
+    "Built a model ranking active standing orders by their chance of lapsing within 60 days (AUC 0.74 on a later, unseen month).",
+    "Tested a 'change your delivery day' prompt for 14,000 accounts over two weeks, after a failed delivery: lapses dropped from 9.1% to 8.2%."
+   ],
+   "logo": "logos/orgs/growly.png"
+  },
+  {
+   "org": "Pinewick Paper & Print",
+   "role": "Senior Business Analyst, Fulfilment Analytics",
+   "place": "Larchmont Falls",
+   "dates": "Apr 2022 – Jun 2025",
+   "points": [
+    "Rebuilt the dispatch-time estimate behind delivery promises; MAE 5.8 → 4.1 hours across pilot depots.",
+    "Created a review process for four sales pods: pre-registration, split-ratio checks and guardrail metrics."
+   ],
+   "logo": "logos/orgs/zippy.svg"
+  },
+  {
+   "org": "Pinewick Paper & Print",
+   "role": "Business Analyst, Sales and Fulfilment Analytics",
+   "place": "Larchmont Falls",
+   "dates": "Jul 2020 – Mar 2022",
+   "points": [
+    "Owned the weekly order-health report for 12 depots (Snowflake, Tableau), after persuading Gordie Pruitt that it did not need a motivational acronym.",
+    "Built the first snow-day flag used to adjust driver schedules and delivery promises."
+   ],
+   "logo": "logos/orgs/zippy.svg"
+  }
+ ],
+ "projects": [
+  {
+   "slug": "eta-accuracy",
+   "title": "Making Pinewick's delivery promise honest",
+   "org": "Pinewick Paper & Print",
+   "year": "2023",
+   "role": "Senior Business Analyst (model owner)",
+   "type": "Work",
+   "summary": "Dispatch time caused most of the gap between the delivery date we promised and the one customers got, because the old rule guessed it from depot averages. I rebuilt that component from live warehouse-queue signals, checked it against Wendell Odom's floor notes, and rolled it out depot by depot.",
+   "result": "Dispatch-time MAE 5.8 → 4.1 hours in five pilot depots; orders delivered after the promised day 11.2% → 8.3%",
+   "thumbnail": "projects/eta-accuracy/thumb.jpg",
+   "has_page": true,
+   "tags": [
+    "Forecasting",
+    "Gradient boosting",
+    "Staggered rollout",
+    "Fulfilment"
+   ],
+   "duration": "6 months",
+   "team": "Me, 2 data scientists, an ML engineer, a fulfilment PM and Wendell",
+   "tools": [
+    "python",
+    "snowflake",
+    "databricks",
+    "apacheairflow"
+   ],
+   "metrics": [
+    [
+     "5.8→4.1 hrs",
+     "dispatch-time error (MAE)"
+    ],
+    [
+     "−2.9 pts",
+     "orders after promised day"
+    ],
+    [
+     "5",
+     "pilot depots"
+    ]
+   ]
+  },
+  {
+   "slug": "growly-sip-stops",
+   "title": "Predicting which standing orders will lapse",
+   "org": "Brightfold Office Direct (internship)",
+   "year": "2026",
+   "role": "Data Science Intern",
+   "type": "Internship",
+   "summary": "Roughly one in eleven active standing orders lapses within two months, frequently after a failed delivery to a closed office. I ranked orders by risk with a model, then tested a single low-cost fix aimed at the largest group.",
+   "result": "AUC 0.74 on a held-out month; lapses fell from 9.1% to 8.2% in a two-week prompt test",
+   "thumbnail": "projects/growly-sip-stops/thumb.jpg",
+   "has_page": true,
+   "tags": [
+    "Churn model",
+    "B2B subscriptions",
+    "Experiment",
+    "LightGBM"
+   ],
+   "duration": "10 weeks",
+   "team": "Intern, supervised by a senior data scientist and working with the standing-orders team",
+   "tools": [
+    "python",
+    "scikitlearn",
+    "apachespark",
+    "jupyter"
+   ],
+   "metrics": [
+    [
+     "0.74",
+     "AUC, held-out month"
+    ],
+    [
+     "38%",
+     "of lapses in top decile"
+    ],
+    [
+     "9.1→8.2%",
+     "lapse rate in test"
+    ]
+   ]
+  },
+  {
+   "slug": "larkspur-air",
+   "title": "Larchmont Falls' river, gauge by gauge",
+   "org": "Own project",
+   "year": "2025",
+   "role": "Did it alone",
+   "type": "Side project",
+   "summary": "The valley has six river-level gauges, and every side of the spring-flood argument quotes whichever suits them. I cleaned up six years of hourly readings, compared the gauges, and walked the bank with a cheap depth stick to find what the gauges miss.",
+   "result": "Published notebook on DataArena and GitHub; 5,400 views and used by the Larchmont river-watch volunteers",
+   "thumbnail": "projects/larkspur-air/thumb.jpg",
+   "has_page": true,
+   "tags": [
+    "Public data",
+    "Time series",
+    "Open notebook",
+    "Field data"
+   ],
+   "duration": "10 weeks",
+   "team": "Solo",
+   "tools": [
+    "python",
+    "pandas",
+    "plotly",
+    "dataarena",
+    "github"
+   ],
+   "metrics": [
+    [
+     "6",
+     "gauges, 2019–2025"
+    ],
+    [
+     "390k",
+     "hourly readings cleaned"
+    ],
+    [
+     "1.3×",
+     "bank stick vs nearest gauge"
+    ]
+   ]
+  },
+  {
+   "slug": "experiment-review",
+   "title": "A test review for four sales pods",
+   "org": "Pinewick Paper & Print",
+   "year": "2024",
+   "role": "Senior Business Analyst",
+   "type": "Work",
+   "summary": "Pods were launching promotions on results no one had checked, usually announced from a whiteboard. I introduced a one-page pre-registration, automatic split-ratio checks, three guardrail metrics and a weekly review meeting.",
+   "result": "52 tests reviewed in two quarters; 6 caught with broken customer splits, 4 launches stopped on guardrails",
+   "thumbnail": "projects/experiment-review/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Experimentation",
+    "Guardrails",
+    "Process"
+   ],
+   "duration": "2 quarters",
+   "team": "Me, plus 4 pod leads and a data engineer",
+   "tools": [
+    "python",
+    "snowflake",
+    "tableau"
+   ],
+   "metrics": [
+    [
+     "52",
+     "tests reviewed"
+    ],
+    [
+     "6",
+     "split failures caught"
+    ],
+    [
+     "4",
+     "launches stopped"
+    ]
+   ]
+  },
+  {
+   "slug": "datathon",
+   "title": "24-hour datathon: wholesale stationery demand forecast",
+   "org": "Alder Hall School of Management",
+   "year": "2026",
+   "role": "Team lead, 4 people",
+   "type": "Case competition",
+   "summary": "A 24-hour inter-college contest to predict next-day demand for each SKU across stationery wholesale depots. Handling term-start weeks and monsoon days as their own signals, rather than noise, put us ahead of the baseline.",
+   "result": "Second of 38 teams; ₹55,000 prize",
+   "thumbnail": "projects/datathon/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Forecasting",
+    "Competition",
+    "Team"
+   ],
+   "duration": "24 hours",
+   "team": "4 classmates",
+   "tools": [
+    "python",
+    "pandas",
+    "scikitlearn"
+   ],
+   "metrics": [
+    [
+     "2nd",
+     "of 38 teams"
+    ],
+    [
+     "−21%",
+     "WAPE vs baseline"
+    ],
+    [
+     "₹55k",
+     "prize"
+    ]
+   ]
+  },
+  {
+   "slug": "active-subscriber",
+   "title": "One definition of an active account (live project)",
+   "org": "Alder Hall School of Management live project",
+   "year": "2025",
+   "role": "Team member, 3 people",
+   "type": "Live project",
+   "summary": "A Chennai stationery subscription-box brand gave its board four different 'active account' counts. With the founders we agreed one definition, implemented it in SQL, and reconciled it against every old figure.",
+   "result": "Now used in the brand's monthly board pack, with one figure instead of four",
+   "thumbnail": "projects/active-subscriber/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Metrics",
+    "SQL",
+    "Stakeholders"
+   ],
+   "duration": "5 weeks",
+   "team": "3 classmates",
+   "tools": [
+    "postgresql",
+    "dbt",
+    "googlesheets"
+   ],
+   "metrics": [
+    [
+     "4→1",
+     "account counts"
+    ],
+    [
+     "13%",
+     "gap explained"
+    ],
+    [
+     "8",
+     "edge cases written down"
+    ]
+   ]
+  },
+  {
+   "slug": "home-credit-dataarena",
+   "title": "DataArena bronze: invoice late-payment stability",
+   "org": "DataArena",
+   "year": "2024",
+   "role": "Solo entry",
+   "type": "Competition",
+   "summary": "A DataArena contest on predicting late invoice payments with models that hold up across weeks, not only on a single split. Most of my effort went into drift-free features and week-by-week stability checks.",
+   "result": "Bronze medal, top 9% of teams",
+   "thumbnail": "projects/home-credit-dataarena/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Payments risk",
+    "Competition",
+    "Model stability"
+   ],
+   "duration": "9 weeks of evenings",
+   "team": "Solo",
+   "tools": [
+    "python",
+    "dataarena",
+    "scikitlearn"
+   ],
+   "metrics": [
+    [
+     "Top 9%",
+     "final leaderboard"
+    ],
+    [
+     "Bronze",
+     "medal"
+    ],
+    [
+     "190",
+     "features kept of 410"
+    ]
+   ]
+  },
+  {
+   "slug": "small-samples",
+   "title": "Small Samples",
+   "org": "Newsletter",
+   "year": "2024–now",
+   "role": "Writer",
+   "type": "Writing",
+   "summary": "Every second week I write about one test or metric that went wrong, using invented offices and made-up data: the story, the warning signs, and the check to run next time.",
+   "result": "24 posts, 940 subscribers",
+   "thumbnail": "projects/small-samples/thumb.jpg",
+   "has_page": false,
+   "tags": [
+    "Writing",
+    "Experimentation",
+    "Statistics"
+   ],
+   "duration": "Fortnightly since 2024",
+   "team": "Solo",
+   "tools": [
+    "substack",
+    "python"
+   ],
+   "metrics": [
+    [
+     "24",
+     "posts"
+    ],
+    [
+     "940",
+     "subscribers"
+    ],
+    [
+     "44%",
+     "open rate"
+    ]
+   ]
+  }
+ ],
+ "project_pages": {
+  "eta-accuracy": {
+   "context": "Each Pinewick order shows a promised delivery day at checkout and refreshes it until the van arrives. Three pieces make up the promise: depot pick-and-dispatch time, the truck's journey to the customer's town, and the final drop. As of 2023, the dispatch piece used each depot's four-week average.",
+   "problem": "Our northern-region error breakdown put 61% of squared promise error on dispatch time, worst during the back-to-school rush and on snow days when depots are swamped. In the pilot depots 11.2% of orders arrived after the promised day, which fed a large chunk of 'where is my delivery' calls, most of them landing on Tilly Brandt's desk.",
+   "what_i_did": [
+    "Split promise error by component, day, depot and weather across 640,000 orders, which pointed at dispatch time as the largest and most fixable piece.",
+    "Trained a LightGBM model of dispatch time from live signals: the depot's pick queue, recent pick times, lines per order and day of week.",
+    "Tested calibration by depot size and day of week, then capped any single update so a model miss could shift a promise by six hours at most.",
+    "Planned a staggered rollout over five pilot depots, flipping between old and new model on alternate weeks so weather and the school rush hit both arms alike.",
+    "Drafted the rollout with the fulfilment PM, ML engineer and Wendell Odom: five depots, then the northern region, then two southern depots, each step with a weekly error report."
+   ],
+   "decisions": [
+    {
+     "choice": "Alternating weeks, not a customer-level A/B test",
+     "why": "Pickers and trucks are shared by every customer in a depot. Giving half the customers new promises would reshuffle the pick order for all of them and spoil the control group."
+    },
+    {
+     "choice": "Model only the dispatch part",
+     "why": "It carried 61% of the error, and it was the one piece we could fix without touching truck routing, which belonged to another team."
+    },
+    {
+     "choice": "Cap each promise change at six hours",
+     "why": "A promise that lurches annoys customers more than one that is slightly off. Capping the change gave up very little accuracy."
+    }
+   ],
+   "results": [
+    {
+     "metric": "Dispatch-time mean absolute error",
+     "value": "5.8 → 4.1 hours",
+     "note": "five pilot depots, six-week alternating rollout"
+    },
+    {
+     "metric": "Orders delivered after the promised day",
+     "value": "11.2% → 8.3%",
+     "note": "same depots and period"
+    },
+    {
+     "metric": "'Where is my delivery' calls",
+     "value": "−12%",
+     "note": "per 1,000 orders, pilot depots"
+    }
+   ],
+   "learned": "Building the model was straightforward. Agreeing on what 'better' meant with three teams and one philosophical foreman took far longer, and the alternating-week design is what won them over.",
+   "images": [
+    "projects/eta-accuracy/thumb.jpg",
+    "projects/eta-accuracy/error-breakdown.jpg",
+    "projects/eta-accuracy/rollout.jpg",
+    "photos/candid-office.jpg"
+   ],
+   "next": "Apply live queue data to the truck leg, beginning with the long run to the coastal towns where deliveries slip most.",
+   "my_role": "Senior Business Analyst; the analysis, the dispatch-time model and the test design were mine",
+   "dates": "Feb – Jul 2023"
+  },
+  "growly-sip-stops": {
+   "context": "A Brightfold Office Direct standing order ships the same bundle of supplies to an office each month and bills the account automatically. The standing-orders team wanted to know which live orders were about to lapse, and whether any simple step could keep more of them going.",
+   "problem": "Around 9% of live standing orders lapsed within 60 days. The existing rule only raised a flag after two failed deliveries, typically too late, since the customer had usually decided to leave by then.",
+   "what_i_did": [
+    "Assembled a monthly snapshot of 1.2 million live standing orders with 60-day lapse labels, making sure no feature drew on anything after the snapshot date.",
+    "Worked through candidate features with the account team: failed deliveries, delivery day against office opening days, invoice disputes, changes in order size and account age.",
+    "Fitted a LightGBM model and scored it on a later month instead of a random split, because back-to-school season shifts buying from one month to the next.",
+    "Discovered that 29% of lapses followed a failed delivery on a day the office was closed, and suggested a prompt inviting customers to change their delivery day.",
+    "Ran a randomised two-week trial of the prompt on 14,000 accounts with a failed delivery, with wording approved by the account team and legal."
+   ],
+   "decisions": [
+    {
+     "choice": "Score on a later month rather than a random split",
+     "why": "A random split scored AUC 0.81, but it lets seasonal patterns leak between training and test data. The later month scored 0.74, which is what the team should plan on."
+    },
+    {
+     "choice": "Try a single inexpensive remedy, not a retention campaign",
+     "why": "The model surfaced one big, well-defined group. A delivery-day prompt needs no discount or new screens, so an intern could test it in ten weeks."
+    }
+   ],
+   "results": [
+    {
+     "metric": "Model AUC",
+     "value": "0.74",
+     "note": "held-out month, vs 0.63 for the two-failed-deliveries rule"
+    },
+    {
+     "metric": "Lapses caught in top 10% of scores",
+     "value": "38%",
+     "note": "same held-out month"
+    },
+    {
+     "metric": "Lapse rate with prompt",
+     "value": "9.1% → 8.2%",
+     "note": "two-week test, 14,000 accounts, p = 0.04"
+    }
+   ],
+   "learned": "The score mattered less than the explanation of why accounts lapsed. The closed-office clash sat in the data for years, waiting for someone to put delivery days next to opening days.",
+   "images": [
+    "projects/growly-sip-stops/thumb.jpg",
+    "projects/growly-sip-stops/deciles.jpg",
+    "photos/event-mu-classroom.jpg"
+   ],
+   "next": "Follow moved orders through a whole billing cycle to see whether they stay active past month one, then try the score as a trigger for account-team calls.",
+   "my_role": "Data Science Intern, responsible for the model and the trial analysis",
+   "dates": "Apr – Jun 2026"
+  },
+  "larkspur-air": {
+   "context": "Each spring the Larchmont river swells with snowmelt, and each town meeting argument cites a different gauge. The county posts hourly levels for six gauges in the valley, though the files contain holes, changed units and frozen sensors.",
+   "problem": "Nobody had published a tidy comparison of the six gauges across several springs, or checked how closely a gauge matches the water level at the spots people worry about.",
+   "what_i_did": [
+    "Pulled six years of hourly readings (2019–2025) for the six gauges and coded checks for gaps, repeats and abrupt jumps, which removed about 8% of hours.",
+    "Compared gauges by month and time of day, and set aside rain effects using public rainfall and snow-depth records.",
+    "Walked a three-kilometre bank with a marked depth stick for three weeks in April 2025, recording 38 visits.",
+    "Checked the stick against the Millrace Bridge gauge for a week before starting, and carried that error band into every reading reported.",
+    "Released the notebook on DataArena and GitHub with a plain summary, then talked the river-watch volunteers through it."
+   ],
+   "decisions": [
+    {
+     "choice": "Discard bad hours rather than patching them",
+     "why": "Interpolating across the melt would have flattened the very peaks the notebook studies. I reported each gauge's share of dropped hours instead."
+    },
+    {
+     "choice": "Show the stick data with its error band",
+     "why": "A marked stick is no reference instrument. Printing its calibration error alongside the readings kept the comparison fair."
+    }
+   ],
+   "results": [
+    {
+     "metric": "Melt-night vs afternoon rise",
+     "value": "2.4×",
+     "note": "April average across gauges, midnight–4 am vs 1–4 pm"
+    },
+    {
+     "metric": "Bank stick vs nearest gauge",
+     "value": "1.3×",
+     "note": "38 morning visits, after calibration"
+    },
+    {
+     "metric": "Notebook views",
+     "value": "5,400",
+     "note": "DataArena and GitHub, first three months"
+    }
+   ],
+   "learned": "Deciding which readings to distrust was the bulk of the job. The gauge that looked worst on most days turned out to have a sensor frozen on one value for 9 days in 2023.",
+   "images": [
+    "projects/larkspur-air/thumb.jpg",
+    "projects/larkspur-air/heatmap.jpg",
+    "photos/candid-field-sensor.jpg"
+   ],
+   "next": "Bring in bank readings from two volunteers on other stretches, and check whether the peak moved after the 2024 upstream weir repairs.",
+   "my_role": "Did it alone",
+   "dates": "Mar – May 2025"
+  }
+ },
+ "wins": [
+  {
+   "title": "Datathon runner-up",
+   "detail": "Inter-B-school 24-hour datathon, Chennai, 2026. Second of 38 teams, ₹55,000 prize.",
+   "image": "photos/achievement-datathon.jpg"
+  },
+  {
+   "title": "Delivery-promise error down from 5.8 to 4.1 hours",
+   "detail": "Dispatch-time model across five Pinewick pilot depots, 2023.",
+   "image": "photos/achievement-presenting.jpg"
+  },
+  {
+   "title": "Pinewick Operations Excellence award",
+   "detail": "Pinewick Paper & Print, Q4 2023, for the delivery-promise rollout. Gordie Pruitt gave a speech with an acronym; the trophy was nicer.",
+   "image": "photos/achievement-award.jpg"
+  },
+  {
+   "title": "Internship readout picked for the PGP showcase",
+   "detail": "Alder Hall School of Management, 2026. Brightfold standing-order lapse model and prompt test.",
+   "image": "photos/event-mu-classroom.jpg"
+  },
+  {
+   "title": "DataArena bronze medal",
+   "detail": "Invoice Late-Payment Stability, 2024. Top 9%, solo.",
+   "image": "projects/home-credit-dataarena/thumb.jpg"
+  }
+ ],
+ "skills": {
+  "Statistics and modelling": [
+   "Test design and analysis",
+   "Staggered and cluster rollouts",
+   "Time-series forecasting",
+   "Gradient boosting (LightGBM, XGBoost)",
+   "Causal inference basics"
+  ],
+  "Data": [
+   "SQL (Snowflake, Postgres)",
+   "Python (pandas, scikit-learn)",
+   "PySpark on Databricks",
+   "dbt",
+   "Airflow"
+  ],
+  "Communication": [
+   "Tableau dashboards",
+   "One-page test readouts",
+   "Metric definitions",
+   "Explaining rounding rules to Dennis Hale"
+  ]
+ },
+ "certifications": [
+  {
+   "name": "Applied Machine Learning Certificate",
+   "issuer": "Northlake Online Institute",
+   "year": "2022"
+  },
+  {
+   "name": "Cloud Data Warehouse Practitioner",
+   "issuer": "Cloudbank Data Academy",
+   "year": "2023"
+  },
+  {
+   "name": "Dashboard Design Associate",
+   "issuer": "Brightchart Learning",
+   "year": "2021"
+  }
+ ],
+ "outside": [
+  {
+   "title": "Choir singing",
+   "detail": "Nine years of light classical vocal training as a child. Now I sing with a small choir in Chennai on Sunday evenings, and at the Founders' Day concert in the Larchmont Falls town hall each May.",
+   "image": "photos/hobby-rabindrasangeet.jpg"
+  },
+  {
+   "title": "Cryptic crosswords",
+   "detail": "Sunday cryptic, tea in hand, most weeks. Fastest full grid: 41 minutes. The typical result is far less impressive.",
+   "image": "photos/hobby-crossword.jpg"
+  },
+  {
+   "title": "Harvest fair in Larchmont Falls",
+   "detail": "I go home every October for the harvest fair and do the same stall-and-fritter route with school friends.",
+   "image": "photos/candid-pujo.jpg"
+  }
+ ],
+ "values": [
+  "Check the test before reading the result.",
+  "Define the metric in writing before the dashboard exists.",
+  "Put the error band beside the number."
+ ],
+ "testimonials": [
+  {
+   "quote": "Pods came to Mitali with their tests ahead of every launch review. She spotted broken customer splits which the rest of us had been quoting for weeks, my own team included.",
+   "name": "Marla Finch",
+   "role": "Top Salesperson and Pod Lead, Pinewick Paper & Print",
+   "relation": "Colleague and friendly rival, 2021–2025"
+  },
+  {
+   "quote": "Without being asked, she scored the model on a later month and gave us the lower figure. That honesty is why the standing-orders team agreed to run the trial.",
+   "name": "Preeti Nambiar",
+   "role": "Senior Data Scientist, Brightfold Office Direct",
+   "relation": "Internship mentor, 2026"
+  },
+  {
+   "quote": "For three springs we had squabbled over which gauge to cite. Her notebook ended it, and she stayed to walk us through the bits we hadn't understood. Priya from HR calls that rare.",
+   "name": "Wendell Odom",
+   "role": "Warehouse Foreman and river-watch volunteer, Larchmont Falls",
+   "relation": "Used the river-gauge notebook"
+  }
+ ],
+ "media": {
+  "headshot": "photos/headshot.jpg",
+  "cutout": "photos/cutout.webp",
+  "professional": "photos/professional-arms.jpg",
+  "professional_alt": "photos/achievement-presenting.jpg",
+  "candids": [
+   "photos/candid-office.jpg",
+   "photos/candid-pujo.jpg",
+   "photos/candid-field-sensor.jpg"
+  ],
+  "gallery": [
+   {
+    "src": "photos/headshot.jpg",
+    "caption": "Headshot",
+    "ratio": "1:1",
+    "kind": "profile"
+   },
+   {
+    "src": "photos/professional-arms.jpg",
+    "caption": "Half-body, holding a laptop",
+    "ratio": "3:4",
+    "kind": "profile"
+   },
+   {
+    "src": "photos/cutout.webp",
+    "caption": "Cutout (transparent)",
+    "ratio": "portrait",
+    "kind": "profile"
+   },
+   {
+    "src": "photos/event-mu-classroom.jpg",
+    "caption": "Presenting her internship model, Alder Hall School of Management classroom",
+    "ratio": "3:2",
+    "kind": "event"
+   },
+   {
+    "src": "photos/candid-office.jpg",
+    "caption": "Whiteboarding the delivery-promise model, Pinewick head office",
+    "ratio": "4:3",
+    "kind": "candid"
+   },
+   {
+    "src": "photos/candid-pujo.jpg",
+    "caption": "Harvest fair with school friends, Larchmont Falls",
+    "ratio": "3:2",
+    "kind": "candid"
+   },
+   {
+    "src": "photos/candid-field-sensor.jpg",
+    "caption": "Logging river levels on the Larchmont bank",
+    "ratio": "16:9",
+    "kind": "project"
+   },
+   {
+    "src": "photos/achievement-datathon.jpg",
+    "caption": "Datathon at 3 a.m., newly in second place",
+    "ratio": "16:9",
+    "kind": "achievement"
+   },
+   {
+    "src": "photos/achievement-presenting.jpg",
+    "caption": "Delivery-promise pilot readout, Pinewick head office, 2023",
+    "ratio": "16:9",
+    "kind": "achievement"
+   },
+   {
+    "src": "photos/achievement-award.jpg",
+    "caption": "Operations Excellence award, Pinewick town hall, 2023",
+    "ratio": "4:3",
+    "kind": "achievement"
+   },
+   {
+    "src": "photos/hobby-rabindrasangeet.jpg",
+    "caption": "Founders' Day concert, Larchmont Falls",
+    "ratio": "3:4",
+    "kind": "hobby"
+   },
+   {
+    "src": "photos/hobby-crossword.jpg",
+    "caption": "The Sunday cryptic",
+    "ratio": "1:1",
+    "kind": "hobby"
+   }
+  ],
+  "event": "photos/event-mu-classroom.jpg"
+ },
+ "logo_note": "Company, college and tool logos are placeholder marks and may belong to unrelated organisations; students replace them with their own.",
+ "tools": [
+  {
+   "name": "SQL (Snowflake)",
+   "logo": "logos/skills/snowflake.svg"
+  },
+  {
+   "name": "Postgres",
+   "logo": "logos/skills/postgresql.svg"
+  },
+  {
+   "name": "Python",
+   "logo": "logos/skills/python.svg"
+  },
+  {
+   "name": "pandas",
+   "logo": "logos/skills/pandas.svg"
+  },
+  {
+   "name": "NumPy",
+   "logo": "logos/skills/numpy.svg"
+  },
+  {
+   "name": "scikit-learn",
+   "logo": "logos/skills/scikitlearn.svg"
+  },
+  {
+   "name": "Jupyter",
+   "logo": "logos/skills/jupyter.svg"
+  },
+  {
+   "name": "Databricks",
+   "logo": "logos/skills/databricks.svg"
+  },
+  {
+   "name": "PySpark",
+   "logo": "logos/skills/apachespark.svg"
+  },
+  {
+   "name": "Airflow",
+   "logo": "logos/skills/apacheairflow.svg"
+  },
+  {
+   "name": "dbt",
+   "logo": "logos/skills/dbt.svg"
+  },
+  {
+   "name": "Tableau",
+   "logo": "logos/skills/tableau.svg"
+  },
+  {
+   "name": "Plotly",
+   "logo": "logos/skills/plotly.svg"
+  },
+  {
+   "name": "Streamlit",
+   "logo": "logos/skills/streamlit.svg"
+  },
+  {
+   "name": "R",
+   "logo": "logos/skills/r.svg"
+  },
+  {
+   "name": "Git",
+   "logo": "logos/skills/git.svg"
+  },
+  {
+   "name": "GitHub",
+   "logo": "logos/skills/github.svg"
+  },
+  {
+   "name": "DataArena",
+   "logo": "logos/skills/dataarena.svg"
+  },
+  {
+   "name": "Google Sheets",
+   "logo": "logos/skills/googlesheets.svg"
+  },
+  {
+   "name": "Substack",
+   "logo": "logos/skills/substack.svg"
+  }
+ ],
+ "site": {
+  "_note": "Extra content used only by this template; remove a key to hide its section.",
+  "hud": {
+   "places": [
+    {
+     "name": "LRF",
+     "lat": "44.8120° N",
+     "lon": "-72.3340° E"
+    },
+    {
+     "name": "MAA",
+     "lat": "13.0827° N",
+     "lon": "80.2707° E"
+    }
+   ],
+   "timezone": "Asia/Kolkata",
+   "status": "Open to roles"
+  },
+  "signal_steps": [
+   {
+    "label": "Noise",
+    "title": "Check the test before reading the result.",
+    "detail": "My work usually begins with figures that contradict each other: 640,000 orders, six river gauges, four account counts."
+   },
+   {
+    "label": "Definition",
+    "title": "Define the metric in writing before the dashboard exists.",
+    "detail": "Give a number one written definition and people can read it and argue about it, ideally without Dennis Hale rounding it first."
+   },
+   {
+    "label": "Signal",
+    "title": "Put the error band beside the number.",
+    "detail": "Any result is a line wrapped in a band. I show both, and the lower figure whenever the validation says so."
+   }
+  ],
+  "questions": {
+   "eta-accuracy": {
+    "q": "What causes delivery-promise error, and how much can be taken out?",
+    "sql": "-- share of squared promise error by component, northern region\nSELECT component,\n       SUM(err_hrs * err_hrs)\n         / SUM(SUM(err_hrs * err_hrs)) OVER () AS share_sq_err\nFROM   promise_error_components\nWHERE  region = 'NORTH'\nGROUP  BY component\nORDER  BY share_sq_err DESC;",
+    "chart": {
+     "type": "slope",
+     "unit": "",
+     "rows": [
+      {
+       "label": "Promise error, MAE (hours)",
+       "a": 5.8,
+       "b": 4.1
+      },
+      {
+       "label": "Orders after promised day (%)",
+       "a": 11.2,
+       "b": 8.3
+      }
+     ],
+     "a_label": "Old rule",
+     "b_label": "Dispatch-time model"
+    }
+   },
+   "growly-sip-stops": {
+    "q": "Which standing orders lapse within 60 days, and can one inexpensive remedy help?",
+    "sql": "-- failed deliveries where the delivery day is an office closed day\nSELECT s.order_id,\n       s.delivery_dow,\n       o.closed_dow,\n       s.delivery_dow = o.closed_dow AS delivered_when_closed\nFROM   standing_snapshot s\nJOIN   office_calendar o USING (account_id)\nWHERE  s.snapshot_month = '2026-04-01'\n  AND  s.failed_delivery_30d;",
+    "chart": {
+     "type": "bars",
+     "max": 1,
+     "rows": [
+      {
+       "label": "Two-failed-deliveries rule",
+       "v": 0.63,
+       "fmt": "0.63"
+      },
+      {
+       "label": "Model, held-out later month",
+       "v": 0.74,
+       "fmt": "0.74",
+       "hi": true
+      },
+      {
+       "label": "Model, random split (leaks, not reported)",
+       "v": 0.81,
+       "fmt": "0.81",
+       "ghost": true
+      }
+     ],
+     "axis": "AUC"
+    }
+   },
+   "larkspur-air": {
+    "q": "Which of the six valley river gauges is safe to quote, and what escapes them?",
+    "sql": "-- melt-night vs afternoon rise, valid hours only\nSELECT gauge,\n       AVG(rise_cm) FILTER (WHERE hour BETWEEN 0 AND 4) /\n       AVG(rise_cm) FILTER (WHERE hour BETWEEN 13 AND 16) AS night_ratio,\n       AVG((NOT valid)::int) AS share_dropped\nFROM   county_hourly\nWHERE  month = 4\nGROUP  BY gauge;",
+    "chart": {
+     "type": "ratio",
+     "rows": [
+      {
+       "label": "Melt night vs afternoon rise",
+       "v": 2.4
+      },
+      {
+       "label": "Bank stick vs nearest gauge",
+       "v": 1.3
+      }
+     ],
+     "axis": "× baseline"
+    }
+   },
+   "experiment-review": {
+    "q": "What share of our test results deserved trust?",
+    "sql": "-- split-ratio check before anyone reads the result\nSELECT test_id,\n       SUM((arm = 'control')::int)   AS n_control,\n       SUM((arm = 'treatment')::int) AS n_treatment,\n       chi2_srm(n_control, n_treatment, 0.5) AS p_srm\nFROM   assignments\nGROUP  BY test_id\nHAVING chi2_srm(n_control, n_treatment, 0.5) < 0.001;",
+    "chart": {
+     "type": "dots",
+     "total": 52,
+     "groups": [
+      {
+       "n": 6,
+       "label": "broken customer split (SRM)",
+       "tone": "amber"
+      },
+      {
+       "n": 4,
+       "label": "stopped on guardrails",
+       "tone": "teal"
+      }
+     ]
+    }
+   },
+   "datathon": {
+    "q": "Can term-start weeks and monsoon days be modelled rather than dismissed as noise?",
+    "sql": "-- next-day demand features per SKU and wholesale depot\nSELECT depot_id, sku_id, dt,\n       units,\n       is_term_start,\n       rain_mm > 5 AS rain_day,\n       AVG(units) OVER w7 AS units_7d\nFROM   daily_sku_demand\nWINDOW w7 AS (PARTITION BY depot_id, sku_id\n              ORDER BY dt ROWS 7 PRECEDING);",
+    "chart": {
+     "type": "bars",
+     "max": 100,
+     "rows": [
+      {
+       "label": "Baseline WAPE (indexed)",
+       "v": 100,
+       "fmt": "100"
+      },
+      {
+       "label": "Our model",
+       "v": 79,
+       "fmt": "79",
+       "hi": true
+      }
+     ],
+     "axis": "WAPE index"
+    }
+   },
+   "active-subscriber": {
+    "q": "Why were four different active-account counts reaching the board?",
+    "sql": "-- single definition, checked against each old figure\nSELECT month_end,\n       COUNT(*) FILTER (WHERE plan_status = 'paid'\n                          AND NOT paused\n                          AND next_box <= month_end + 35) AS active_accounts\nFROM   accounts_monthly\nGROUP  BY month_end;",
+    "chart": {
+     "type": "converge",
+     "from": 4,
+     "to": 1,
+     "label": "account counts in the board pack"
+    }
+   },
+   "home-credit-dataarena": {
+    "q": "Which features hold steady week on week, rather than on one split alone?",
+    "sql": "# keep features whose weekly Gini does not drift\nstable = (weekly_gini\n          .groupby('feature')['gini']\n          .agg(['mean', 'std'])\n          .query('std < 0.02'))\nkept = stable.index.tolist()   # 190 of 410",
+    "chart": {
+     "type": "bars",
+     "max": 410,
+     "rows": [
+      {
+       "label": "Features built",
+       "v": 410,
+       "fmt": "410"
+      },
+      {
+       "label": "Features kept (stable)",
+       "v": 190,
+       "fmt": "190",
+       "hi": true
+      }
+     ],
+     "axis": "features"
+    }
+   },
+   "small-samples": {
+    "q": "Can a broken test be explained every fortnight to readers who are not analysts?",
+    "sql": "-- newsletter, since 2024\nSELECT COUNT(*)            AS posts,        -- 24\n       MAX(subscribers)    AS subscribers,  -- 940\n       AVG(open_rate)      AS open_rate     -- 0.44\nFROM   small_samples.posts;",
+    "chart": {
+     "type": "bars",
+     "max": 100,
+     "rows": [
+      {
+       "label": "Open rate (%)",
+       "v": 44,
+       "fmt": "44%",
+       "hi": true
+      }
+     ],
+     "axis": "%"
+    }
+   }
+  },
+  "glossary": [
+   {
+    "term": "Active account",
+    "def": "Any account on a paid plan, not paused, with a box due inside 35 days of the month end. Counted once, on the month's final day.",
+    "used": "active-subscriber"
+   },
+   {
+    "term": "Promise error (MAE)",
+    "def": "Average absolute gap, in hours, between the dispatch time implied by the checkout promise and real dispatch, worked out per order and then averaged.",
+    "used": "eta-accuracy"
+   },
+   {
+    "term": "Late order",
+    "def": "Delivered after the day promised at checkout. Revised promises do not restart the clock.",
+    "used": "eta-accuracy"
+   },
+   {
+    "term": "Sample ratio mismatch (SRM)",
+    "def": "The actual customer split between arms strays from the planned split further than chance explains (chi-square p < 0.001). A failed check means nobody reads the result.",
+    "used": "experiment-review"
+   },
+   {
+    "term": "Guardrail metric",
+    "def": "A measure that cannot slip if a launch is to proceed, whatever the headline metric does. For sales pods: returns, late deliveries and margin per order.",
+    "used": "experiment-review"
+   },
+   {
+    "term": "Minimum detectable effect",
+    "def": "The least real change a test is built to spot, at 80% power and a 5% false-alarm rate. Fixed beforehand from what would justify shipping.",
+    "used": "experiment-review"
+   },
+   {
+    "term": "Staggered rollout",
+    "def": "Old and new versions swap by week inside one depot, so pickers and trucks shared between them cannot contaminate the control.",
+    "used": "eta-accuracy"
+   },
+   {
+    "term": "AUC, held-out month",
+    "def": "How well a model ranks cases in a calendar month later than its training data. It reads lower than a random split and nearer to real use.",
+    "used": "growly-sip-stops"
+   },
+   {
+    "term": "WAPE",
+    "def": "Total absolute forecast error over total actual demand, so high-volume SKUs weigh more than slow sellers.",
+    "used": "datathon"
+   },
+   {
+    "term": "Dropped hour",
+    "def": "An hourly river reading discarded because the sensor froze on one value, showed zero, or leapt past physical limits. Counted per gauge and never patched.",
+    "used": "larkspur-air"
+   }
+  ],
+  "why_figures": [
+   {
+    "big": "5 yrs",
+    "unit": "Pinewick sales and fulfilment analytics"
+   },
+   {
+    "big": "5.8→4.1",
+    "unit": "promise error in hours, pilot depots"
+   },
+   {
+    "big": "6 of 52",
+    "unit": "tests caught with broken splits"
+   }
+  ]
+ }
+}

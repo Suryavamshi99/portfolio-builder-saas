@@ -1,0 +1,1463 @@
+{
+  "demo": true,
+  "_note": "SAMPLE PERSONA. Nisha Bhandari is a fictional person. Every employer, school, client, colleague, project, figure and quote on this site is made up. Swap in real content and set demo to false before going live.",
+  "meta": {
+    "domain": "consulting",
+    "site_title": "Nisha Bhandari · Management Consulting",
+    "description": "Six years in operations at Pinewick Paper & Print in Larchmont Falls, ending with a cash-cycle taskforce. Now in the Whitlock School of Management MBA and looking for a management consulting role.",
+    "theme": "editorial",
+    "noindex": true
+  },
+  "person": {
+    "first_name": "Nisha",
+    "last_name": "Bhandari",
+    "pronouns": "she/her",
+    "headline": "Former Pinewick operations analyst, now solving cash, cost and pricing problems for paper, print and packaging companies",
+    "current": "MBA in Operations & Strategy, Whitlock School of Management, Fenwater",
+    "looking_for": "Associate / Consultant roles in management consulting, Fenwater or Larchmont Falls",
+    "location": "Fenwater (from Larchmont Falls)",
+    "available_from": "January 2027"
+  },
+  "contact": {
+    "email": "nisha.bhandari@example.com",
+    "phone": "+91 00000 00000",
+    "whatsapp": "+91 00000 00000",
+    "linkedin": "https://www.linkedin.com/in/example",
+    "calendly": "https://calendly.com/example",
+    "resume_pdf": "media/resume.pdf",
+    "substack": "https://example.substack.com"
+  },
+  "pitch": {
+    "short": "I spent six years inside Pinewick Paper & Print, a regional paper company, learning where its money and its paper went. The last three I spent on why cash sat in warehouses and where costs leaked. I build the model myself and walk the warehouse floor before anything goes into a deck.",
+    "why_hire": [
+      "Six years at Pinewick Paper & Print across the mill, the warehouses and the sales desk, so I read a line cost sheet and an aged-receivables report quickly.",
+      "On the 2023 cash taskforce I found $6.3M of cash the company could release; the cash cycle fell from 83 to 75 days over the next two quarters.",
+      "In my Ashgrove & Vane internship I traced 1.4 points of price leakage in a stationery maker's retailer channel and ran the fix as a six-week pilot in two regions."
+    ],
+    "for_company_template": "Why {company}: I would like to join {company}'s operations and pricing work for manufacturing and distribution clients, where six years of plant-floor analysis count for the most."
+  },
+  "about": {
+    "intro": "I grew up in Larchmont Falls and studied business at Thornfield College of Commerce. In 2019 I joined Pinewick Paper & Print as an operations analyst, reporting to Gordon \"Gordie\" Pruitt, a regional manager who loved whiteboard acronyms. Pinewick taught me that every figure has an owner, and that the owner is usually in the warehouse. I became curious about what the figures said about the business: why wholesalers paid late, why one production line was dearer per tonne than the rest. Seven months on the finance team's cash taskforce in 2023 convinced me this should be my full-time work, and in 2025 I enrolled in the Whitlock School of Management MBA to move into consulting.",
+    "now": "Co-editing the Consulting Club casebook, preparing for a 300 km ride this December, and singing with my teacher on Sunday mornings."
+  },
+  "journey": [
+    {
+      "year": "2019",
+      "title": "BBA (Hons), Thornfield College of Commerce, Larchmont Falls",
+      "detail": "First class, 8.5 CGPA. Thesis on how often regional offices reorder envelopes, which turned out to be \"too often\"."
+    },
+    {
+      "year": "2019",
+      "title": "Operations Analyst, Pinewick Paper & Print, Larchmont Falls",
+      "detail": "Stock counts, order-to-cash testing and line costing at the mill and Warehouse 3. Decoded Gordie Pruitt's weekly acronym."
+    },
+    {
+      "year": "2022",
+      "title": "Promoted to Senior Business Analyst",
+      "detail": "Led a small team on line cost reviews. Built the conversion-cost analytic that two other teams later reused."
+    },
+    {
+      "year": "2023",
+      "title": "Seconded to the finance cash taskforce, seven months",
+      "detail": "Cash-cycle diagnostic with Dennis Hale and Wendell Odom's warehouse crew."
+    },
+    {
+      "year": "2024",
+      "title": "Pro bono costing at the community print room",
+      "detail": "Weekend project to lower the cost per page at a volunteer-run library print room."
+    },
+    {
+      "year": "2025",
+      "title": "MBA in Operations & Strategy, Whitlock School of Management, Fenwater",
+      "detail": "Consulting Club. Depot-entry live project for Pinewick. Reached the national final of a strategy case competition."
+    },
+    {
+      "year": "2026",
+      "title": "Summer Associate, Ashgrove & Vane, Fenwater",
+      "detail": "Ten weeks on retailer pricing for a stationery maker."
+    }
+  ],
+  "education": [
+    {
+      "school": "Whitlock School of Management, Fenwater",
+      "degree": "MBA in Operations & Strategy",
+      "years": "2025–2026",
+      "notes": "Consulting stream. Co-editor of the Consulting Club casebook. Won the Term 1 prize for best live-project report.",
+      "logo": "media/logos/orgs/crestfield.svg"
+    },
+    {
+      "school": "Larchmont Falls Polytechnic Institute",
+      "degree": "Evening diploma in Business Statistics",
+      "years": "2019–2020",
+      "notes": "Taken alongside the first year at Pinewick. Distinction.",
+      "logo": "media/logos/orgs/greenfield.png"
+    },
+    {
+      "school": "Thornfield College of Commerce, Larchmont Falls",
+      "degree": "BBA (Hons)",
+      "years": "2016–2019",
+      "notes": "CGPA 8.5. President, quiz society, 2018–19",
+      "logo": "media/logos/orgs/dps-rk-puram.png"
+    }
+  ],
+  "experience": [
+    {
+      "org": "Ashgrove & Vane",
+      "role": "Summer Associate",
+      "place": "Fenwater",
+      "dates": "Apr 2026 – Jun 2026",
+      "points": [
+        "Built the pocket-price waterfall for a stationery maker from 29,000 invoice lines across 360 retailers.",
+        "Created discount bands and an exceptions matrix, then piloted them for six weeks in two regions alongside the client's sales team."
+      ],
+      "logo": "media/logos/orgs/halden.png"
+    },
+    {
+      "org": "Pinewick Paper & Print",
+      "role": "Senior Business Analyst",
+      "place": "Larchmont Falls",
+      "dates": "Apr 2022 – Jun 2025",
+      "points": [
+        "Led teams of three to four on line cost and stock reviews across the mill and three warehouses.",
+        "On a seven-month secondment in 2023 to the finance cash taskforce, identified $6.3M of cash release."
+      ],
+      "logo": "media/logos/orgs/meridian.svg"
+    },
+    {
+      "org": "Pinewick Paper & Print",
+      "role": "Operations Analyst",
+      "place": "Larchmont Falls",
+      "dates": "Sep 2019 – Mar 2022",
+      "points": [
+        "Stock counts, order-to-cash testing and cost checks at the mill, Warehouse 3 and Redfern Yard.",
+        "Built a conversion-cost analytic across four production lines that two other teams reused."
+      ],
+      "logo": "media/logos/orgs/meridian.svg"
+    }
+  ],
+  "projects": [
+    {
+      "slug": "working-capital",
+      "title": "Cash-cycle diagnostic for Pinewick's paper warehouses",
+      "org": "Pinewick Paper & Print (cash taskforce)",
+      "year": "2023",
+      "role": "Senior Analyst (seconded), led the receivables and stock workstreams",
+      "type": "Work",
+      "summary": "Pinewick, a $210M paper and packaging company, was running an 83-day cash cycle and kept dipping into its credit line. I split the cycle by customer channel and by SKU to see where the cash had parked.",
+      "result": "$6.3M of cash release identified; the cash cycle fell from 83 to 75 days in the next two quarters",
+      "thumbnail": "media/projects/working-capital/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "Working capital",
+        "Paper and packaging",
+        "Diagnostic"
+      ],
+      "duration": "14 weeks",
+      "team": "Dennis Hale, 2 analysts, 1 intern",
+      "tools": [
+        "alteryx",
+        "tableau",
+        "sap",
+        "googleslides"
+      ],
+      "metrics": [
+        [
+          "$6.3M",
+          "cash release identified"
+        ],
+        [
+          "83→75",
+          "days cash cycle"
+        ],
+        [
+          "1,800",
+          "slow SKUs reviewed"
+        ]
+      ],
+      "insight": "A single wholesaler channel accounted for 6 of the 15 added days in the cycle.",
+      "chart": {
+        "type": "waterfall",
+        "title": "Cash conversion cycle, days, FY21 to FY23 and levers found",
+        "unit": "days",
+        "labels": [
+          "FY21",
+          "Whole- salers",
+          "Slow SKUs",
+          "Safety stock",
+          "Other",
+          "FY23",
+          "Levers found",
+          "Target"
+        ],
+        "values": [
+          68,
+          6,
+          5,
+          3,
+          1,
+          83,
+          -11,
+          72
+        ],
+        "totals": [
+          0,
+          5,
+          7
+        ],
+        "highlight": [
+          6
+        ],
+        "source": "Pinewick ERP extracts, warehouse walks"
+      }
+    },
+    {
+      "slug": "tile-pricing",
+      "title": "Closing price leakage in a stationery maker's retailer channel",
+      "org": "Ashgrove & Vane (internship)",
+      "year": "2026",
+      "role": "Summer Associate",
+      "type": "Internship",
+      "summary": "Each year a stationery and notebook maker raised list prices, yet what it actually collected stayed flat. I mapped pocket price for 360 retailers and found that similar retailers were getting very different discounts.",
+      "result": "Off-invoice discount fell 1.4 points on average during a six-week pilot across two regions, with volumes unchanged",
+      "thumbnail": "media/projects/tile-pricing/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "Pricing",
+        "B2B",
+        "Stationery"
+      ],
+      "duration": "10 weeks",
+      "team": "Engagement manager, 2 consultants, me",
+      "tools": [
+        "python",
+        "pandas",
+        "tableau",
+        "googleslides"
+      ],
+      "metrics": [
+        [
+          "−1.4 pts",
+          "off-invoice discount"
+        ],
+        [
+          "29,000",
+          "invoice lines"
+        ],
+        [
+          "2",
+          "pilot regions"
+        ]
+      ],
+      "insight": "Retailers with similar volumes were paying pocket prices as much as 3.8 points apart.",
+      "chart": {
+        "type": "scatter",
+        "title": "Pocket price vs retailer volume, 360 retailers",
+        "unit": "% of list",
+        "points": 70,
+        "spread": 3.8,
+        "source": "29,000 invoice lines, FY26 (pattern shown, not retailer data)"
+      }
+    },
+    {
+      "slug": "cold-chain-entry",
+      "title": "Which town first: a second depot for Pinewick",
+      "org": "Whitlock School of Management live project",
+      "year": "2025",
+      "role": "Team lead, 4 people",
+      "type": "Live project",
+      "summary": "Pinewick wanted to open its first depot outside Larchmont Falls. We estimated demand and supply across four nearby towns, then ranked each one on how big the shortfall was and how easy entry looked.",
+      "result": "Recommended Oakhaven first; Pinewick has started site visits there",
+      "thumbnail": "media/projects/cold-chain-entry/thumb.jpg",
+      "has_page": true,
+      "tags": [
+        "Market entry",
+        "Market sizing",
+        "Logistics"
+      ],
+      "duration": "8 weeks",
+      "team": "4 classmates, Pinewick regional manager",
+      "tools": [
+        "googlesheets",
+        "miro",
+        "googleslides"
+      ],
+      "metrics": [
+        [
+          "4",
+          "towns sized"
+        ],
+        [
+          "37",
+          "interviews"
+        ],
+        [
+          "~18k",
+          "pallet gap, Oakhaven"
+        ]
+      ],
+      "insight": "Oakhaven has the largest gap in depot space for paper and packaging, about 18,000 pallets by 2028.",
+      "chart": {
+        "type": "bars",
+        "title": "Gap in depot capacity by 2028, thousand pallet positions",
+        "unit": "k",
+        "labels": [
+          "Oakhaven",
+          "Briarwick",
+          "Stillwater Cross",
+          "Marrow Bend"
+        ],
+        "values": [
+          18,
+          8,
+          8,
+          4
+        ],
+        "highlight": [
+          0
+        ],
+        "source": "37 interviews, haulier calls, planning filings"
+      }
+    },
+    {
+      "slug": "case-final",
+      "title": "National strategy case competition: shared supply cupboards for tiny offices",
+      "org": "Inter-school competition",
+      "year": "2025",
+      "role": "Team member, 4 people",
+      "type": "Case competition",
+      "summary": "The brief asked how a stationery maker could reach offices too small for a distributor to visit. We sized demand by pay cycle in three districts and proposed a subscription supply cupboard run by local shop owners.",
+      "result": "Reached the national final as one of the top 6 of 400+ teams",
+      "thumbnail": "media/projects/case-final/thumb.jpg",
+      "has_page": false,
+      "tags": [
+        "Case",
+        "Small business",
+        "Business model"
+      ],
+      "duration": "3 rounds, 5 weeks",
+      "team": "4 classmates",
+      "tools": [
+        "googlesheets",
+        "googleslides",
+        "miro"
+      ],
+      "metrics": [
+        [
+          "Top 6",
+          "of 400+ teams"
+        ],
+        [
+          "3",
+          "districts sized"
+        ],
+        [
+          "19",
+          "shop-owner calls"
+        ]
+      ],
+      "insight": "Tiny offices can be served through a subscription cupboard run by local shopkeepers, sized by pay cycle.",
+      "chart": {
+        "type": "dots",
+        "title": "Teams entered and national finalists",
+        "total": 400,
+        "highlight": 6,
+        "label": "Top 6 of 400+",
+        "source": "Competition results, Dec 2025"
+      }
+    },
+    {
+      "slug": "plant-cost",
+      "title": "Conversion-cost analytics across four production lines",
+      "org": "Pinewick Paper & Print",
+      "year": "2022",
+      "role": "Senior Business Analyst",
+      "type": "Work",
+      "summary": "For the month-end variance review I compared conversion cost per tonne across Pinewick's four production lines. One line's power and adhesive costs did not move with its volume.",
+      "result": "Flagged $1.9M of unexplained variance; Wendell Odom's crew traced 60% of it to a laminating-adhesive spec change",
+      "thumbnail": "media/projects/plant-cost/thumb.jpg",
+      "has_page": false,
+      "tags": [
+        "Cost",
+        "Variance analytics",
+        "Manufacturing"
+      ],
+      "duration": "5 weeks",
+      "team": "Me and 1 analyst",
+      "tools": [
+        "alteryx",
+        "tableau",
+        "sap"
+      ],
+      "metrics": [
+        [
+          "$1.9M",
+          "variance flagged"
+        ],
+        [
+          "4",
+          "lines compared"
+        ],
+        [
+          "2",
+          "teams reused it"
+        ]
+      ],
+      "insight": "Line C's power and adhesive cost per tonne rose 14% while its volume fell.",
+      "chart": {
+        "type": "bars",
+        "title": "Conversion cost per tonne, FY22, $",
+        "unit": "$",
+        "labels": [
+          "Line A",
+          "Line B",
+          "Line C",
+          "Line D"
+        ],
+        "values": [
+          612,
+          608,
+          706,
+          591
+        ],
+        "highlight": [
+          2
+        ],
+        "min": 500,
+        "source": "Pinewick cost-centre reports"
+      }
+    },
+    {
+      "slug": "ngo-kitchen",
+      "title": "Cost per page at the Larchmont Falls library print room",
+      "org": "Pro bono",
+      "year": "2024",
+      "role": "Volunteer, worked alone on weekends",
+      "type": "Own initiative",
+      "summary": "A volunteer-run library print room serves about 2,500 pages a day on a fixed grant, while toner and paper prices were not fixed. I costed the room line by line and changed how it bought paper and toner.",
+      "result": "Cost per 100 pages down from $4.80 to $4.27 over four months",
+      "thumbnail": "media/projects/ngo-kitchen/thumb.jpg",
+      "has_page": false,
+      "tags": [
+        "Operations",
+        "Cost",
+        "Non-profit"
+      ],
+      "duration": "4 months, weekends",
+      "team": "Solo, with the head librarian",
+      "tools": [
+        "googlesheets"
+      ],
+      "metrics": [
+        [
+          "$4.80→4.27",
+          "cost per 100 pages"
+        ],
+        [
+          "2,500",
+          "pages a day"
+        ],
+        [
+          "11%",
+          "saving"
+        ]
+      ],
+      "insight": "Changing how the print room bought paper and toner cut cost per page by 11%.",
+      "chart": {
+        "type": "line",
+        "title": "Cost per 100 pages, $, over four months",
+        "unit": "$",
+        "labels": [
+          "Start",
+          "M1",
+          "M2",
+          "M3",
+          "M4"
+        ],
+        "values": [
+          4.8,
+          4.69,
+          4.52,
+          4.38,
+          4.27
+        ],
+        "source": "Print room purchase records"
+      }
+    },
+    {
+      "slug": "inventory-note",
+      "title": "Industry note: why regional paper merchants hold 70 days of stock",
+      "org": "Whitlock School of Management Consulting Club",
+      "year": "2026",
+      "role": "Author",
+      "type": "Writing",
+      "summary": "A 12-page note using annual reports of 22 regional paper and print merchants. It splits stock days into raw paper, work in progress and finished goods, and shows which part grew after 2020.",
+      "result": "Printed in the club journal and sent out as a newsletter; 5,400 reads",
+      "thumbnail": "media/projects/inventory-note/thumb.jpg",
+      "has_page": false,
+      "tags": [
+        "Writing",
+        "Paper trade",
+        "Research"
+      ],
+      "duration": "6 weeks",
+      "team": "Solo",
+      "tools": [
+        "python",
+        "pandas",
+        "substack"
+      ],
+      "metrics": [
+        [
+          "22",
+          "merchants analysed"
+        ],
+        [
+          "12",
+          "pages"
+        ],
+        [
+          "5,400",
+          "reads"
+        ]
+      ],
+      "insight": "Most of the rise in stock days since FY20 sits in raw paper.",
+      "chart": {
+        "type": "stack",
+        "title": "Median stock days, 22 regional merchants",
+        "labels": [
+          "FY20",
+          "FY25"
+        ],
+        "series": [
+          {
+            "name": "Raw paper",
+            "values": [
+              38,
+              49
+            ]
+          },
+          {
+            "name": "WIP and finished goods",
+            "values": [
+              20,
+              22
+            ]
+          }
+        ],
+        "source": "Annual reports, 22 companies"
+      }
+    },
+    {
+      "slug": "casebook",
+      "title": "Consulting Club casebook 2026",
+      "org": "Whitlock School of Management Consulting Club",
+      "year": "2026",
+      "role": "Co-editor",
+      "type": "Club",
+      "summary": "The club wrote 24 practice cases, each with an issue tree, data and interviewer notes, drawn from regional industries (one asks whether a paper company needs a second laminator), and used them in weekly mock interviews.",
+      "result": "Worked through by 140 students during 2026 placements",
+      "thumbnail": "media/projects/casebook/thumb.jpg",
+      "has_page": false,
+      "tags": [
+        "Cases",
+        "Club",
+        "Coaching"
+      ],
+      "duration": "Term 3 and 4",
+      "team": "3 co-editors, 11 writers",
+      "tools": [
+        "notion",
+        "canva",
+        "googleslides"
+      ],
+      "metrics": [
+        [
+          "24",
+          "cases"
+        ],
+        [
+          "140",
+          "students"
+        ],
+        [
+          "60+",
+          "mocks run"
+        ]
+      ],
+      "insight": "24 practice cases from regional industries, taken up by 140 students.",
+      "chart": {
+        "type": "dots",
+        "title": "Students who used the casebook",
+        "total": 140,
+        "highlight": 140,
+        "label": "140 students",
+        "source": "Consulting Club, 2026 season"
+      }
+    }
+  ],
+  "project_pages": {
+    "working-capital": {
+      "context": "Pinewick makes paper reels, envelopes and packaging cartons at its Larchmont Falls mill and ships from Warehouse 3, with about $210M in revenue, roughly 70% sold to office-supply chains and corporate print buyers and 30% to independent wholesalers. Over three years the cash conversion cycle had stretched from 68 to 83 days, and the credit line was nearly full.",
+      "problem": "Gordon Pruitt believed the office-supply chains were paying late and had put the acronym on a whiteboard. Dennis Hale's taskforce had to explain the 15-day stretch and say which days could be won back within twelve months.",
+      "what_i_did": [
+        "Extracted three years of receivables, stock and payables records from the ERP, then recomputed the cycle by month, channel and warehouse.",
+        "Showed that the chains paid on terms; independent wholesalers were at 79 days against 60-day terms, and that a single channel was behind 6 of the 15 days.",
+        "Reviewed the age of 1,800 slow-moving SKUs alongside the planning team, and walked Warehouse 3 with Wendell Odom to see what was really on the shelves.",
+        "Held three workshops with Dennis and the sales and supply heads, settling each lever with an owner and a number everyone could defend.",
+        "Produced the steering pack: a cycle bridge, eight levers ranked on cash and effort, and a plan for the first 90 days."
+      ],
+      "decisions": [
+        {
+          "choice": "Leave small-supplier payables alone",
+          "why": "Contracts with the small local mills add 3% to the price if Pinewick pays after 45 days, so paying them later would cost more than the cash it freed."
+        },
+        {
+          "choice": "Count only stock we had seen",
+          "why": "The ERP showed more slow stock than the warehouse held. Wendell remarked that a pallet nobody can find is a philosophical question, not an asset. We sized the stock lever only on what we counted; that shrank the figure and made Dennis readier to sign it."
+        },
+        {
+          "choice": "Start with wholesaler collections",
+          "why": "It was the biggest lever that left production planning untouched, which meant Pinewick could start within a month."
+        }
+      ],
+      "results": [
+        {
+          "metric": "Cash release identified",
+          "value": "$6.3M",
+          "note": "worth 11 days of cycle time, spread over eight levers"
+        },
+        {
+          "metric": "Cash conversion cycle",
+          "value": "83 → 75 days",
+          "note": "two quarters after the taskforce, finance-reported"
+        },
+        {
+          "metric": "Wholesaler DSO",
+          "value": "79 → 62 days",
+          "note": "after credit-limit and collection changes"
+        }
+      ],
+      "learned": "The ERP said one thing and the warehouse said another. Two days in Warehouse 3 moved the stock figure by a quarter, and that is why Dennis trusted the rest of the deck, rounding included.",
+      "next": "Tie wholesaler credit limits into sales bonuses, so the sales team, Marla Finch's included, shares the pain of late payment.",
+      "images": [
+        "media/projects/working-capital/thumb.jpg",
+        "media/projects/working-capital/bridge.jpg",
+        "media/projects/working-capital/tree.jpg",
+        "media/photos/event-client-workshop.jpg"
+      ],
+      "my_role": "Senior Analyst on secondment, led the receivables and stock workstreams",
+      "dates": "Aug – Nov 2023"
+    },
+    "tile-pricing": {
+      "context": "The client is a mid-size stationery and notebook maker selling through about 360 independent retailers in two states. List prices went up 4–6% every year, while the average price actually realised per carton hardly changed.",
+      "problem": "Discounts leaked out at several points: printed on the invoice, paid back through quarterly schemes, granted as cash discounts, or absorbed as freight. No one saw the combined figure for one retailer, so two similar-sized retailers could end up paying quite different prices.",
+      "what_i_did": [
+        "Prepared 29,000 FY26 invoice lines and scheme credit notes in Python, then matched them with freight bills.",
+        "Constructed a pocket-price waterfall for every retailer and product range, running from list price down to what the company retained after all discounts.",
+        "Plotted pocket price against retailer volume and found a spread of 3.8 points between similar-sized retailers.",
+        "Visited 12 retailers in Harlow Bay and Dunmere alongside the regional sales managers to learn how discount deals were struck.",
+        "Drew up volume-based discount bands, an exception approval matrix and a weekly leakage report, and ran them as a pilot lasting six weeks across two regions."
+      ],
+      "decisions": [
+        {
+          "choice": "Volume bands that allow exceptions",
+          "why": "The sales team needed room to land big school orders. Anything outside the band went up to the regional head, so every exception stayed on view."
+        },
+        {
+          "choice": "Include freight in the waterfall",
+          "why": "For far-away retailers, freight paid by the company came to 1.9 points of list price, and no discount report showed it."
+        }
+      ],
+      "results": [
+        {
+          "metric": "Average off-invoice discount",
+          "value": "−1.4 pts",
+          "note": "pilot regions vs prior six weeks"
+        },
+        {
+          "metric": "Volume",
+          "value": "Flat",
+          "note": "within ±2% of the comparison regions"
+        },
+        {
+          "metric": "Exceptions approved",
+          "value": "27",
+          "note": "all logged with a reason"
+        }
+      ],
+      "learned": "The leakage came mostly from a handful of negotiating habits in each region. When regional managers saw their own retailers on the scatter chart, they began requesting the report weekly.",
+      "next": "Roll the bands out to the remaining three regions and merge quarterly schemes into them, so each retailer sees a single net price.",
+      "images": [
+        "media/projects/tile-pricing/thumb.jpg",
+        "media/projects/tile-pricing/scatter.jpg",
+        "media/photos/candid-dealer-visit.jpg"
+      ],
+      "my_role": "Summer Associate, ran the pricing analysis and set up the pilot",
+      "dates": "Apr – Jun 2026"
+    },
+    "cold-chain-entry": {
+      "context": "Pinewick runs one mill and three warehouses, all in Larchmont Falls. Its largest customers were asking for a depot closer to their own markets in neighbouring towns, and Gordon Pruitt had already drafted a motivational poster about expansion.",
+      "problem": "Pinewick could fund one new depot over the next year and a half and had to pick from Oakhaven, Briarwick, Stillwater Cross and Marrow Bend. Customers had asked for all four, yet nothing put them on a comparable footing.",
+      "what_i_did": [
+        "Estimated demand in pallet positions for each product group (office paper, cartons, stationery, print-on-demand) for each town, from mill output figures, buyer consumption estimates and interviews.",
+        "Built a supply list of existing depots in each town from planning filings, haulier calls and site visits in two towns.",
+        "Interviewed 37 people: 15 wholesalers and print buyers, 9 depot operators, 7 haulage brokers and 6 of Pinewick's own customers.",
+        "Rated each town for demand shortfall and ease of entry (land prices, power hook-up, anchor customers) and put all four on a single chart.",
+        "Presented a phased plan to Gordon: Oakhaven first, Briarwick second, with the anchor customers signed before construction."
+      ],
+      "decisions": [
+        {
+          "choice": "Count modern capacity only",
+          "why": "Most existing storage in these towns is old single-product shed space. Including it would have masked the shortfall in mixed paper and carton handling."
+        },
+        {
+          "choice": "Weight anchor customers heavily",
+          "why": "If two wholesalers took 40% of the space, year one would pay for itself, so anchor customers got the heaviest weight in the entry score."
+        }
+      ],
+      "results": [
+        {
+          "metric": "Capacity gap, Oakhaven",
+          "value": "~18,000",
+          "note": "pallet positions by 2028, base case"
+        },
+        {
+          "metric": "Anchor interest",
+          "value": "2 customers",
+          "note": "willing to talk about taking 40% of a 6,000-pallet depot"
+        },
+        {
+          "metric": "Client action",
+          "value": "Site visits",
+          "note": "three land parcels in Oakhaven shortlisted"
+        }
+      ],
+      "learned": "My first top-down estimate put Briarwick on top. Then the haulier calls revealed two big depots due there in 2026, and the order flipped. Since then I give supply the same care as demand.",
+      "next": "Hand Pinewick a town-level model it can refresh yearly as capacity arrives, beginning with Briarwick.",
+      "images": [
+        "media/projects/cold-chain-entry/thumb.jpg",
+        "media/projects/cold-chain-entry/sizing.jpg",
+        "media/photos/candid-war-room.jpg"
+      ],
+      "my_role": "Team lead, built the demand model and gave the closing presentation",
+      "dates": "Oct – Nov 2025"
+    }
+  },
+  "wins": [
+    {
+      "title": "National finalist, strategy case competition",
+      "detail": "December 2025. Top 6 of 400+ B-school teams, on shared supply cupboards for tiny offices.",
+      "image": "media/photos/event-case-final.jpg"
+    },
+    {
+      "title": "$6.3M of cash release identified",
+      "detail": "Cash-cycle diagnostic, Pinewick Paper & Print, 2023.",
+      "image": "media/photos/event-client-workshop.jpg"
+    },
+    {
+      "title": "Pricing pilot taken up in two regions",
+      "detail": "Ashgrove & Vane summer internship, 2026. Off-invoice discount down 1.4 points.",
+      "image": "media/photos/candid-dealer-visit.jpg"
+    },
+    {
+      "title": "Employee of the Quarter, Operations",
+      "detail": "Pinewick, Q3 2022, for the line cost analytic. The ballot box was counted by Tilly Brandt, so nobody disputed it.",
+      "image": "media/photos/candid-meridian.jpg"
+    },
+    {
+      "title": "Best live-project report, Term 1",
+      "detail": "Whitlock School of Management, 2025, for the Pinewick depot-entry study.",
+      "image": "media/photos/event-mu-classroom.jpg"
+    }
+  ],
+  "skills": {
+    "Consulting": [
+      "Issue trees and hypotheses",
+      "Market sizing",
+      "Pricing and discount analysis",
+      "Working capital",
+      "Steering-committee decks"
+    ],
+    "Finance and data": [
+      "Financial statement analysis",
+      "Spreadsheet modelling",
+      "Data preparation and dashboards",
+      "Python (pandas)",
+      "ERP cost and ledger reports"
+    ],
+    "Field": [
+      "Warehouse and mill walks",
+      "Customer and wholesaler interviews",
+      "Client workshops",
+      "Hindi, English, Gujarati"
+    ]
+  },
+  "certifications": [
+    {
+      "name": "Chartered Analyst Level I",
+      "issuer": "Brookmere Institute of Finance",
+      "year": "2022"
+    },
+    {
+      "name": "Data Preparation Professional",
+      "issuer": "Larchmont Falls Polytechnic Institute",
+      "year": "2021"
+    },
+    {
+      "name": "Financial Modelling and Valuation",
+      "issuer": "Pinewick internal training programme",
+      "year": "2023"
+    }
+  ],
+  "outside": [
+    {
+      "title": "Quizzing",
+      "detail": "Captained my college team and ran the quiz society. I now captain the Paper Tigers at the Tuesday pub quiz in Larchmont Falls, against Marla Finch's team, who have never lost a round they have admitted to.",
+      "image": "media/photos/candid-quiz-night.jpg"
+    },
+    {
+      "title": "Long-distance cycling",
+      "detail": "Rode my first 200 km brevet in 2024 in 11 hours 20 minutes. Wendell Odom says the road is a warehouse aisle with better weather. Training for a 300 km ride in December.",
+      "image": "media/photos/hobby-cycling.jpg"
+    },
+    {
+      "title": "Hindustani vocals",
+      "detail": "Learning since I was ten. I practise most mornings, have a class on Sundays, and sing at the Pinewick holiday party at Priya Raman's request.",
+      "image": "media/photos/hobby-vocals.jpg"
+    }
+  ],
+  "values": [
+    "Check the number where it lives, in the warehouse or the ledger, before it goes on a slide.",
+    "Size the recommendation on what the client can do this quarter.",
+    "Put the answer on the first page."
+  ],
+  "testimonials": [
+    {
+      "quote": "Nisha was the analyst I sent to the warehouses I worried about. She returned with the count, the cause of the variance and the person who could fix it. She also rounded correctly, which I do not say lightly.",
+      "name": "Dennis Hale",
+      "role": "Senior Accountant, Pinewick Paper & Print",
+      "relation": "Worked alongside her, 2021–2025"
+    },
+    {
+      "quote": "Her team changed the ranking halfway through because the haulier calls did not match the model. I had already ordered a banner for Briarwick. That is why I believed the final answer.",
+      "name": "Gordon \"Gordie\" Pruitt",
+      "role": "Regional Manager, Pinewick Paper & Print",
+      "relation": "Live project client, 2025"
+    },
+    {
+      "quote": "Within three weeks she was driving the pricing model alone and had visited more retailers than any of us. She designed the pilot.",
+      "name": "Hollis Veyra",
+      "role": "Engagement Manager, Ashgrove & Vane",
+      "relation": "Internship manager, 2026"
+    }
+  ],
+  "media": {
+    "headshot": "media/photos/headshot.jpg",
+    "cutout": "media/photos/cutout.webp",
+    "professional": "media/photos/professional-arms.jpg",
+    "professional_alt": "media/photos/event-client-workshop.jpg",
+    "candids": [
+      "media/photos/candid-meridian.jpg",
+      "media/photos/candid-quiz-night.jpg",
+      "media/photos/candid-dealer-visit.jpg",
+      "media/photos/candid-war-room.jpg"
+    ],
+    "event": "media/photos/event-mu-classroom.jpg",
+    "gallery": [
+      {
+        "src": "media/photos/headshot.jpg",
+        "caption": "Headshot",
+        "ratio": "1:1",
+        "kind": "profile"
+      },
+      {
+        "src": "media/photos/professional-arms.jpg",
+        "caption": "Half-body, arms folded",
+        "ratio": "3:4",
+        "kind": "profile"
+      },
+      {
+        "src": "media/photos/cutout.webp",
+        "caption": "Cutout (transparent)",
+        "ratio": "portrait",
+        "kind": "profile"
+      },
+      {
+        "src": "media/photos/event-mu-classroom.jpg",
+        "caption": "Presenting the depot study, Whitlock School of Management classroom",
+        "ratio": "3:2",
+        "kind": "event"
+      },
+      {
+        "src": "media/photos/candid-meridian.jpg",
+        "caption": "Year-end stock count in Warehouse 3, Pinewick",
+        "ratio": "4:3",
+        "kind": "candid"
+      },
+      {
+        "src": "media/photos/candid-quiz-night.jpg",
+        "caption": "Tuesday pub quiz with the Paper Tigers, Larchmont Falls",
+        "ratio": "3:2",
+        "kind": "candid"
+      },
+      {
+        "src": "media/photos/candid-dealer-visit.jpg",
+        "caption": "Retailer visit, Ashgrove & Vane internship",
+        "ratio": "16:9",
+        "kind": "project"
+      },
+      {
+        "src": "media/photos/event-client-workshop.jpg",
+        "caption": "Working session with Pinewick's finance team, cash-cycle diagnostic",
+        "ratio": "4:3",
+        "kind": "event"
+      },
+      {
+        "src": "media/photos/candid-war-room.jpg",
+        "caption": "Team room at 1:40 a.m., hours before the live-project readout",
+        "ratio": "3:2",
+        "kind": "candid"
+      },
+      {
+        "src": "media/photos/event-case-final.jpg",
+        "caption": "National finalists, strategy case competition 2025",
+        "ratio": "16:9",
+        "kind": "achievement"
+      },
+      {
+        "src": "media/photos/hobby-cycling.jpg",
+        "caption": "Tea stop on a 200 km brevet",
+        "ratio": "3:4",
+        "kind": "hobby"
+      },
+      {
+        "src": "media/photos/hobby-vocals.jpg",
+        "caption": "Sunday practice",
+        "ratio": "3:4",
+        "kind": "hobby"
+      }
+    ]
+  },
+  "logo_note": "Logos on this sample are stand-ins and do not belong to the fictional organisations named. Students replace them with their own.",
+  "tools": [
+    {
+      "name": "Alteryx",
+      "logo": "media/logos/skills/alteryx.svg"
+    },
+    {
+      "name": "Tableau",
+      "logo": "media/logos/skills/tableau.svg"
+    },
+    {
+      "name": "ERP cost reports",
+      "logo": "media/logos/skills/sap.svg"
+    },
+    {
+      "name": "Python",
+      "logo": "media/logos/skills/python.svg"
+    },
+    {
+      "name": "pandas",
+      "logo": "media/logos/skills/pandas.svg"
+    },
+    {
+      "name": "Google Sheets",
+      "logo": "media/logos/skills/googlesheets.svg"
+    },
+    {
+      "name": "Google Slides",
+      "logo": "media/logos/skills/googleslides.svg"
+    },
+    {
+      "name": "Miro",
+      "logo": "media/logos/skills/miro.svg"
+    },
+    {
+      "name": "Notion",
+      "logo": "media/logos/skills/notion.svg"
+    },
+    {
+      "name": "Canva",
+      "logo": "media/logos/skills/canva.svg"
+    },
+    {
+      "name": "Substack",
+      "logo": "media/logos/skills/substack.svg"
+    }
+  ],
+  "site": {
+    "nav": [
+      [
+        "summary",
+        "Summary"
+      ],
+      [
+        "tree",
+        "Issue tree"
+      ],
+      [
+        "exhibits",
+        "Exhibits"
+      ],
+      [
+        "model",
+        "Market model"
+      ],
+      [
+        "journey",
+        "Journey"
+      ],
+      [
+        "contact",
+        "Contact"
+      ]
+    ],
+    "hero_kicker": "Management consulting · MBA candidate, Whitlock School of Management",
+    "sections": {
+      "summary": {
+        "label": "Executive summary",
+        "headline": "Six years inside a paper company's warehouses and ledgers, now applied to consulting cases."
+      },
+      "method": {
+        "label": "How I work",
+        "headline": "Each of my cases follows the same three steps."
+      },
+      "exhibits": {
+        "label": "Exhibits 2.1–2.8",
+        "headline": "My best work is on working capital and pricing: $6.3M of cash found and 1.4 points of discount recovered.",
+        "note": "Eight projects in total, three written up as full cases."
+      },
+      "model": {
+        "label": "Pressure-test my market sizing",
+        "headline": "Oakhaven topped the ranking under most weightings we tried. Adjust them and watch it move.",
+        "intro": "This is the scoring sheet from the Pinewick depot project. Switch a criterion off, or change how much it counts, and the ranking and the chart update."
+      },
+      "writeups": {
+        "label": "Case write-ups",
+        "headline": "Three cases written up in full, with the decisions and what I would do next."
+      },
+      "journey": {
+        "label": "Journey",
+        "headline": "Business studies at Thornfield, six years at Pinewick, a cash-cycle secondment, then the MBA and an Ashgrove & Vane summer."
+      },
+      "wins": {
+        "label": "Wins",
+        "headline": "Results that clients, managers and judges recognised."
+      },
+      "skills": {
+        "label": "Skills and tools",
+        "headline": "I build the model in a spreadsheet or Python and show it in a dashboard or slides."
+      },
+      "outside": {
+        "label": "Outside work",
+        "headline": "Tuesday quiz nights, 200 km brevets and Sunday practice."
+      },
+      "testimonials": {
+        "label": "References",
+        "headline": "What a colleague, a client and a manager said."
+      },
+      "contact": {
+        "label": "Next steps",
+        "headline": "Open to Associate and Consultant offers from January 2027."
+      },
+      "tree": {
+        "label": "Exhibit 1 · Issue tree",
+        "headline": "The extra 15 days were not where the regional manager thought they were.",
+        "note": "Cash-cycle diagnostic, Pinewick Paper & Print, 2023. Scroll to test each branch."
+      },
+      "index": {
+        "label": "Index",
+        "headline": "All eight pieces of work, by year."
+      }
+    },
+    "pillars": [
+      {
+        "name": "Diagnose",
+        "value_index": 0,
+        "proof": "6 of 15",
+        "proof_label": "added cash-cycle days traced back to one channel",
+        "project": "working-capital",
+        "text": "Recompute the figures from raw records, then go to the mill or warehouse to confirm the stock is real."
+      },
+      {
+        "name": "Size",
+        "value_index": 1,
+        "proof": "~18k",
+        "proof_label": "pallet gap in Oakhaven, sized demand and supply",
+        "project": "cold-chain-entry",
+        "text": "Estimate demand and supply from the ground up and include only what the client can realistically act on this year."
+      },
+      {
+        "name": "Recommend",
+        "value_index": 2,
+        "proof": "−1.4 pts",
+        "proof_label": "off-invoice discount in a two-region pilot",
+        "project": "tile-pricing",
+        "text": "Lead with the answer, name an owner and attach a pilot that proves it."
+      }
+    ],
+    "hero_stats": [
+      [
+        "$6.3M",
+        "cash release identified"
+      ],
+      [
+        "83→75",
+        "days cash cycle"
+      ],
+      [
+        "−1.4 pts",
+        "retailer discount"
+      ],
+      [
+        "Top 6",
+        "of 400+ case teams"
+      ]
+    ],
+    "city": "Fenwater",
+    "timezone": "Asia/Kolkata",
+    "status_prefix": "Available",
+    "nav_cta": "Get in touch",
+    "hero": {
+      "kicker": "Nisha Bhandari · consulting",
+      "answer": "I look for the single number a decision hinges on, then build the case around it.",
+      "for_line": "Prepared for {company}'s next engagement",
+      "exhibit0": "Exhibit 0 · Warehouse 3 walk, Pinewick, 2023",
+      "cta_primary": "See the exhibits",
+      "cta_secondary": "Re-weight the market",
+      "sandwich_label": "Exhibit 0.1 · The analyst",
+      "sandwich_text": "Six years at Pinewick Paper & Print, then a cash-cycle taskforce, an MBA at Whitlock School of Management and an Ashgrove & Vane summer.",
+      "lens_hint_fine": "Move across the frame to see the analyst's notes",
+      "lens_hint_touch": "Drag across the frame to see the analyst's notes",
+      "waypoints": [
+        {
+          "at": [
+            0.52,
+            0.24
+          ],
+          "layer": "hypothesis",
+          "t": "Hypothesis",
+          "n": "one channel behind 6 of the 15 added days"
+        },
+        {
+          "at": [
+            0.17,
+            0.22
+          ],
+          "layer": "slow stock",
+          "t": "Slow stock",
+          "n": "1,800 SKUs reviewed with the planning team"
+        },
+        {
+          "at": [
+            0.6,
+            0.7
+          ],
+          "layer": "count",
+          "t": "Count sheet",
+          "n": "size the lever on stock we had seen"
+        },
+        {
+          "at": [
+            0.14,
+            0.76
+          ],
+          "layer": "ERP extract",
+          "t": "ERP extract",
+          "n": "3 years of receivables, inventory, payables"
+        },
+        {
+          "at": [
+            0.86,
+            0.3
+          ],
+          "layer": "planning team",
+          "t": "Planning team",
+          "n": "walk the aisles to check what exists"
+        }
+      ]
+    },
+    "terrain": {
+      "origin": {
+        "city": "Larchmont Falls",
+        "lat": 44.21,
+        "lon": -72.48,
+        "note": "Pinewick's mill and three warehouses"
+      },
+      "cities": {
+        "Oakhaven": [
+          44.55,
+          -72.05
+        ],
+        "Briarwick": [
+          44.02,
+          -73.1
+        ],
+        "Stillwater Cross": [
+          44.9,
+          -73.0
+        ],
+        "Marrow Bend": [
+          43.6,
+          -72.2
+        ]
+      },
+      "beats": [
+        {
+          "shot": "PLAN",
+          "t": "Four towns, one depot",
+          "p": "Pinewick could fund one new depot over the next year and a half. Every town had customer requests and there was no common basis to compare them."
+        },
+        {
+          "shot": "GAP",
+          "t": "Size the gap, not the market",
+          "p": "We counted modern mixed-handling capacity only. Most existing space is old single-product shed storage, which would have hidden the gap."
+        },
+        {
+          "shot": "BRIARWICK",
+          "t": "Briarwick looked biggest from the top down",
+          "p": "Our first answer was Briarwick. Haulier calls showed two large depots opening there in 2026, which reversed the ranking."
+        },
+        {
+          "shot": "OAKHAVEN",
+          "t": "Oakhaven: about 18,000 pallets short by 2028",
+          "p": "Two anchor wholesalers were willing to talk about taking 40% of a 6,000-pallet depot. Pinewick has shortlisted three land parcels."
+        }
+      ]
+    },
+    "marquee": [
+      "Pinewick Paper & Print",
+      "$6.3M of cash release identified",
+      "Ashgrove & Vane",
+      "−1.4 points off-invoice discount",
+      "Whitlock School of Management",
+      "Top 6 of 400+ case teams",
+      "83 → 75 days cash cycle",
+      "37 interviews, 4 towns"
+    ],
+    "issue_tree": {
+      "project": "working-capital",
+      "question": "Why did the cash cycle stretch by 15 days, and which days can Pinewick win back within a year?",
+      "start": "68 → 83 days in three years",
+      "branches": [
+        {
+          "name": "Receivables",
+          "q": "Are customers paying late?",
+          "leaves": [
+            {
+              "t": "Office-supply chains",
+              "v": "Paid on terms",
+              "status": "rejected",
+              "note": "Gordie's first hypothesis"
+            },
+            {
+              "t": "Independent wholesalers",
+              "v": "+6 days",
+              "status": "confirmed",
+              "note": "79 days against 60-day terms"
+            }
+          ]
+        },
+        {
+          "name": "Inventory",
+          "q": "Is stock building up?",
+          "leaves": [
+            {
+              "t": "Slow-moving SKUs",
+              "v": "+5 days",
+              "status": "confirmed",
+              "note": "1,800 SKUs reviewed, Warehouse 3 walked"
+            },
+            {
+              "t": "Safety stock",
+              "v": "+3 days",
+              "status": "confirmed",
+              "note": "from the cash-cycle bridge"
+            }
+          ]
+        },
+        {
+          "name": "Payables",
+          "q": "Can we pay suppliers later?",
+          "leaves": [
+            {
+              "t": "Small local mills",
+              "v": "Leave alone",
+              "status": "rejected",
+              "note": "Past 45 days their price rises 3%"
+            }
+          ]
+        }
+      ],
+      "answer": "$6.3M of cash release across eight levers, worth 11 cycle days",
+      "after": "83 → 75 days two quarters later, finance-reported"
+    }
+  },
+  "market_model": {
+    "title": "Which town first: Pinewick depot entry",
+    "project": "cold-chain-entry",
+    "criteria": [
+      {
+        "key": "size",
+        "name": "Market size",
+        "hint": "Depot demand for paper and packaging, 2028",
+        "axis": "y",
+        "weight": 20,
+        "short": "Size"
+      },
+      {
+        "key": "growth",
+        "name": "Growth",
+        "hint": "Demand growth to 2028",
+        "axis": "y",
+        "weight": 15,
+        "short": "Grow"
+      },
+      {
+        "key": "competition",
+        "name": "Competitive intensity",
+        "hint": "Higher score means fewer new depots",
+        "axis": "x",
+        "weight": 20,
+        "short": "Comp"
+      },
+      {
+        "key": "regulatory",
+        "name": "Regulatory ease",
+        "hint": "Land rezoning and power connection",
+        "axis": "x",
+        "weight": 15,
+        "short": "Reg"
+      },
+      {
+        "key": "fit",
+        "name": "Fit with Pinewick's capabilities",
+        "hint": "Anchor customers and existing requests",
+        "axis": "x",
+        "weight": 30,
+        "short": "Fit"
+      }
+    ],
+    "options": [
+      {
+        "id": "lko-mt",
+        "city": "Oakhaven",
+        "segment": "Mixed handling, office paper and carton anchors",
+        "gap": 14,
+        "scores": [
+          8,
+          7,
+          7,
+          6,
+          8
+        ],
+        "recommended": true,
+        "code": "OAK · mixed"
+      },
+      {
+        "id": "lko-ph",
+        "city": "Oakhaven",
+        "segment": "Reels only",
+        "gap": 4,
+        "scores": [
+          5,
+          7,
+          7,
+          4,
+          6
+        ],
+        "code": "OAK · reels"
+      },
+      {
+        "id": "jai-mt",
+        "city": "Briarwick",
+        "segment": "Mixed handling",
+        "gap": 6,
+        "scores": [
+          9,
+          7,
+          3,
+          7,
+          7
+        ],
+        "code": "BRI · mixed"
+      },
+      {
+        "id": "jai-ph",
+        "city": "Briarwick",
+        "segment": "Reels only",
+        "gap": 2,
+        "scores": [
+          6,
+          6,
+          5,
+          4,
+          5
+        ],
+        "code": "BRI · reels"
+      },
+      {
+        "id": "ldh-df",
+        "city": "Stillwater Cross",
+        "segment": "Stationery and school supplies",
+        "gap": 8,
+        "scores": [
+          6,
+          5,
+          7,
+          8,
+          7
+        ],
+        "code": "STC · stationery"
+      },
+      {
+        "id": "ddn-ph",
+        "city": "Marrow Bend",
+        "segment": "Print-on-demand",
+        "gap": 4,
+        "scores": [
+          3,
+          9,
+          8,
+          5,
+          4
+        ],
+        "code": "MAR · print"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Our final weights",
+        "weights": [
+          20,
+          15,
+          20,
+          15,
+          30
+        ]
+      },
+      {
+        "name": "Equal weights",
+        "weights": [
+          20,
+          20,
+          20,
+          20,
+          20
+        ]
+      },
+      {
+        "name": "Size only (first pass)",
+        "weights": [
+          100,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "recommendation": "We recommended Oakhaven first, as a mixed-handling depot with office-paper and carton anchors. It tops most weightings because it does well on every criterion without leading on any single one. Briarwick wins only when raw size counts for nearly everything, which matched our first top-down answer, until haulier calls revealed two large depots opening there in 2026.",
+    "source": "Scores out of 10 from our team sheet. Bubble area shows the depot-capacity gap, in thousand pallets."
+  }
+}
