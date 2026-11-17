@@ -27,7 +27,7 @@ import {
   type JobRow,
 } from "./jobs";
 import { prepareGeneration } from "./prepare";
-import { registry } from "@/server/themes/registry";
+import { designBriefFor } from "@/server/themes/brief";
 
 function llmJobError(e: unknown): JobError {
   if (e instanceof LlmAuthError) return { code: "byok_key_invalid", message: "Your API key was rejected by the provider" };
@@ -60,12 +60,6 @@ export async function runJob(admin: SupabaseClient, jobId: string): Promise<void
   }
 }
 
-/** The chosen theme's design direction, or undefined for a custom build. */
-function designBriefFor(job: JobRow): string | undefined {
-  const theme = job.params.theme ? registry.get(job.params.theme.id) : undefined;
-  return theme ? `Follow this design language ("${theme.name}"). Use it for look, layout and interaction only; every fact still comes from the resume.\n${theme.brief}${theme.reference ? `\nDesign fingerprint of the reference implementation (techniques it uses, not content):\n${theme.reference}` : ""}` : undefined;
-}
-
 async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   // A step-by-step build that is being continued keeps its own progress message.
   if (!job.params.pipeline) await setStatus(admin, job.id, "reading");
@@ -76,7 +70,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   const prepared = await prepareGeneration(admin, job.user_id, {
     resumeUploadId: job.resume_upload_id,
     instructions: job.params.instructions,
-    designBrief: designBriefFor(job),
+    designBrief: designBriefFor(job.params.theme?.id),
   });
   if (!prepared.ok) return failJob(admin, job.id, { code: prepared.code, message: prepared.message });
 
@@ -135,7 +129,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     const input: BuildInput = {
       lines: resumeLines(prepared.resumeText),
       specifics: prepared.specifics,
-      instructions: [designBriefFor(job), job.params.instructions].filter(Boolean).join("\n\n") || undefined,
+      instructions: [designBriefFor(job.params.theme?.id), job.params.instructions].filter(Boolean).join("\n\n") || undefined,
       designIntensity: prepared.designIntensity,
       photoUrl: prepared.photoUrl,
       links: prepared.links,
