@@ -16,8 +16,28 @@ export const THEMES = {
     fontMap: { '"Plex Mono"': '"IBM Plex Mono"' },
     googleFonts: ["Inter+Tight:wght@100..900", "IBM+Plex+Mono:wght@400;500"],
     patches: [
-      // The comment pins carry the sample person's own prose and invented testimonials; a user's page has none.
+      // The sample's pins are the owner's own notes and invented replies; a user's page has none.
+      { in: "js", from: "flag.style.left = (PROJ[0].x + PROJ[0].w * 0.5) + 'px'; flag.style.top = PROJ[0].y + 'px';", to: "if (PROJ[0]) { flag.style.left = (PROJ[0].x + PROJ[0].w * 0.5) + 'px'; flag.style.top = PROJ[0].y + 'px'; } else flag.remove();" },
+      { in: "js", from: "PROJ[0].id", to: "(PROJ[0] || {}).id", count: 3 },
+      { in: "js", from: "PROJ[0].name", to: "(PROJ[0] || {}).name" },
+      { in: "js", from: "const img = (src, alt, cls = '', extra = '') => `<img", to: "const img = (src, alt, cls = '', extra = '') => !src ? '' : `<img" },
+      { in: "js", from: " (${pn.pronouns})`]", to: "`]" },
+      { in: "html", from: ", Product Manager</span>", to: "</span>" },
       { in: "js", from: "function buildPins() {", to: "function buildPins() { PINS = []; return;" },
+      // The sample simulates other visitors moving around the file. On a real page that would be invented activity.
+      { in: "js", from: "function buildVisitors() {", to: "function buildVisitors() { VIS.length = 0;" },
+      // Hard-coded prose and numbers from the sample person: replaced by the user's own data or removed.
+      { in: "js", from: "/ Product manager · ${esc(pn.location.split(' (')[0])}", to: "/ ${esc(pn.location)}" },
+      { in: "js", from: "const tags = ['User interviews', 'SQL', 'Experiment design', 'Roadmapping'];", to: "const tags = Object.values(D.skills || {}).flat().slice(0, 4);" },
+      { in: "js", from: "<div class=\"ab-card c1\"><b>−18%</b>manual ticket reassignments, routing beta at Freshworks</div>", to: "" },
+      { in: "js", from: "<div class=\"ab-card c2\"><b>430</b>clinic bookings on WhatsApp in 10 weeks</div>", to: "" },
+      { in: "js", from: "Available from. Looking for PM and APM roles in B2B SaaS or consumer services.", to: "${esc(pn.looking_for)}" },
+      { in: "js", from: "<h2 class=\"fr-h2\">Four years at Freshworks, then a PGP and an internship</h2>", to: "<h2 class=\"fr-h2\">Roles and education</h2>" },
+      { in: "js", from: "<p>Five results from Freshworks, Masters' Union, Slotwise and NIT Calicut. The project frames above show where each number came from.</p>", to: "" },
+      { in: "js", from: "<li><a href=\"${esc(c.calendly)}\" target=\"_blank\" rel=\"noopener\"><span>Book a call</span><b>calendly.com/example</b></a></li>", to: "" },
+      { in: "js", from: "<li><a href=\"${esc(c.substack)}\" target=\"_blank\" rel=\"noopener\"><span>Newsletter</span><b>Sunday Teardowns</b></a></li>", to: "" },
+      { in: "js", from: "<b>linkedin.com/in/example</b>", to: "<b>LinkedIn</b>" },
+      { in: "js", from: "<p>Hi, this file is my portfolio. Select any frame to see its facts in the panel on the right.</p><p>The numbered pins are my notes on each project, with replies from people I worked with.</p><p>Press <kbd>P</kbd> to click through the projects, or Read all for one long page.</p>", to: "<p>Select any frame to see its facts in the panel on the right.</p><p>Press <kbd>P</kbd> to click through the projects, or Read all for one long page.</p>" },
     ],
   }),
   sprintboard: T("orig-01-product-kavya", "kavya-menon-portfolio", "Kavya", "Menon", {
