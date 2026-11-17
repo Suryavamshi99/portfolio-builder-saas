@@ -43,18 +43,6 @@ export const Route = createFileRoute("/api/generations")({
           return errorResponse(400, "invalid_request", "instructions must be a string up to 2000 characters");
         }
 
-        if (body["links"] !== undefined || body["otherSpecifics"] !== undefined || designIntensity !== undefined) {
-          try {
-            await savePortfolioInputs(supabase, user.id, {
-              links: body["links"],
-              specifics: body["otherSpecifics"],
-              designIntensity,
-            });
-          } catch {
-            return errorResponse(500, "internal_error", "Could not save portfolio inputs");
-          }
-        }
-
         const appUser = await getOrCreateAppUser(supabase, user.id);
         if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
 
@@ -65,6 +53,18 @@ export const Route = createFileRoute("/api/generations")({
           if (!theme) return errorResponse(400, "invalid_request", "theme is not valid");
           const access = checkThemeAccess(theme.id, hasPaidAccess(appUser));
           if (!access.ok) return errorResponse(access.status, access.code, access.message);
+        }
+
+        if (body["links"] !== undefined || body["otherSpecifics"] !== undefined || designIntensity !== undefined) {
+          try {
+            await savePortfolioInputs(supabase, user.id, {
+              links: body["links"],
+              specifics: body["otherSpecifics"],
+              designIntensity,
+            });
+          } catch {
+            return errorResponse(500, "internal_error", "Could not save portfolio inputs");
+          }
         }
 
         const hourly = await checkHourlyRateLimit(supabase, "generations", user.id, PLAN_GENERATIONS_PER_HOUR[appUser.plan]);

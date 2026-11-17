@@ -28,3 +28,7 @@ Two samples imitate Google product UIs (grid-ledger, atlas-desk); the briefs for
 ## Sample sites
 
 Each theme has a rebranded sample site in `public/theme-previews/<id>/` (open `/theme-previews/<id>/index.html`, linked from every card on `/themes`). They are fictional people at a fictional company, with generated placeholder cards and neutral logos. They show the look only; the live app writes each user's page from their own resume. Known gaps: Route Board and Two Ink ask for a hero video that is not shipped (404, harmless), and tool names such as Figma or Jira appear as plain text.
+
+## Free and paid
+
+The server checks the tier on every build (`checkThemeAccess`, called from `POST /api/generations`). Paid themes need paid access, but `hasPaidAccess` is true for everyone while `PAYMENTS_ENABLED` is false, so today every theme is open. The picker does not yet know the user's tier, so a free user can pick a paid card and only see the 402 after the build starts.
