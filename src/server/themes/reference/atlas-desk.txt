@@ -1,0 +1,7 @@
+Fonts used: Google Sans, Google Sans Text, Roboto, Material Symbols Outlined
+Colour tokens: --ink #1f1f1f, --ink-2 #444746, --mute #5e5e5e, --mute-2 #747775, --line #e3e3e3, --line-2 #c4c7c5, --blue #0b57d0, --blue-2 #1a73e8, --blue-l #c2e7ff, --blue-ink #001d35, --blue-50 #e8f0fe, --surface #f0f4f9, --hover #f1f3f4, --green #188038, --red #d93025, --red-pin #ea4335
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, scroll snap, clip-path shapes, CSS keyframe animation, reduced-motion handling
+Named animations: drop, pulse
+Scripted behaviours: canvas 2D drawing, smooth scrolling, pointer drag interaction, keyboard controls, requestAnimationFrame loop, hash or history routing, localStorage state, SVG charts drawn by script
+Script functions (hint at features): initMap, padFor, zoneNote, updateScale, onCityClick, initChrome, setFilter, back, searchIndex, initSearch, showSugg, closeSugg, pickSugg, onKey, route, setSearchTitle, setPanel, headerHome, tabsHtml, renderHome, fitAll, bindHome, bindCommon, pinHl, rowsHome, homeOverview, listItem, homeSaved, reviewCard, homeReviews
+Page outline (landmarks): nav.rail, section#sheet.sheet, nav.bnav, aside#drawer.drawer

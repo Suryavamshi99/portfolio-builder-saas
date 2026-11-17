@@ -1,0 +1,8 @@
+Fonts used: Inter, Bebas, Mono
+Colour tokens: --bg #141414, --bg-2 #181818, --card #232323, --text #ffffff, --muted #b3b3b3, --dim #808080, --accent #ff7a1a, --match #46d369, --lens #ff7a1a
+Visual techniques: CSS grid layouts, flex layouts, scroll snap, clip-path shapes, backdrop blur, CSS keyframe animation, reduced-motion handling
+Named animations: popIn, fade, modalIn
+Scripted behaviours: canvas 2D drawing, scroll-triggered animation, smooth scrolling, keyboard controls, requestAnimationFrame loop, hash or history routing, localStorage state, SVG charts drawn by script
+Script functions (hint at features): init, buildPicker, choose, fillStatic, renderBillboard, metaLine, renderRows, topItem, brandCard, winCard, skillCard, toolCard, listMail, wireRow, showPop, hidePop, toggleList, openModal, closeModal, stopModalTrailer, onKey, openTitle, episodes, extraCaption, moreLike, vizFor, titleCards, openBrand, openWin, openSkill
+Page outline (landmarks): section#picker.picker, header#top.top, nav.nav, main#main, section#billboard.billboard, aside#meet.meet, footer#contact.foot, nav.tabbar
+Heading classes: h2.bb-title, h2.meet-name

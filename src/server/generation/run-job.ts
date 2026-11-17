@@ -63,7 +63,7 @@ export async function runJob(admin: SupabaseClient, jobId: string): Promise<void
 /** The chosen theme's design direction, or undefined for a custom build. */
 function designBriefFor(job: JobRow): string | undefined {
   const theme = job.params.theme ? registry.get(job.params.theme.id) : undefined;
-  return theme ? `Follow this design language ("${theme.name}"). Use it for look, layout and interaction only; every fact still comes from the resume.\n${theme.brief}` : undefined;
+  return theme ? `Follow this design language ("${theme.name}"). Use it for look, layout and interaction only; every fact still comes from the resume.\n${theme.brief}${theme.reference ? `\nDesign fingerprint of the reference implementation (techniques it uses, not content):\n${theme.reference}` : ""}` : undefined;
 }
 
 async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {

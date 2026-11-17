@@ -32,8 +32,12 @@ describe("theme roster", () => {
     }
   });
 
+  it("has a code-derived reference for every theme", () => {
+    for (const t of registry.list()) expect(t.reference?.length ?? 0, t.id).toBeGreaterThan(200);
+  });
+
   it("keeps the brief out of the public catalog", () => {
-    for (const t of listThemeCatalog()) expect("brief" in t).toBe(false);
+    for (const t of listThemeCatalog()) expect("brief" in t || "reference" in t).toBe(false);
   });
 
   it("looks a theme up by id", () => {

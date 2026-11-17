@@ -25,6 +25,8 @@ export interface Theme {
   fonts: string[];
   /** Design direction handed to the model. No names, numbers or claims about any person. */
   brief: string;
+  /** Code-derived design fingerprint of the original sample (techniques, scripted behaviours, outline). Facts-free. */
+  reference?: string | undefined;
 }
 
 export interface ThemeRequest {

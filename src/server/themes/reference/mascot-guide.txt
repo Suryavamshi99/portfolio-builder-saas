@@ -1,0 +1,7 @@
+Fonts used: Archivo Black, Inter
+Colour tokens: --paper #ebebea, --ink #111111, --accent #5fb57a, --white #ffffff, --muted #4a4a48
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, backdrop blur, CSS keyframe animation, marquee or ticker motion, SVG filters or masks, reduced-motion handling
+Named animations: mph-draw, mph-spin, mph-wiggle, hint-bob
+Scripted behaviours: canvas 2D drawing, scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, requestAnimationFrame loop, SVG charts drawn by script
+Script functions (hint at features): defaultChips, projectAnswer, orgAnswer, intro, owned, evidence, lessons, roles, weakest, hidden, projectList, education, awards, skills, contact, about, search, answer, createStore, ensure, renderText, applyTheme, build, room, secTop, heading, flower, arrow, hero, openAsk
+Page outline (landmarks): nav#nav.nav, main#main, section#top.hero, section#about.sec, section#numbers.sec, section#work.sec, section#experience.sec, section#journey.sec, section#wins.sec, section#skills.sec, section#contact.sec, footer#foot.foot

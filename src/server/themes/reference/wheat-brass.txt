@@ -1,0 +1,7 @@
+Fonts used: Fraunces, Manrope
+Colour tokens: --bg #F3ECDD, --fg #2B2317, --wheat #E4CB91, --brass #B08A3E, --brass-ink #7C5E22, --olive #8C8A5C
+Visual techniques: CSS grid layouts, flex layouts, blend modes, backdrop blur, 3D transforms, CSS keyframe animation, SVG filters or masks, reduced-motion handling
+Named animations: grain
+Scripted behaviours: WebGL or three.js scene, GSAP animation, scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, hash or history routing, SVG charts drawn by script
+Script functions (hint at features): loadData, forCompany, carryFor, navHTML, footerHTML, scrollToEl, initLenis, veil, leave, arrive, shell, splitWords, lines, reveals, parallax, accordion, form, nameOf, caseBook, fitTitle, main, heroHTML, mainHTML, layoutFor, placeName, heroIntro, program, createPlate, reweight, dragStrip
+Page outline (landmarks): main#main

@@ -1,0 +1,7 @@
+Colour tokens: --sky #6b55d9, --night #1b1240, --panel #6ce398, --paper #c9f7d9, --paper-2 #e3fbea, --ink #0c4d2b, --ink-soft #2f6b49, --neon-pink #ff4fd8, --neon-cyan #3ef0ff, --neon-lime #c6ff4a, --neon-orange #ff8a3d, --gold #ffd23f, --console #4a2a6e, --console-dark #2c1745, --console-hi #7a4ea8
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, CSS keyframe animation, reduced-motion handling
+Named animations: pop
+Scripted behaviours: canvas 2D drawing, WebGL or three.js scene, scroll-triggered animation, pointer drag interaction, keyboard controls, requestAnimationFrame loop, localStorage state, SVG charts drawn by script
+Script functions (hint at features): shade, pixelText, recolor, neonSign, facade, skyline, skyGradient, moon, ground, lamp, lampCone, glowBlob, bench, hydrant, plant, scooter, crate, ledge, awning, acUnit, terminal, folder, kiosk, phoneBooth, arcade, trophy, heatmap, screenChart, poster, heroPortrait
+Page outline (landmarks): main#stage, nav.map, nav.map, header, header, footer
+Heading classes: h2.h-pixel, h2.h-pixel

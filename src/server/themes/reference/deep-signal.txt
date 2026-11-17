@@ -1,0 +1,8 @@
+Fonts used: Cormorant Garamond, Inter
+Colour tokens: --bg #03141a, --bg2 #06222a, --bg3 #0a2f37, --paper #082831, --ink #eaf8f5, --fg #eaf8f5, --soft #5d8a86, --muted #a3c9c3, --aqua #8ff5e2, --aqua-mid #3ee3c6, --aqua-deep #8ff5e2, --dark #03141a
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, blend modes, backdrop blur, CSS keyframe animation, custom cursor, reduced-motion handling
+Named animations: hum, grain, rip, scanv
+Scripted behaviours: canvas 2D drawing, WebGL or three.js scene, GSAP animation, scroll-triggered animation, smooth scrolling, pointer drag interaction, keyboard controls, web audio sound, requestAnimationFrame loop, hash or history routing, SVG charts drawn by script
+Script functions (hint at features): initLenis, splitWords, intro, reveals, makeDrone, fallback, heroDriver, hudSwap, wall, bandRipples, main, hasWebGL, makeStage, makePointer, buildTargets, portraitPoints, namePoints, makeCloud, loadContent, forCompany, printResume, mountCursor, cycleAt, draw, size, loop, kick, mountDots, dotAvatar, targets
+Page outline (landmarks): header.top, aside#coords.coords, main#top, section.hero, section.resume-print
+Heading classes: h1.lead-line, h2.beat-title, h2.beat-title

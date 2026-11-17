@@ -1,0 +1,8 @@
+Fonts used: Google Sans Flex, Roboto, Material Symbols Outlined, Georgia, Roboto Mono
+Colour tokens: --bg #f9fbfd, --tb #edf2fa, --ink #1f1f1f, --ink2 #444746, --mute #5f6368, --line #c7c7c7, --line2 #e1e3e1, --grid #e1e1e1, --hdr #f8f9fa, --hdr-ink #575a5f, --hdr-sel #d3e3fd, --hdr-sel-ink #0b57d0, --sel #1a73e8, --blue #0b57d0, --share #c2e7ff, --share-ink #001d35
+Visual techniques: CSS grid layouts, flex layouts, sticky elements, CSS keyframe animation, reduced-motion handling
+Named animations: chg
+Scripted behaviours: smooth scrolling, pointer drag interaction, keyboard controls, hash or history routing, localStorage state, SVG charts drawn by script
+Script functions (hint at features): rawInput, ctxFor, fmtOf, display, rawText, prep, cfClass, filteredOut, cellHTML, sumW, sumH, renderGrid, applyFreeze, anchorXY, renderObjects, rectOf, drawSel, updateBars, select, scrollTo, move, jumpEdge, parseInput, setInput, commitEdit, startEdit, finishEdit, protectedWarn, undo, redo
+Page outline (landmarks): header.docbar, nav.menubar, header.mbar, aside#side.side, nav.rail, footer.tabbar
+Heading classes: h1.title
