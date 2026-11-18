@@ -349,6 +349,14 @@ export const apiClient = {
     });
   },
 
+  savePortfolioHtml: async (body: { html: string; baseUpdatedAt: string }): Promise<{ updatedAt: string; warnings: string[]; unchanged: boolean }> => {
+    return requestJson<{ updatedAt: string; warnings: string[]; unchanged: boolean }>("/api/portfolio/html", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  },
+
   // GitHub
   getGitHubStatus: async (): Promise<GitHubStatusResponse> => {
     return requestJson<GitHubStatusResponse>("/api/github/status");

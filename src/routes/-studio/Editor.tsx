@@ -2,7 +2,8 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { LivePreview } from "@/components/preview/LivePreview";
+import { LivePreview, type SaveEditResult } from "@/components/preview/LivePreview";
+import { useBlocker } from "@tanstack/react-router";
 import { StudioToolbar } from "@/components/studio/StudioToolbar";
 import { JobProgressView } from "@/components/wizard/JobProgressView";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +89,69 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
   const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollStartTimeRef = useRef<number>(0);
+
+  // Inline editing of text and photos in the preview
+  const [editing, setEditing] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const baseUpdatedAtRef = useRef<string | null>(null);
+
+  async function loadLatestContent(): Promise<boolean> {
+    const res = await fetch("/api/content");
+    if (!res.ok) return false;
+    const json = (await res.json()) as { html?: string | null; updatedAt?: string | null };
+    if (!json.html || !json.updatedAt) return false;
+    baseUpdatedAtRef.current = json.updatedAt;
+    setHtml(json.html);
+    return true;
+  }
+
+  // Edit mode always starts from the newest saved page, so a save can tell whether someone else changed it meanwhile.
+  async function startEditing(): Promise<boolean> {
+    try {
+      if (await loadLatestContent()) return true;
+    } catch {
+      // fall through
+    }
+    setStatus({ kind: "err", title: "Could not start editing", msg: "Could not load your latest page. Check your connection and try again." });
+    return false;
+  }
+
+  async function saveEdits(edited: string): Promise<SaveEditResult> {
+    if (!baseUpdatedAtRef.current) return { ok: false, message: "Reload the page and try again." };
+    try {
+      const res = await apiClient.savePortfolioHtml({ html: edited, baseUpdatedAt: baseUpdatedAtRef.current });
+      baseUpdatedAtRef.current = res.updatedAt;
+      try {
+        await loadLatestContent();
+      } catch {
+        // the saved page is still what the preview shows
+      }
+      return { ok: true };
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string; details?: string[] };
+      return { ok: false, message: err.message || "Could not save.", details: err.details, stale: err.code === "portfolio_stale" };
+    }
+  }
+
+  // Leaving the Studio with unsaved edits: browser prompt for reload/close, a confirm for in-app navigation.
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
+  useBlocker({
+    shouldBlockFn: () => dirty && !window.confirm("You have unsaved changes to your page. Leave without saving?"),
+    disabled: !dirty,
+  });
+
+  function leaveEditing() {
+    setEditing(false);
+    setDirty(false);
+  }
 
   // Version history state
   const [versionsOpen, setVersionsOpen] = useState(false);
@@ -209,6 +273,8 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
   }
 
   async function restoreVersion(versionId: string) {
+    if (dirty && !window.confirm("You have unsaved edits in the preview. Restoring will lose them. Continue?")) return;
+    leaveEditing();
     setRestoringId(versionId);
     setStatus(null);
     try {
@@ -320,6 +386,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
 
   // Task D: Regenerate uses POST /api/generations + JobProgressView
   async function regenerate() {
+    leaveEditing();
     if (method === "mcp") return; // edited in the user's own chat (see McpHandoff), not on our servers
     if (!resumeUploadId) {
       setStatus({ kind: "err", msg: "No resume on file — upload one from the wizard first." });
@@ -634,7 +701,18 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
         </div>
 
         <div className="h-[80vh] min-h-[500px]">
-          <LivePreview html={html} />
+          <LivePreview
+            html={html}
+            editable
+            editing={editing}
+            onEditingChange={setEditing}
+            onDirtyChange={setDirty}
+            onStartEdit={startEditing}
+            onSave={saveEdits}
+            onReloadLatest={async () => {
+              await loadLatestContent();
+            }}
+          />
         </div>
       </div>
 
@@ -646,6 +724,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               Regenerate and overwrite your current draft?
             </DialogTitle>
             <DialogDescription>
+              {dirty && "You also have unsaved text or photo edits in the preview. They will be lost. "}
               This calls background generation with your latest instructions. Your current draft will be updated,
               and your past version snapshot is automatically saved to Version History so you can restore it anytime.
             </DialogDescription>
