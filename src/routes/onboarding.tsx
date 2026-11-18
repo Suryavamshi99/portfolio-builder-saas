@@ -545,7 +545,7 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(2)}
                 className="gap-2 w-full sm:w-auto justify-center"
               >
-                Next: Visual Style
+                Next: Choose a look
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -688,7 +688,7 @@ function OnboardingWizard() {
                 }}
                 className="gap-2"
               >
-                {uploadBusy ? "Uploading…" : visualReferences.length > 0 ? "Next: Profile Photo" : "Skip / Next: Profile Photo"}
+                {uploadBusy ? "Uploading…" : visualReferences.length > 0 ? "Next: Add a photo" : "Skip / Next: Add a photo"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -728,7 +728,7 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(4)}
                 className="gap-2"
               >
-                {uploadBusy ? "Uploading…" : photoUpload ? "Next: Specifics" : "Skip / Next: Specifics"}
+                {uploadBusy ? "Uploading…" : photoUpload ? "Next: Links and details" : "Skip / Next: Links and details"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -893,7 +893,7 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(5)}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
-                Next: How to Generate
+                Next: How to build
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -953,7 +953,7 @@ function OnboardingWizard() {
                 }}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
-                {selectedMethod === "mcp" ? "Proceed to Waiting Panel" : "Next: Review & Generate"}
+                {selectedMethod === "mcp" ? "Continue in Claude or ChatGPT" : "Next: Review and build"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
