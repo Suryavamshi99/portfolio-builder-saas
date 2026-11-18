@@ -23,6 +23,8 @@ export interface SiteResponse {
   status: number;
   body: string | Uint8Array;
   contentType: string;
+  /** The page asks not to be indexed (a robots noindex meta), so the header says so too. */
+  noindex?: boolean;
 }
 
 const page = (title: string, message: string, status: number): SiteResponse => ({
@@ -45,8 +47,14 @@ export function parseSitePath(splat: string): { slug: string; file: "index.html"
   return null;
 }
 
-export function responseHeaders(contentType: string): Record<string, string> {
+/** True when the page carries a robots meta that includes noindex. */
+export function hasNoindexMeta(html: string): boolean {
+  return /<meta\b[^>]*\bname\s*=\s*["']?robots["']?[^>]*\bcontent\s*=\s*["'][^"']*noindex/i.test(html);
+}
+
+export function responseHeaders(contentType: string, noindex = false): Record<string, string> {
   return {
+    ...(noindex ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
     "Content-Type": contentType,
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -69,7 +77,7 @@ export async function serveSite(admin: SupabaseClient, splat: string): Promise<S
   if (target.file === "index.html") {
     // The page was written with relative "images/..." paths; under /s/<slug> they must be absolute.
     const html = new TextDecoder().decode(bytes).replace(/(["'(])images\//g, `$1/s/${target.slug}/images/`);
-    return { status: 200, contentType: "text/html; charset=utf-8", body: html };
+    return { status: 200, contentType: "text/html; charset=utf-8", body: html, noindex: hasNoindexMeta(html) };
   }
   const ext = target.file.split(".").pop()?.toLowerCase() ?? "";
   const contentType = IMAGE_TYPES[ext];

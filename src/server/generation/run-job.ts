@@ -27,6 +27,8 @@ import {
   type JobRow,
 } from "./jobs";
 import { prepareGeneration } from "./prepare";
+import { resolveReplica } from "@/server/brand/replica-brief";
+import { applyReplicaGuard, nameFromResume } from "@/server/brand/replica-guard";
 import { designBriefFor } from "@/server/themes/brief";
 import { extractFacts } from "@/server/themes/extract-facts";
 import { getTemplate, renderTheme } from "@/server/themes/templates";
@@ -78,12 +80,33 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   if (!job.resume_upload_id) {
     return failJob(admin, job.id, { code: "resume_not_found", message: "Resume upload not found" });
   }
+  // A "look like this company" build: read the site once (kept with the job), and let its style, not its words, drive the brief.
+  const replica = job.params.replica;
+  const replicaRes = replica ? await resolveReplica(replica) : null;
+  if (replica && replicaRes && !replica.brief) {
+    job.params = { ...job.params, replica: { ...replica, brief: replicaRes.brief, companyName: replicaRes.companyName, warnings: replicaRes.warnings, needsImages: replicaRes.needsImages } };
+    await admin.from("generation_jobs").update({ params: job.params, updated_at: new Date().toISOString() }).eq("id", job.id);
+  }
+  const designBrief = replicaRes?.brief ?? designBriefFor(job.params.theme?.id);
+
   const prepared = await prepareGeneration(admin, job.user_id, {
     resumeUploadId: job.resume_upload_id,
     instructions: job.params.instructions,
-    designBrief: designBriefFor(job.params.theme?.id),
+    designBrief,
   });
   if (!prepared.ok) return failJob(admin, job.id, { code: prepared.code, message: prepared.message });
+
+  // Only a model that can see images can use screenshots; never fall back to a generic page.
+  if (replicaRes?.needsImages && (job.source !== "gemini" || prepared.images.length === 0)) {
+    await recordGeneration(admin, job.user_id, job.resume_upload_id, "failed");
+    return failJob(admin, job.id, {
+      code: "replica_unreadable",
+      message:
+        job.source === "gemini"
+          ? "This site could not be read. Add up to 3 screenshots of it, or check the address."
+          : "This site could not be read. Use your own Gemini key or Claude/ChatGPT so we can use your screenshots, or check the address.",
+    });
+  }
 
   const finalize = {
     userId: job.user_id,
@@ -100,7 +123,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   let geminiKey: string | null = null;
 
   // A theme with a real template is built from facts (one extraction call + a template); any problem falls back to the brief path below.
-  let themeWarnings = job.params.themeWarnings ?? [];
+  let themeWarnings = [...(job.params.themeWarnings ?? []), ...(replicaRes?.warnings ?? [])];
   const themeId = job.params.theme?.id;
   if (getTemplate(themeId) && !job.params.pipeline && (job.source === "gemini" || job.source === "free")) {
     if (job.source === "gemini") {
@@ -204,7 +227,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     const input: BuildInput = {
       lines: resumeLines(prepared.resumeText),
       specifics: prepared.specifics,
-      instructions: [designBriefFor(job.params.theme?.id), job.params.instructions].filter(Boolean).join("\n\n") || undefined,
+      instructions: [designBrief, job.params.instructions].filter(Boolean).join("\n\n") || undefined,
       designIntensity: prepared.designIntensity,
       photoUrl: prepared.photoUrl,
       links: prepared.links,
@@ -237,6 +260,19 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
     ({ html, warnings, model } = outcome);
   } else {
     return failJob(admin, job.id, { code: "invalid_source", message: "This generation method isn't available here." });
+  }
+
+  if (replicaRes) {
+    // Disclaimer, noindex and no company-hosted graphics, then the same safety rules and fact check as any page.
+    const company = replicaRes.companyName;
+    const guarded = applyReplicaGuard(html, { name: nameFromResume(prepared.resumeText), company, companyUrl: job.params.replica?.url ?? "" });
+    const again = finalizeHtml({ ...finalize, rawText: guarded.html });
+    if (!again.ok || findUnsupportedClaims(again.html, `${prepared.referenceText}\n${company}`).length > 0) {
+      await recordGeneration(admin, job.user_id, job.resume_upload_id, "failed");
+      return failJob(admin, job.id, { code: "generation_invalid_output", message: CHECK_FAILED.generation_invalid_output });
+    }
+    html = again.html;
+    warnings = [...warnings, ...again.warnings];
   }
 
   await setStatus(admin, job.id, "saving");

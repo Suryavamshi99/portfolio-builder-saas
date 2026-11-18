@@ -62,6 +62,8 @@ export interface CreateGenerationBody {
   instructions?: string | undefined;
   /** A design language chosen in the gallery. Omit for a custom, model-designed page. */
   theme?: { id: string; custom?: ThemeCustom | undefined } | undefined;
+  /** Build in the look of a company's website. Cannot be combined with `theme`. */
+  replica?: { url: string; company?: string | undefined } | undefined;
 }
 
 /** What a user changed on a theme ("Make it yours"). Everything is optional; the server validates it strictly. */

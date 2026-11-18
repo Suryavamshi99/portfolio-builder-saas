@@ -7,6 +7,7 @@ import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { checkThemeAccess } from "@/server/themes/gate";
 import { parseThemeRequest } from "@/server/themes/types";
+import { checkReplicaRequest, replicaEnabled, type ReplicaRequest } from "@/server/brand/replica";
 import { savePortfolioInputs } from "@/server/portfolio-inputs";
 import { runInBackground } from "@/server/generation/background";
 import { createJob, toApiJob } from "@/server/generation/jobs";
@@ -53,6 +54,14 @@ export const Route = createFileRoute("/api/generations")({
           if (!theme) return errorResponse(400, "invalid_request", "theme is not valid");
           const access = checkThemeAccess(theme.id, hasPaidAccess(appUser));
           if (!access.ok) return errorResponse(access.status, access.code, access.message);
+        }
+
+        // A "look like this company" build: behind a flag, never with a theme, paid (see checkReplicaRequest).
+        let replica: ReplicaRequest | undefined;
+        if (body["replica"] !== undefined) {
+          const check = checkReplicaRequest(body["replica"], { enabled: replicaEnabled(), hasTheme: body["theme"] !== undefined, paid: hasPaidAccess(appUser) });
+          if (!check.ok) return errorResponse(check.status, check.code, check.message);
+          replica = check.replica;
         }
 
         if (body["links"] !== undefined || body["otherSpecifics"] !== undefined || designIntensity !== undefined) {
@@ -107,6 +116,7 @@ export const Route = createFileRoute("/api/generations")({
           resumeUploadId,
           instructions: typeof instructions === "string" && instructions.trim() ? instructions.trim() : undefined,
           theme: theme ?? undefined,
+          replica,
         });
         if (!created.ok) {
           return errorResponse(409, "job_in_progress", "A generation is already running.", { jobId: created.activeJobId });

@@ -33,6 +33,11 @@ function sendResponse(
   body: string | Buffer | Uint8Array,
   contentType: string,
 ) {
+  // A page that asks not to be indexed (a robots noindex meta) gets the matching header too.
+  const noindex =
+    contentType.startsWith("text/html") &&
+    typeof body !== "string" &&
+    /<meta\b[^>]*\bname\s*=\s*["']?robots["']?[^>]*\bcontent\s*=\s*["'][^"']*noindex/i.test(Buffer.from(body).toString("utf8", 0, 20000));
   // The CSP (with its sandbox) goes on EVERY response, not only HTML: a file opened
   // directly must not run scripts with this host's origin either.
   const headers: Record<string, string> = {
@@ -41,6 +46,7 @@ function sendResponse(
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Cache-Control": "public, max-age=0, s-maxage=20",
     "Content-Security-Policy": SITES_CSP,
+    ...(noindex ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
   };
 
   res.writeHead(statusCode, headers);
