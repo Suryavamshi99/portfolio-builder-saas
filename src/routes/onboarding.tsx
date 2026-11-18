@@ -32,7 +32,7 @@ import {
   X,
   Link2,
 } from "lucide-react";
-import { apiClient, ApiError, type FreeStatusResponse, type GenerationJob } from "@/lib/api-client";
+import { apiClient, ApiError, type FreeStatusResponse, type GenerationJob, type ThemeCustom } from "@/lib/api-client";
 import {
   GenerationMethodCards,
   type GenerationMethod,
@@ -84,6 +84,7 @@ function OnboardingWizard() {
   const [otherLinks, setOtherLinks] = React.useState<{ label: string; url: string }[]>([]);
   const [designIntensity, setDesignIntensity] = React.useState<"minimal" | "bold">("minimal");
   const [themeId, setThemeId] = React.useState<string | null>(null);
+  const [themeCustom, setThemeCustom] = React.useState<ThemeCustom | undefined>(undefined);
 
   // Step 5 & Generation method state
   const [selectedMethod, setSelectedMethod] = React.useState<GenerationMethod>("free");
@@ -367,7 +368,7 @@ function OnboardingWizard() {
         resumeUploadId: resumeUpload.id,
         otherSpecifics: otherSpecifics.trim() || undefined,
         designIntensity,
-        theme: themeId ? { id: themeId } : undefined,
+        theme: themeId ? { id: themeId, ...(themeCustom ? { custom: themeCustom } : {}) } : undefined,
         links: {
           linkedin: linkedinUrl.trim() || undefined,
           github: githubProfileUrl.trim() || undefined,
@@ -562,7 +563,7 @@ function OnboardingWizard() {
                 onBusyChange={setUploadBusy}
               />
 
-              <ThemePicker value={themeId} onChange={setThemeId} />
+              <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} />
 
               <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5">
                 <div className="text-xs font-semibold text-foreground">Design intensity</div>

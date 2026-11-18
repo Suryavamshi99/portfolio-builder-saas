@@ -12,7 +12,7 @@ import {
 } from "@/server/llm";
 import { savePortfolioVersion } from "@/server/portfolio-versions";
 import { getFreeChain } from "./free-wiring";
-import { advancePipeline, scheduleContinue } from "./pipeline/run-pipeline-job";
+import { advancePipeline, freeProviderIO, scheduleContinue } from "./pipeline/run-pipeline-job";
 import { resumeLines } from "./pipeline/plan";
 import type { BuildInput } from "./pipeline/types";
 import {
@@ -28,6 +28,12 @@ import {
 } from "./jobs";
 import { prepareGeneration } from "./prepare";
 import { designBriefFor } from "@/server/themes/brief";
+import { extractFacts } from "@/server/themes/extract-facts";
+import { getTemplate, renderTheme } from "@/server/themes/templates";
+import { findUnsupportedClaims } from "@/server/fact-check";
+import { finalizeHtml } from "@/server/finalize-html";
+import { registry } from "@/server/themes/registry";
+import { buildThemedPage, completeViaFreeChain, type ThemedDeps } from "./themed-build";
 
 function llmJobError(e: unknown): JobError {
   if (e instanceof LlmAuthError) return { code: "byok_key_invalid", message: "Your API key was rejected by the provider" };
@@ -39,6 +45,11 @@ function llmJobError(e: unknown): JobError {
     };
   }
   return { code: "llm_provider_error", message: e instanceof Error ? e.message : String(e) };
+}
+
+async function loadGeminiKey(admin: SupabaseClient, userId: string): Promise<string | null> {
+  const { data: keyRow } = await admin.from("byok_keys").select("encrypted_key, nonce").eq("user_id", userId).eq("provider", "google").maybeSingle();
+  return keyRow ? decryptSecret(byteaToBuffer(keyRow.encrypted_key), byteaToBuffer(keyRow.nonce)) : null;
 }
 
 const CHECK_FAILED: Record<"generation_invalid_output" | "generation_unsupported_claims", string> = {
@@ -86,18 +97,82 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   let warnings: string[];
   let model: string;
   let source: "gemini" | "free";
+  let geminiKey: string | null = null;
+
+  // A theme with a real template is built from facts (one extraction call + a template); any problem falls back to the brief path below.
+  let themeWarnings = job.params.themeWarnings ?? [];
+  const themeId = job.params.theme?.id;
+  if (getTemplate(themeId) && !job.params.pipeline && (job.source === "gemini" || job.source === "free")) {
+    if (job.source === "gemini") {
+      geminiKey = await loadGeminiKey(admin, job.user_id);
+      if (!geminiKey) return failJob(admin, job.id, { code: "byok_key_missing", message: "Connect a Google Gemini API key first" });
+    }
+    const themeName = registry.get(themeId!)?.name ?? "chosen";
+    await setStatus(admin, job.id, "writing", { message: `Reading your resume into the ${themeName} look…` });
+    const providers = getFreeChain();
+    const io = freeProviderIO(admin, budgetDay());
+    const key = geminiKey;
+    const deps: ThemedDeps = {
+      extract: extractFacts,
+      complete:
+        job.source === "gemini"
+          ? async (system, user) => (await callLlmProvider("google", { apiKey: key!, systemPrompt: system, userMessage: user, images: [] })).text
+          : (system, user) => completeViaFreeChain(io, providers, system, user),
+      render: renderTheme,
+      finalize: (h) => finalizeHtml({ ...finalize, rawText: h }),
+      claims: (h, ref) => findUnsupportedClaims(h, ref),
+    };
+    let outcome: Awaited<ReturnType<typeof buildThemedPage>>;
+    try {
+      outcome = await buildThemedPage(deps, {
+        themeId: themeId!,
+        typed: job.params.theme?.custom,
+        input: {
+          resumeText: prepared.resumeText,
+          ...(prepared.specifics ? { specifics: prepared.specifics } : {}),
+          links: prepared.links,
+          ...(prepared.photoUrl ? { photoUrl: prepared.photoUrl } : {}),
+          ...(job.params.instructions ? { instructions: job.params.instructions } : {}),
+        },
+        referenceText: prepared.referenceText,
+      });
+    } catch (e) {
+      console.warn("Themed build crashed, using the brief path", job.id, e instanceof Error ? e.message : e);
+      outcome = { kind: "fallback", warning: "This look couldn't be built, so the AI designed your page instead." };
+    }
+    if (outcome.kind === "provider_error" && job.source === "gemini") {
+      await recordGeneration(admin, job.user_id, job.resume_upload_id, "failed");
+      return failJob(admin, job.id, llmJobError(outcome.error));
+    }
+    if (outcome.kind === "no_capacity") {
+      const { data: rows } = await admin.from("provider_budgets").select("provider, used").eq("day", budgetDay());
+      const used = new Map((rows ?? []).map((r) => [r.provider as string, r.used as number]));
+      if (!providers.some((p) => (used.get(p.id) ?? 0) < p.dailyRequestBudget)) return queueJob(admin, job.id, nextBudgetReset());
+      return failJob(admin, job.id, { code: "free_models_busy", message: "The free AI models are busy right now. Please try again in a few minutes." });
+    }
+    if (outcome.kind === "done") {
+      await setStatus(admin, job.id, "saving");
+      await savePortfolioVersion(admin, job.user_id, {
+        html: outcome.html,
+        source: job.source,
+        model: job.source === "gemini" ? LLM_MODELS.google : "template",
+        warnings: outcome.warnings,
+      });
+      await recordGeneration(admin, job.user_id, job.resume_upload_id, "succeeded");
+      return completeJob(admin, job.id);
+    }
+    const warning = outcome.kind === "fallback" ? outcome.warning : "This look couldn't be built right now, so the AI designed your page instead.";
+    themeWarnings = [...themeWarnings, warning];
+    // Kept with the job so a build that continues in later runs still tells the user.
+    await admin.from("generation_jobs").update({ params: { ...job.params, themeWarnings }, updated_at: new Date().toISOString() }).eq("id", job.id);
+    if (job.source === "gemini") await setStatus(admin, job.id, "writing");
+  }
 
   if (job.source === "gemini") {
     source = "gemini";
     model = LLM_MODELS.google;
-    const { data: keyRow } = await admin
-      .from("byok_keys")
-      .select("encrypted_key, nonce")
-      .eq("user_id", job.user_id)
-      .eq("provider", "google")
-      .maybeSingle();
-    if (!keyRow) return failJob(admin, job.id, { code: "byok_key_missing", message: "Connect a Google Gemini API key first" });
-    const apiKey = decryptSecret(byteaToBuffer(keyRow.encrypted_key), byteaToBuffer(keyRow.nonce));
+    const apiKey = geminiKey ?? (await loadGeminiKey(admin, job.user_id));
+    if (!apiKey) return failJob(admin, job.id, { code: "byok_key_missing", message: "Connect a Google Gemini API key first" });
     const call = async (userMessage: string, images: typeof prepared.images) =>
       (await callLlmProvider("google", { apiKey, systemPrompt: GUARDRAIL_SYSTEM_PROMPT, userMessage, images })).text;
 
@@ -165,7 +240,7 @@ async function execute(admin: SupabaseClient, job: JobRow): Promise<void> {
   }
 
   await setStatus(admin, job.id, "saving");
-  await savePortfolioVersion(admin, job.user_id, { html, source, model, warnings });
+  await savePortfolioVersion(admin, job.user_id, { html, source, model, warnings: [...themeWarnings, ...warnings] });
   await recordGeneration(admin, job.user_id, job.resume_upload_id, "succeeded");
   await completeJob(admin, job.id);
 }

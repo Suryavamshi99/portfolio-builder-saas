@@ -61,7 +61,18 @@ export interface CreateGenerationBody {
   } | undefined;
   instructions?: string | undefined;
   /** A design language chosen in the gallery. Omit for a custom, model-designed page. */
-  theme?: { id: string } | undefined;
+  theme?: { id: string; custom?: ThemeCustom | undefined } | undefined;
+}
+
+/** What a user changed on a theme ("Make it yours"). Everything is optional; the server validates it strictly. */
+export interface ThemeCustom {
+  /** Main accent colour as #rrggbb. */
+  accent?: string | undefined;
+  fonts?: "theme" | "serif" | "sans" | "mono" | undefined;
+  /** Section keys to hide. */
+  hidden?: string[] | undefined;
+  /** Section keys that come first, in this order. */
+  order?: string[] | undefined;
 }
 
 export interface ThemeSummary {
@@ -73,6 +84,10 @@ export interface ThemeSummary {
   tier: "free" | "paid";
   palette: string[];
   fonts: string[];
+  /** Sections the theme's layout can show, in its default order. Empty when the theme has no template (nothing to customise). */
+  sections: string[];
+  /** The theme's own accent colour. */
+  defaultAccent: string;
 }
 
 export interface CreateGenerationResponse {

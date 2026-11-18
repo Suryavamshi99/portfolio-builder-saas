@@ -28,6 +28,38 @@ export function leaseActive(state: PipelineState | undefined, now = Date.now()):
   return Boolean(state?.lease && Date.parse(state.lease.until) > now);
 }
 
+/** How a call reaches a free provider, with the shared daily budget and cooldown. Used by the step-by-step build and the themed one-call build. */
+export function freeProviderIO(admin: SupabaseClient, day: string): Pick<EngineDeps, "call" | "claim" | "cooldown"> {
+  return {
+    call: async (p: FreeProvider, system, user, maxTokens, timeoutMs) => {
+      const apiKey = process.env[p.apiKeyEnv]?.trim();
+      if (!apiKey) throw new LlmProviderError(`${p.label} is not configured`);
+      return callOpenAICompatible({
+        apiKey,
+        systemPrompt: system,
+        userMessage: user,
+        images: [],
+        baseUrl: p.baseUrl,
+        model: p.model,
+        maxOutputTokens: maxTokens,
+        timeoutMs,
+        extraBody: p.extraBody,
+      });
+    },
+    claim: async (p) => {
+      const { data } = await admin.rpc("claim_provider_budget", { p_provider: p.id, p_day: day, p_limit: p.dailyRequestBudget });
+      return data === true;
+    },
+    cooldown: async (p, seconds) => {
+      await admin
+        .from("provider_budgets")
+        .update({ cooldown_until: new Date(Date.now() + seconds * 1000).toISOString() })
+        .eq("provider", p.id)
+        .eq("day", day);
+    },
+  };
+}
+
 /**
  * Runs the free build for a job as far as one invocation allows. The caller turns the outcome into a final job state;
  * on "yield" the build is not finished and must be continued (see scheduleContinue).
@@ -77,32 +109,7 @@ export async function advancePipeline(
 
   const deps: EngineDeps = {
     providers,
-    call: async (p: FreeProvider, system, user, maxTokens, timeoutMs) => {
-      const apiKey = process.env[p.apiKeyEnv]?.trim();
-      if (!apiKey) throw new LlmProviderError(`${p.label} is not configured`);
-      return callOpenAICompatible({
-        apiKey,
-        systemPrompt: system,
-        userMessage: user,
-        images: [],
-        baseUrl: p.baseUrl,
-        model: p.model,
-        maxOutputTokens: maxTokens,
-        timeoutMs,
-        extraBody: p.extraBody,
-      });
-    },
-    claim: async (p) => {
-      const { data } = await admin.rpc("claim_provider_budget", { p_provider: p.id, p_day: day, p_limit: p.dailyRequestBudget });
-      return data === true;
-    },
-    cooldown: async (p, seconds) => {
-      await admin
-        .from("provider_budgets")
-        .update({ cooldown_until: new Date(Date.now() + seconds * 1000).toISOString() })
-        .eq("provider", p.id)
-        .eq("day", day);
-    },
+    ...freeProviderIO(admin, day),
     save: (s, message) => {
       // `s` is the same object as `state`; writeState reads it.
       void s;
