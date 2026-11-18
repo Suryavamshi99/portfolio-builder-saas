@@ -84,17 +84,18 @@ export function Navbar() {
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <LayoutTemplate className="size-3.5" />
-                    Studio
+                    Edit my portfolio
                   </span>
                 </Link>
               ) : (
-                <span
-                  className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground/50"
-                  title="Generate your portfolio in the wizard first to unlock Studio"
+                <Link
+                  to="/onboarding"
+                  title="Create your portfolio first. Then you can edit it here."
+                  className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground/70 hover:bg-muted hover:text-foreground"
                 >
                   <Lock className="size-3" />
-                  Studio
-                </span>
+                  Edit my portfolio
+                </Link>
               )}
               <Link
                 to="/onboarding"
@@ -106,7 +107,7 @@ export function Navbar() {
               >
                 <span className="inline-flex items-center gap-1.5">
                   <FolderUp className="size-3.5" />
-                  Wizard
+                  Create
                 </span>
               </Link>
               <Link
@@ -119,7 +120,7 @@ export function Navbar() {
               >
                 <span className="inline-flex items-center gap-1.5">
                   <Settings className="size-3.5" />
-                  Settings
+                  Account
                 </span>
               </Link>
             </nav>
@@ -244,13 +245,17 @@ export function Navbar() {
                 }`}
               >
                 <LayoutTemplate className="size-4 text-accent" />
-                <span>Studio</span>
+                <span>Edit my portfolio</span>
               </Link>
             ) : (
-              <div className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground/50">
+              <Link
+                to="/onboarding"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
                 <Lock className="size-4" />
-                <span>Studio (Generate portfolio first)</span>
-              </div>
+                <span>Edit my portfolio (create one first)</span>
+              </Link>
             )}
             <Link
               to="/onboarding"
@@ -262,7 +267,7 @@ export function Navbar() {
               }`}
             >
               <FolderUp className="size-4 text-accent" />
-              <span>Wizard</span>
+              <span>Create a portfolio</span>
             </Link>
             <Link
               to="/settings"
@@ -274,7 +279,7 @@ export function Navbar() {
               }`}
             >
               <Settings className="size-4 text-accent" />
-              <span>Settings</span>
+              <span>Account and plan</span>
             </Link>
             <button
               type="button"

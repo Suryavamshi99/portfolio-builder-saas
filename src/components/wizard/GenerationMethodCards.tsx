@@ -68,6 +68,7 @@ export function GenerationMethodCards({
             )}
           </div>
           <div className="font-semibold text-sm text-foreground">Free</div>
+          <div className="text-[11px] text-muted-foreground/80">Quick start, no card needed</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             No setup.{" "}
             {freeLoading ? (
@@ -108,7 +109,7 @@ export function GenerationMethodCards({
           </div>
           <div className="font-semibold text-sm text-foreground">Claude or ChatGPT</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            Best quality, uses your subscription plan via custom connector.
+            Best results. Uses your existing subscription. You connect it once, then ask it to build your page.
           </p>
         </button>
 
@@ -132,9 +133,9 @@ export function GenerationMethodCards({
               </Badge>
             )}
           </div>
-          <div className="font-semibold text-sm text-foreground">My Gemini key</div>
+          <div className="font-semibold text-sm text-foreground">Your own Gemini key</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            Free key from Google. We store it securely and never bill for inference.
+            Use a free key from Google. Your key is stored securely and we never charge for its AI use.
           </p>
         </button>
       </div>
