@@ -271,6 +271,15 @@ export const apiClient = {
     });
   },
 
+  /** Connector (Claude/ChatGPT) builds: store, or with null clear, the company look on the user's connector job before the chat starts. */
+  setConnectorCompanyLook: async (resumeUploadId: string, replica: { url: string; company?: string | undefined } | null): Promise<void> => {
+    await requestJson<{ ok: boolean }>("/api/generations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ source: "mcp", resumeUploadId, replica }),
+    });
+  },
+
   getGeneration: async (id: string): Promise<GenerationJob> => {
     return requestJson<GenerationJob>(`/api/generations/${encodeURIComponent(id)}`);
   },

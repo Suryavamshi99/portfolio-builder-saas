@@ -6,12 +6,13 @@ const strictAdmin = new Proxy({}, { get: () => () => { throw new Error("database
 const tools = buildTools({ admin: strictAdmin, userId: "u1", origin: "https://app.example" });
 
 describe("MCP tools", () => {
-  it("exposes the six tools, each with an object input schema", () => {
+  it("exposes the seven tools, each with an object input schema", () => {
     expect(TOOL_DEFS.map((t) => t.name)).toEqual([
       "list_portfolio_themes",
       "get_themed_brief",
       "build_themed_portfolio",
       "get_portfolio_brief",
+      "get_company_look",
       "save_portfolio_html",
       "get_portfolio_html",
     ]);
