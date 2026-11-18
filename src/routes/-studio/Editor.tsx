@@ -547,9 +547,9 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
       <div className="flex flex-col gap-4 border-b border-border/80 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Portfolio Studio</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Your portfolio</h1>
             <p className="text-xs text-muted-foreground">
-              A fully custom, AI-generated site — regenerate with new instructions, or publish as-is.
+              Look at your page, change the text or photos, then publish when you are happy with it.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -611,15 +611,21 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
           <div className="space-y-1">
             <p className="flex items-center gap-1.5 text-sm font-semibold">
               <Sparkles className="size-4 text-accent" />
-              Regenerate with new instructions
+              Rebuild my page
             </p>
             <p className="text-xs text-muted-foreground">
-              Describe what to change — design direction, sections to emphasize, tone. Auto-saved as you type.
+              Use this after you change your resume or photo, or to ask for a different style. Tell it what to change, if you like. Your notes are saved as you type.
             </p>
           </div>
 
+          <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1.5">
+            <p className="font-medium text-foreground">Changed your resume or photo?</p>
+            <p>Your page does not update on its own. Rebuild it to use them.</p>
+            <p>Rebuilding here uses the AI-designed style. If you chose a look, rebuild from Create a portfolio to keep it.</p>
+          </div>
+
           <div className="space-y-1.5">
-            <p className="text-[11px] font-medium text-muted-foreground">Regenerate with</p>
+            <p className="text-[11px] font-medium text-muted-foreground">Build with</p>
             <div role="radiogroup" aria-label="Regenerate with" className="flex flex-wrap gap-1.5">
               {REGEN_METHODS.map((m) => (
                 <button
@@ -677,7 +683,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               ) : (
                 <>
                   <Sparkles className="size-4" />
-                  Regenerate Portfolio
+                  Rebuild my page
                 </>
               )}
             </Button>
@@ -721,12 +727,12 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-warning">
               <AlertTriangle className="size-5" />
-              Regenerate and overwrite your current draft?
+              Rebuild and replace your current page?
             </DialogTitle>
             <DialogDescription>
-              {dirty && "You also have unsaved text or photo edits in the preview. They will be lost. "}
-              This calls background generation with your latest instructions. Your current draft will be updated,
-              and your past version snapshot is automatically saved to Version History so you can restore it anytime.
+              {dirty && "Your unsaved text and photo changes will be lost. "}
+              Your page will be rebuilt from your latest resume, photo and details. Your current page is saved in
+              Version History first, so you can go back to it at any time.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -741,7 +747,7 @@ export function Editor({ initialHtml, onRegenerated }: EditorProps) {
               }}
             >
               <Sparkles className="size-4" />
-              Yes, regenerate
+              Yes, rebuild
             </Button>
           </DialogFooter>
         </DialogContent>

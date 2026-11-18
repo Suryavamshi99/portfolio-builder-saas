@@ -61,11 +61,11 @@ type StepIndex = 1 | 2 | 3 | 4 | 5 | 6;
 
 const STEPS = [
   { step: 1, title: "Resume", icon: FileText },
-  { step: 2, title: "Visual Style", icon: ImageIcon },
-  { step: 3, title: "Profile Photo", icon: User },
-  { step: 4, title: "Specifics", icon: MessageSquare },
-  { step: 5, title: "How to Generate", icon: Sparkles },
-  { step: 6, title: "Generate", icon: Sparkles },
+  { step: 2, title: "Look", icon: ImageIcon },
+  { step: 3, title: "Photo", icon: User },
+  { step: 4, title: "Details", icon: MessageSquare },
+  { step: 5, title: "How to build", icon: Sparkles },
+  { step: 6, title: "Build", icon: Sparkles },
 ] as const;
 
 
@@ -511,7 +511,7 @@ function OnboardingWizard() {
         {currentStep === 1 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 1: Upload Your Resume</CardTitle>
+              <CardTitle className="text-lg">Step 1 of 6: Upload your resume</CardTitle>
               <CardDescription>
                 We extract plain text from your PDF or DOCX server-side before sending it to the model.
               </CardDescription>
@@ -549,9 +549,10 @@ function OnboardingWizard() {
         {currentStep === 2 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 2: Visual Reference Screenshots (Optional)</CardTitle>
+              <CardTitle className="text-lg">Step 2 of 6: Choose a look (optional)</CardTitle>
               <CardDescription>
-                Upload up to 3 screenshots of portfolios or layouts you admire for structural inspiration.
+                Pick a ready-made look below, or upload up to 3 screenshots of designs you like. You can skip this.
+                Your look sets how the page is laid out. Your resume still provides every fact.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -631,7 +632,7 @@ function OnboardingWizard() {
         {currentStep === 3 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 3: Profile Photo / Headshot (Optional)</CardTitle>
+              <CardTitle className="text-lg">Step 3 of 6: Add a photo (optional)</CardTitle>
               <CardDescription>
                 Upload a portrait for your hero section. Image EXIF and location data are stripped automatically.
               </CardDescription>
@@ -671,7 +672,7 @@ function OnboardingWizard() {
         {currentStep === 4 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 4: Links & Specifics</CardTitle>
+              <CardTitle className="text-lg">Step 4 of 6: Add links and details</CardTitle>
               <CardDescription>
                 Add your profile links and anything else you want the AI to know.
               </CardDescription>
@@ -836,7 +837,7 @@ function OnboardingWizard() {
         {currentStep === 5 && (
           <>
             <CardHeader>
-              <CardTitle className="text-lg">Step 5: How should we generate it?</CardTitle>
+              <CardTitle className="text-lg">Step 5 of 6: How should we build it?</CardTitle>
               <CardDescription>
                 Choose how you want your portfolio generated. You can use free models, your own Claude/ChatGPT subscription, or a Gemini key.
               </CardDescription>
@@ -920,8 +921,8 @@ function OnboardingWizard() {
             <CardHeader>
               <CardTitle className="text-lg">
                 {selectedMethod === "mcp"
-                  ? "Step 6: Chat with Claude or ChatGPT"
-                  : "Step 6: Generate Your Portfolio Draft"}
+                  ? "Step 6 of 6: Finish in Claude or ChatGPT"
+                  : "Step 6 of 6: Build your portfolio"}
               </CardTitle>
               <CardDescription>
                 {selectedMethod === "mcp"
