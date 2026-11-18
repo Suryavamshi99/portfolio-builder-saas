@@ -9,7 +9,7 @@ import { PUBLISHED_SITE_CSP } from "@/server/site-csp";
 import { renderTheme, templateIds } from "./index";
 import { RICH_FACTS, SPARSE_FACTS } from "./fixtures";
 
-const BANNED = /Kavya|Riya|Aditya|Kabir|Ishita|Vihaan|Simran|Nandini|Siddharth|Menon|Malhotra|Kulkarni|Sethi|Banerjee|Bhatt|elevenlabs|Dunder|Scranton|Anika|Nisha|Bhandari|Yash Trivedi|Pinewick/i;
+const BANNED = /\b(?:Kavya|Riya|Aditya|Kabir|Ishita|Vihaan|Simran|Nandini|Siddharth|Menon|Malhotra|Kulkarni|Sethi|Banerjee|Bhatt|elevenlabs|Dunder|Scranton|Anika|Nisha|Bhandari|Yash Trivedi|Pinewick)\b/i;
 const MAX_BYTES = 2_500_000;
 const fin = (html: string, facts = RICH_FACTS) => finalizeHtml({ rawText: html, userId: "u1", supabaseUrl: "https://x.supabase.co", links: {}, referenceText: factsText(facts) });
 

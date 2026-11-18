@@ -37,7 +37,7 @@ export const RICH_FACTS: PortfolioFacts = {
   ],
   achievements: [{ title: "Product Team of the Year", detail: "Harbourline Freight", year: "2023" }],
   certifications: [{ name: "Certified Scrum Product Owner", issuer: "Scrum Alliance", year: "2020" }],
-  testimonials: [{ quote: "Jordan made hard trade-offs easy to follow.", author: "Priya Nair", role: "Head of Operations" }],
+  testimonials: [{ quote: "Jordan made hard trade-offs easy to follow.", author: "Dana Whitfield", role: "Head of Operations" }],
   extras: [{ label: "Languages", items: ["English", "French"] }],
 };
 
