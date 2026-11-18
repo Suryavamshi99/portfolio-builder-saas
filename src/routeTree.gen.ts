@@ -69,6 +69,7 @@ import { Route as ApiGenerationsLatestRouteImport } from './routes/api/generatio
 import { Route as ApiGithubCallbackRouteImport } from './routes/api/github/callback'
 import { Route as ApiGithubStatusRouteImport } from './routes/api/github/status'
 import { Route as ApiMcpStatusRouteImport } from './routes/api/mcp.status'
+import { Route as ApiPortfolioHtmlRouteImport } from './routes/api/portfolio/html'
 import { Route as ApiPortfolioInputsRouteImport } from './routes/api/portfolio/inputs'
 import { Route as ApiPortfolioVersionsRouteImport } from './routes/api/portfolio/versions'
 import { Route as ApiPublishStatusRouteImport } from './routes/api/publish/status'
@@ -397,6 +398,11 @@ const ApiMcpStatusRoute = ApiMcpStatusRouteImport.update({
   path: '/api/mcp/status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPortfolioHtmlRoute = ApiPortfolioHtmlRouteImport.update({
+  id: '/api/portfolio/html',
+  path: '/api/portfolio/html',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPortfolioInputsRoute = ApiPortfolioInputsRouteImport.update({
   id: '/api/portfolio/inputs',
   path: '/api/portfolio/inputs',
@@ -585,6 +591,7 @@ export interface FileRoutesByFullPath {
   '/api/github/callback': typeof ApiGithubCallbackRoute
   '/api/github/status': typeof ApiGithubStatusRoute
   '/api/mcp/status': typeof ApiMcpStatusRoute
+  '/api/portfolio/html': typeof ApiPortfolioHtmlRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -671,6 +678,7 @@ export interface FileRoutesByTo {
   '/api/github/callback': typeof ApiGithubCallbackRoute
   '/api/github/status': typeof ApiGithubStatusRoute
   '/api/mcp/status': typeof ApiMcpStatusRoute
+  '/api/portfolio/html': typeof ApiPortfolioHtmlRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -758,6 +766,7 @@ export interface FileRoutesById {
   '/api/github/callback': typeof ApiGithubCallbackRoute
   '/api/github/status': typeof ApiGithubStatusRoute
   '/api/mcp/status': typeof ApiMcpStatusRoute
+  '/api/portfolio/html': typeof ApiPortfolioHtmlRoute
   '/api/portfolio/inputs': typeof ApiPortfolioInputsRoute
   '/api/portfolio/versions': typeof ApiPortfolioVersionsRouteWithChildren
   '/api/publish/status': typeof ApiPublishStatusRoute
@@ -846,6 +855,7 @@ export interface FileRouteTypes {
     | '/api/github/callback'
     | '/api/github/status'
     | '/api/mcp/status'
+    | '/api/portfolio/html'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -932,6 +942,7 @@ export interface FileRouteTypes {
     | '/api/github/callback'
     | '/api/github/status'
     | '/api/mcp/status'
+    | '/api/portfolio/html'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -1018,6 +1029,7 @@ export interface FileRouteTypes {
     | '/api/github/callback'
     | '/api/github/status'
     | '/api/mcp/status'
+    | '/api/portfolio/html'
     | '/api/portfolio/inputs'
     | '/api/portfolio/versions'
     | '/api/publish/status'
@@ -1102,6 +1114,7 @@ export interface RootRouteChildren {
   ApiGithubCallbackRoute: typeof ApiGithubCallbackRoute
   ApiGithubStatusRoute: typeof ApiGithubStatusRoute
   ApiMcpStatusRoute: typeof ApiMcpStatusRoute
+  ApiPortfolioHtmlRoute: typeof ApiPortfolioHtmlRoute
   ApiPortfolioInputsRoute: typeof ApiPortfolioInputsRoute
   ApiPortfolioVersionsRoute: typeof ApiPortfolioVersionsRouteWithChildren
   ApiSitesCheckRoute: typeof ApiSitesCheckRoute
@@ -1540,6 +1553,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMcpStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/portfolio/html': {
+      id: '/api/portfolio/html'
+      path: '/api/portfolio/html'
+      fullPath: '/api/portfolio/html'
+      preLoaderRoute: typeof ApiPortfolioHtmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/portfolio/inputs': {
       id: '/api/portfolio/inputs'
       path: '/api/portfolio/inputs'
@@ -1907,6 +1927,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGithubCallbackRoute: ApiGithubCallbackRoute,
   ApiGithubStatusRoute: ApiGithubStatusRoute,
   ApiMcpStatusRoute: ApiMcpStatusRoute,
+  ApiPortfolioHtmlRoute: ApiPortfolioHtmlRoute,
   ApiPortfolioInputsRoute: ApiPortfolioInputsRoute,
   ApiPortfolioVersionsRoute: ApiPortfolioVersionsRouteWithChildren,
   ApiSitesCheckRoute: ApiSitesCheckRoute,

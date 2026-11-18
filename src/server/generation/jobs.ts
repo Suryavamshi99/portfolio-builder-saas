@@ -20,7 +20,7 @@ export interface JobRow {
   error: JobError | null;
   retry_at: string | null;
   resume_upload_id: string | null;
-  params: { instructions?: string; pipeline?: PipelineState; theme?: ThemeRequest };
+  params: { instructions?: string; pipeline?: PipelineState; theme?: ThemeRequest; /** Why a themed build used the AI-designed path instead; shown with the saved page. */ themeWarnings?: string[] };
   provider: string | null;
   created_at: string;
   updated_at: string;
@@ -126,10 +126,11 @@ export function isStale(row: JobRow, now = Date.now()): boolean {
   return ["reading", "writing", "checking", "saving"].includes(row.status) && now - new Date(row.updated_at).getTime() > limit;
 }
 
-export async function setStatus(admin: SupabaseClient, id: string, status: JobStatus, extra: { provider?: string } = {}) {
+export async function setStatus(admin: SupabaseClient, id: string, status: JobStatus, extra: { provider?: string; message?: string } = {}) {
+  const { message, ...rest } = extra;
   await admin
     .from("generation_jobs")
-    .update({ status, message: STATUS_MESSAGES[status], retry_at: null, updated_at: new Date().toISOString(), ...extra })
+    .update({ status, message: message ?? STATUS_MESSAGES[status], retry_at: null, updated_at: new Date().toISOString(), ...rest })
     .eq("id", id);
 }
 

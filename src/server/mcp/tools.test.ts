@@ -6,8 +6,15 @@ const strictAdmin = new Proxy({}, { get: () => () => { throw new Error("database
 const tools = buildTools({ admin: strictAdmin, userId: "u1", origin: "https://app.example" });
 
 describe("MCP tools", () => {
-  it("exposes exactly the three tools, each with an object input schema", () => {
-    expect(TOOL_DEFS.map((t) => t.name)).toEqual(["get_portfolio_brief", "save_portfolio_html", "get_portfolio_html"]);
+  it("exposes the six tools, each with an object input schema", () => {
+    expect(TOOL_DEFS.map((t) => t.name)).toEqual([
+      "list_portfolio_themes",
+      "get_themed_brief",
+      "build_themed_portfolio",
+      "get_portfolio_brief",
+      "save_portfolio_html",
+      "get_portfolio_html",
+    ]);
     for (const t of TOOL_DEFS) expect(t.inputSchema["type"]).toBe("object");
   });
   it("tells the model not to paste the HTML into the chat", () => {
