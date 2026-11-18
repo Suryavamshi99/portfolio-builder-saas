@@ -90,6 +90,7 @@ function OnboardingWizard() {
   const [replicaUrl, setReplicaUrl] = React.useState("");
   const [replicaCompany, setReplicaCompany] = React.useState("");
   const [replicaTouched, setReplicaTouched] = React.useState(false);
+  const [connectorLookError, setConnectorLookError] = React.useState<string | null>(null);
 
   // Step 5 & Generation method state
   const [selectedMethod, setSelectedMethod] = React.useState<GenerationMethod>("free");
@@ -921,6 +922,9 @@ function OnboardingWizard() {
                 }}
                 comingSoonNotice={comingSoonNotice}
               />
+              {connectorLookError && (
+                <p role="alert" className="text-xs text-destructive">{connectorLookError}</p>
+              )}
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
               <Button
@@ -934,7 +938,19 @@ function OnboardingWizard() {
               <Button
                 type="button"
                 disabled={!canProceedFromStep5()}
-                onClick={() => setCurrentStep(6)}
+                onClick={async () => {
+                  setConnectorLookError(null);
+                  if (selectedMethod === "mcp" && resumeUpload && replicaUiEnabled()) {
+                    // The company look must reach the connector job before the chat's first build.
+                    try {
+                      await apiClient.setConnectorCompanyLook(resumeUpload.id, replicaPayload(replicaOn, replicaUrl, replicaCompany) ?? null);
+                    } catch (err) {
+                      setConnectorLookError(err instanceof ApiError ? err.message : "Could not save your company look. Try again.");
+                      return;
+                    }
+                  }
+                  setCurrentStep(6);
+                }}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
                 {selectedMethod === "mcp" ? "Proceed to Waiting Panel" : "Next: Review & Generate"}

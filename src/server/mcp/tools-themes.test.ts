@@ -81,12 +81,13 @@ beforeEach(() => {
 });
 
 describe("themed MCP tools", () => {
-  it("exposes the three new tools and the three existing ones", () => {
+  it("exposes the themed, company look and existing tools", () => {
     expect(TOOL_DEFS.map((t) => t.name)).toEqual([
       "list_portfolio_themes",
       "get_themed_brief",
       "build_themed_portfolio",
       "get_portfolio_brief",
+      "get_company_look",
       "save_portfolio_html",
       "get_portfolio_html",
     ]);

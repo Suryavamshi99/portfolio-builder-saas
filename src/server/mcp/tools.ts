@@ -9,6 +9,10 @@ import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { addWatermark } from "@/server/watermark";
 import { getSupabaseEnv } from "@/lib/supabase/env";
+import { checkReplicaRequest, replicaEnabled, type ReplicaParams } from "@/server/brand/replica";
+import { companyNameFor, resolveReplica, DISCLAIMER_TEXT } from "@/server/brand/replica-brief";
+import { applyReplicaGuard, nameFromResume } from "@/server/brand/replica-guard";
+import { activeMcpJob, activeReplica } from "./replica-job";
 import { registry } from "@/server/themes/registry";
 import { checkThemeAccess } from "@/server/themes/gate";
 import { getTemplate, renderTheme } from "@/server/themes/templates";
@@ -36,19 +40,19 @@ const MAX_HTML_CHARS = 600_000;
 const ACTIVE = ["queued", "reading", "writing", "checking", "saving"];
 
 export const SERVER_INSTRUCTIONS =
-  "Shipfolio builds the user's personal portfolio website. First step, always: call list_portfolio_themes, show the user the looks in plain language and ask which one they want, or 'Custom' for a one-of-a-kind design. If they pick a look: call get_themed_brief with its id, write the curated text it asks for, and call build_themed_portfolio. If they pick Custom: call get_portfolio_brief, write the page it asks for, then call save_portfolio_html. After ANY build, give the user the Studio link and ask whether they want to keep it or change something (wording, colours and sections, a different look, or deeper edits), then do what they choose. Never paste the page HTML into the chat.";
+  "Shipfolio builds the user's personal portfolio website. COMPANY LOOK RULE: if the user opted into a company look (they chose it in the Shipfolio setup, or they explicitly ask in chat for a page that looks like a named company's website), the FIRST build must already follow that company's site (layout, colours, type feel, UI patterns) with the user's own details. Never build a generic or ready-made-look page first and wait to be corrected, and never ask the user to confirm the company look after the fact. If the user did not opt in, do not apply a company look, and never guess one from a company named in their resume. First step, always: call list_portfolio_themes. If it says the user already chose a company look, call get_portfolio_brief next and follow it. Otherwise show the user the looks in plain language and ask which one they want, or 'Custom' for a one-of-a-kind design. If they ask for a company's look instead, call get_company_look with the address they give. If they pick a look: call get_themed_brief with its id, write the curated text it asks for, and call build_themed_portfolio. If they pick Custom: call get_portfolio_brief, write the page it asks for, then call save_portfolio_html. After ANY build, give the user the Studio link and ask whether they want to keep it or change something (wording, colours and sections, a different look, or deeper edits), then do what they choose. Never paste the page HTML into the chat.";
 
 export const TOOL_DEFS: ToolDef[] = [
   {
     name: "list_portfolio_themes",
     description:
-      "Call this FIRST. Lists the ready-made looks (themes) for the user's portfolio and whether they can use each one. Show them to the user in plain language and ask which look they want, or 'Custom' for a one-of-a-kind design built from scratch. Do nothing else until they answer.",
+      "Call this FIRST. Lists the ready-made looks (themes) for the user's portfolio and whether they can use each one. Show them to the user in plain language and ask which look they want, or 'Custom' for a one-of-a-kind design built from scratch. Do nothing else until they answer. If the result says the user already chose a company look, do not ask them to pick a look: follow its instructions and call get_portfolio_brief.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
     name: "get_themed_brief",
     description:
-      "After the user picks a look from list_portfolio_themes: returns their resume text, verified links, the look's text slots and the strict rules. Write the curated facts it asks for, then call build_themed_portfolio. Not for 'Custom' (use get_portfolio_brief for that).",
+      "After the user picks a look from list_portfolio_themes: returns their resume text, verified links, the look's text slots and the strict rules. Write the curated facts it asks for, then call build_themed_portfolio. Not for 'Custom' (use get_portfolio_brief for that). Refused when the user chose a company look (use get_portfolio_brief); a ready-made look and a company look are never combined.",
     inputSchema: {
       type: "object",
       properties: {
@@ -77,13 +81,27 @@ export const TOOL_DEFS: ToolDef[] = [
   {
     name: "get_portfolio_brief",
     description:
-      "For the 'Custom' choice only (the user did not pick a ready-made look). Returns the rules, the user's resume text, links, preferences, photo URL and reference screenshots for building their portfolio. Write ONE complete HTML document and pass it to save_portfolio_html.",
+      "For the 'Custom' choice, or when the user chose a company look in the Shipfolio setup (then the company look brief is the FIRST thing this returns, and your first build must follow it; never build generic first). Returns the rules, the user's resume text, links, preferences, photo URL and reference screenshots for building their portfolio. Write ONE complete HTML document and pass it to save_portfolio_html.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
+  },
+  {
+    name: "get_company_look",
+    description:
+      "ONLY for when the user explicitly asks, in the conversation, for a page that looks like a named company's website, and gave you its address. Never call it because their resume mentions a company. Checks the request, records it, and returns the company look brief; your FIRST build must then follow that look with the user's own details, then call save_portfolio_html. Do not build a generic page first or ask the user to confirm the look afterwards.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: { type: "string", description: "The company's public website address, starting with https://." },
+        company: { type: "string", description: "Optional: how to name the company in the disclaimer." },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
   },
   {
     name: "save_portfolio_html",
     description:
-      "Checks and saves the complete portfolio HTML document. If it lists problems, fix exactly those and call this tool again with the whole corrected page. On success give the user the Studio link, then ask whether they want to keep it or change anything; do NOT paste the HTML in the chat.",
+      "Checks and saves the complete portfolio HTML document. If it lists problems, fix exactly those and call this tool again with the whole corrected page. For a company look build it also adds the independent-concept disclaimer and noindex itself. On success give the user the Studio link, then ask whether they want to keep it or change anything; do NOT paste the HTML in the chat.",
     inputSchema: {
       type: "object",
       properties: { html: { type: "string", description: "The complete HTML document, from <!DOCTYPE html> to </html>." } },
@@ -114,18 +132,22 @@ async function latestResumeId(admin: SupabaseClient, userId: string): Promise<st
 }
 
 /** The user's running MCP job (kept alive while their chat works), or a new one; null if another kind is running. */
-async function ensureMcpJob(admin: SupabaseClient, userId: string, resumeId: string, themeId?: string): Promise<string | null> {
+async function ensureMcpJob(admin: SupabaseClient, userId: string, resumeId: string, themeId?: string, replica?: ReplicaParams): Promise<string | null> {
   const { data: active } = await admin.from("generation_jobs").select("id, source, status, params").eq("user_id", userId).in("status", ACTIVE).maybeSingle();
   // A job parked in the queue (waiting for free capacity) doesn't block: createJob() replaces it.
   if (active && active.status !== "queued") {
     if (active.source !== "mcp") return null;
     const params = (active.params ?? {}) as Record<string, unknown>;
-    const nextParams = themeId ? { ...params, theme: { id: themeId } } : params;
-    await admin.from("generation_jobs").update({ error: null, ...(themeId ? { params: nextParams } : {}) }).eq("id", active.id);
+    const withoutTheme = { ...params };
+    delete withoutTheme["theme"];
+    const nextParams = replica ? { ...withoutTheme, replica } : themeId ? { ...params, theme: { id: themeId } } : params;
+    await admin.from("generation_jobs").update({ error: null, ...(themeId || replica ? { params: nextParams } : {}) }).eq("id", active.id);
     await setStatus(admin, active.id, "writing");
     return active.id;
   }
-  const created = await createJob(admin, { userId, source: "mcp", resumeUploadId: resumeId, ...(themeId ? { theme: { id: themeId } } : {}) });
+  // A revision after a finished build keeps the user's company look until the wizard clears it.
+  const carried = replica ?? (themeId ? null : await activeReplica(admin, userId));
+  const created = await createJob(admin, { userId, source: "mcp", resumeUploadId: resumeId, ...(themeId ? { theme: { id: themeId } } : {}), ...(carried ? { replica: carried } : {}) });
   if (!created.ok) return null;
   await setStatus(admin, created.job.id, "writing");
   return created.job.id;
@@ -134,14 +156,63 @@ async function ensureMcpJob(admin: SupabaseClient, userId: string, resumeId: str
 export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin: string }): Tools {
   const { admin, userId, origin } = ctx;
 
-  async function brief(): Promise<ToolResult> {
+  /** The company look the user opted into, checked again now (flag, paid), or a plain message when it can't be used. */
+  async function replicaFor(replica: ReplicaParams | null): Promise<{ replica: ReplicaParams } | { error: ToolResult } | null> {
+    if (!replica) return null;
+    const appUser = await getOrCreateAppUser(admin, userId);
+    if (!appUser) return { error: text("Could not load the user's account.", true) };
+    const check = checkReplicaRequest({ url: replica.url, ...(replica.company ? { company: replica.company } : {}) }, { enabled: replicaEnabled(), hasTheme: false, paid: hasPaidAccess(appUser) });
+    if (!check.ok) {
+      return { error: text(`${check.message} The user chose a company look, so do NOT build a generic page instead. Tell the user this and ask how they want to continue.`, true) };
+    }
+    return { replica };
+  }
+
+  async function brief(replicaIn?: ReplicaParams): Promise<ToolResult> {
     const resumeId = await latestResumeId(admin, userId);
     if (!resumeId) return text(`The user hasn't uploaded a resume yet. Ask them to upload it at ${origin}/onboarding first, then try again.`, true);
-    if (!(await ensureMcpJob(admin, userId, resumeId))) {
+    const gate = await replicaFor(replicaIn ?? (await activeReplica(admin, userId)));
+    if (gate && "error" in gate) return gate.error;
+    const replica = gate?.replica ?? null;
+    const jobId = await ensureMcpJob(admin, userId, resumeId);
+    if (!jobId) {
       return text("Another portfolio generation is already running for this user. Ask them to wait for it to finish, then try again.", true);
     }
     const prepared = await prepareGeneration(admin, userId, { resumeUploadId: resumeId });
     if (!prepared.ok) return text(prepared.message, true);
+
+    let lookSection: string[] = [];
+    if (replica) {
+      const res = await resolveReplica(replica);
+      if (res.needsImages && prepared.images.length === 0) {
+        return text(
+          [
+            `The user chose the look of ${res.companyName}'s website, but Shipfolio could not read that site automatically.`,
+            "Ask the user to attach screenshots of the site (home page and one more page) in this chat, or to upload up to 3 at " + `${origin}/onboarding, then build from those screenshots. Do NOT fall back to a generic or ready-made design, and do not write the page until you have screenshots.`,
+            "",
+            res.brief,
+          ].join("\n"),
+        );
+      }
+      if (!replica.brief) {
+        const cached: ReplicaParams = { ...replica, ...(res.needsImages ? {} : { brief: res.brief, companyName: res.companyName, warnings: res.warnings, needsImages: false }) };
+        if (!res.needsImages) {
+          const job = await activeMcpJob(admin, userId);
+          if (job) await admin.from("generation_jobs").update({ params: { ...job.params, replica: cached } }).eq("id", job.id);
+        }
+      }
+      const disclaimer = DISCLAIMER_TEXT(nameFromResume(prepared.resumeText) || "a candidate", res.companyName);
+      lookSection = [
+        "=== COMPANY LOOK (the user chose this; your FIRST build must follow it) ===",
+        `The user asked for a portfolio in the look of ${res.companyName}'s website. Follow this from your first draft: do not build a generic or ready-made-look page first, and do not ask the user to confirm the look afterwards.`,
+        res.brief,
+        res.needsImages ? "The site could not be read, so take the look from the attached screenshots only." : "",
+        "Layout, colours, type feel and UI patterns come from the company; every word, name, date and number comes from the USER DATA below.",
+        `Include this disclaimer text verbatim, at the top and in the footer: "${disclaimer}"`,
+        "Shipfolio also adds the disclaimer and a noindex tag when you save, so do not worry about them being missing, but write them in anyway.",
+        "",
+      ];
+    }
 
     const content: ToolContent[] = [
       {
@@ -155,6 +226,7 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
           "5. If the tool lists problems, fix exactly those and call save_portfolio_html again with the whole corrected page.",
           "6. When it succeeds, reply with only the Studio link it gives you.",
           "",
+          ...lookSection,
           "=== RULES ===",
           GUARDRAIL_SYSTEM_PROMPT,
           "",
@@ -165,6 +237,21 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
       ...prepared.images.map((i): ToolContent => ({ type: "image", data: i.base64Data, mimeType: i.mimeType })),
     ];
     return { content };
+  }
+
+  /** Chat-only opt-in: the user explicitly asked for a company's look. Same checks as the setup toggle. */
+  async function companyLook(args: Record<string, unknown>): Promise<ToolResult> {
+    const resumeId = await latestResumeId(admin, userId);
+    if (!resumeId) return text(`The user hasn't uploaded a resume yet. Ask them to upload it at ${origin}/onboarding first, then try again.`, true);
+    const appUser = await getOrCreateAppUser(admin, userId);
+    if (!appUser) return text("Could not load the user's account.", true);
+    const raw = { url: args["url"], ...(args["company"] !== undefined && args["company"] !== null ? { company: args["company"] } : {}) };
+    const check = checkReplicaRequest(raw, { enabled: replicaEnabled(), hasTheme: false, paid: hasPaidAccess(appUser) });
+    if (!check.ok) return text(`${check.message} Tell the user, and do not build a generic page instead without asking them.`, true);
+    if (!(await ensureMcpJob(admin, userId, resumeId, undefined, check.replica))) {
+      return text("Another portfolio generation is already running for this user. Ask them to wait for it to finish, then try again.", true);
+    }
+    return await brief(check.replica);
   }
 
   async function save(args: Record<string, unknown>): Promise<ToolResult> {
@@ -207,8 +294,16 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
         .eq("id", jobId);
     };
 
+    // A company look: disclaimer, noindex and no company-hosted graphics first, then the same checks as any page.
+    const replica = await activeReplica(admin, userId);
+    let rawHtml = a.html;
+    let company = "";
+    if (replica) {
+      company = replica.companyName ?? companyNameFor(replica);
+      rawHtml = applyReplicaGuard(a.html, { name: nameFromResume(prepared.resumeText), company, companyUrl: replica.url }).html;
+    }
     const final = finalizeHtml({
-      rawText: a.html,
+      rawText: rawHtml,
       userId,
       supabaseUrl: getSupabaseEnv().url,
       links: prepared.links,
@@ -218,7 +313,7 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
       await problems({ code: "generation_invalid_output", message: "The page didn't pass our checks.", details: final.errors });
       return text(`The page can't be saved yet. Fix these and call ${a.retryTool} again with ${a.retryWhat}:\n- ${final.errors.join("\n- ")}`, true);
     }
-    const claims = findUnsupportedClaims(final.html, prepared.referenceText);
+    const claims = findUnsupportedClaims(final.html, replica ? `${prepared.referenceText}\n${company}` : prepared.referenceText);
     if (claims.length > 0) {
       const details = claims.map((c) => c.message);
       await problems({ code: "generation_unsupported_claims", message: "The page includes facts that aren't in the resume.", details });
@@ -234,10 +329,16 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
     await completeJob(admin, jobId);
     const notes = final.warnings.length > 0 ? `\nNotes: ${final.warnings.join(" ")}` : "";
     if (a.successText) return text(a.successText(notes));
-    return text(`Saved. The user can open it in Studio: ${origin}/studio\nGive the user that link, then ask whether they want to keep it or change anything (you can revise it with get_portfolio_html and save_portfolio_html). Do not paste the HTML.${notes}`);
+    const guardNote = replica ? `\nShipfolio added the "independent concept, not affiliated with ${company}" disclaimer (top and footer) and a noindex tag, and removed any graphics hosted by the company. Do not add or remove them.` : "";
+    return text(`Saved. The user can open it in Studio: ${origin}/studio${guardNote}\nGive the user that link, then ask whether they want to keep it or change anything (you can revise it with get_portfolio_html and save_portfolio_html). Do not paste the HTML.${notes}`);
   }
 
   async function listThemes(): Promise<ToolResult> {
+    const chosen = await activeReplica(admin, userId);
+    if (chosen) {
+      const company = chosen.company ?? companyNameFor(chosen);
+      return text(`The user already chose to have their portfolio look like ${company}'s website (their choice in the Shipfolio setup). Do not show ready-made looks and do not ask which look they want. Call get_portfolio_brief now; your FIRST build must follow that company's look with the user's own details.`);
+    }
     const appUser = await getOrCreateAppUser(admin, userId);
     if (!appUser) return text("Could not load the user's account.", true);
     const paid = hasPaidAccess(appUser);
@@ -280,7 +381,11 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
     return { id, theme, template, appUser } as const;
   }
 
+  const COMPANY_LOOK_CHOSEN =
+    "The user chose a company look, so a ready-made look is not used with it. Do not show or pick a look. Call get_portfolio_brief now and build the page in the company's look on the first try.";
+
   async function themedBrief(args: Record<string, unknown>): Promise<ToolResult> {
+    if (await activeReplica(admin, userId)) return text(COMPANY_LOOK_CHOSEN, true);
     const t = await themeFor(args);
     if ("error" in t) return t.error;
     const instructions = typeof args["instructions"] === "string" ? args["instructions"].trim().slice(0, 2000) : "";
@@ -331,6 +436,7 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
   }
 
   async function buildThemed(args: Record<string, unknown>): Promise<ToolResult> {
+    if (await activeReplica(admin, userId)) return text(COMPANY_LOOK_CHOSEN, true);
     const t = await themeFor(args);
     if ("error" in t) return t.error;
     const factsIn = boundedObject(args["facts"], MAX_FACTS_JSON_CHARS);
@@ -410,6 +516,7 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
         if (name === "get_themed_brief") return await themedBrief(args);
         if (name === "build_themed_portfolio") return await buildThemed(args);
         if (name === "get_portfolio_brief") return await brief();
+        if (name === "get_company_look") return await companyLook(args);
         if (name === "save_portfolio_html") return await save(args);
         if (name === "get_portfolio_html") return await current();
         return null;

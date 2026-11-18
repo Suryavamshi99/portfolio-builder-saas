@@ -14,6 +14,7 @@ import { createJob, toApiJob } from "@/server/generation/jobs";
 import { FREE_GENERATIONS_PER_DAY, countFreeRunsToday } from "@/server/generation/limits";
 import { getFreeChain } from "@/server/generation/free-wiring";
 import { runJob } from "@/server/generation/run-job";
+import { storeMcpReplica } from "@/server/mcp/replica-job";
 
 function errorResponse(status: number, code: string, message: string, extra: Record<string, unknown> = {}) {
   return Response.json({ error: { code, message, ...extra } }, { status });
@@ -33,8 +34,8 @@ export const Route = createFileRoute("/api/generations")({
           return errorResponse(400, "invalid_json", "Body must be valid JSON");
         }
         const { source, resumeUploadId, designIntensity, instructions } = body;
-        if (source !== "free" && source !== "gemini") {
-          return errorResponse(400, "invalid_request", "source must be 'free' or 'gemini'");
+        if (source !== "free" && source !== "gemini" && source !== "mcp") {
+          return errorResponse(400, "invalid_request", "source must be 'free', 'gemini' or 'mcp'");
         }
         if (typeof resumeUploadId !== "string") return errorResponse(400, "invalid_request", "resumeUploadId is required");
         if (designIntensity !== undefined && designIntensity !== "minimal" && designIntensity !== "bold") {
@@ -57,11 +58,22 @@ export const Route = createFileRoute("/api/generations")({
         }
 
         // A "look like this company" build: behind a flag, never with a theme, paid (see checkReplicaRequest).
+        // For the connector (mcp) the request is only stored on the user's connector job; their chat reads it before the first build.
+        // `replica: null` clears an earlier choice.
         let replica: ReplicaRequest | undefined;
-        if (body["replica"] !== undefined) {
+        if (body["replica"] !== undefined && !(source === "mcp" && body["replica"] === null)) {
           const check = checkReplicaRequest(body["replica"], { enabled: replicaEnabled(), hasTheme: body["theme"] !== undefined, paid: hasPaidAccess(appUser) });
           if (!check.ok) return errorResponse(check.status, check.code, check.message);
           replica = check.replica;
+        }
+
+        if (source === "mcp") {
+          const admin = createSupabaseAdminClient();
+          const { data: resumeRow } = await admin.from("uploads").select("id").eq("id", resumeUploadId).eq("user_id", user.id).eq("kind", "resume").maybeSingle();
+          if (!resumeRow) return errorResponse(400, "resume_not_found", "Resume upload not found");
+          const stored = await storeMcpReplica(admin, user.id, resumeUploadId, replica ?? null);
+          if (!stored) return errorResponse(409, "job_in_progress", "A generation is already running.");
+          return Response.json({ ok: true }, { status: 200 });
         }
 
         if (body["links"] !== undefined || body["otherSpecifics"] !== undefined || designIntensity !== undefined) {
