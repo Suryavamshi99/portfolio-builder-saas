@@ -2,6 +2,7 @@ import type { FreeProvider } from "@/config/free-models";
 import { LlmAuthError, LlmProviderError, LlmRateLimitError, type ProfileLinks } from "@/server/llm";
 import type { FinalizeHtmlResult } from "@/server/finalize-html";
 import { customisationsSchema, NO_CUSTOMISATIONS, factsText, type Customisations, type PortfolioFacts } from "@/server/themes/facts";
+import { curateFacts, type CurateInput, type CurateResult } from "@/server/themes/curate-facts";
 import type { EngineDeps } from "./pipeline/engine";
 
 /** The extraction step's contract (src/server/themes/extract-facts.ts), restated so this file can be tested with a stub. */
@@ -12,6 +13,8 @@ export interface ThemedDeps {
   extract(input: ThemedExtractInput, complete: (system: string, user: string) => Promise<string>): Promise<ThemedExtractResult>;
   /** One non-streaming model call (the user's key, or the free chain). Throws the Llm*Error classes. */
   complete(system: string, user: string): Promise<string>;
+  /** Text curation (src/server/themes/curate-facts.ts). Optional: defaults to the real curateFacts. Must never fail the build. */
+  curate?(input: CurateInput, complete: (system: string, user: string) => Promise<string>): Promise<CurateResult>;
   render(id: string, facts: unknown, custom: unknown): string;
   finalize(html: string): FinalizeHtmlResult;
   claims(html: string, referenceText: string): Array<{ claim: string; message: string }>;
@@ -69,10 +72,30 @@ export async function buildThemedPage(
     if (providerError instanceof LlmAuthError || providerError instanceof LlmRateLimitError) return { kind: "provider_error", error: providerError };
   }
 
+  // Curation: reword the text for this look. Skipped when extraction fell back to the plain reader (the model already failed once).
+  let facts = extracted.facts;
+  if (!extracted.usedFallback) {
+    try {
+      const curate = deps.curate ?? curateFacts;
+      const c = await curate(
+        {
+          facts,
+          themeId: args.themeId,
+          source: { resumeText: args.input.resumeText, links: args.input.links, ...(args.input.specifics ? { specifics: args.input.specifics } : {}) },
+          ...(args.input.instructions ? { instructions: args.input.instructions } : {}),
+        },
+        complete,
+      );
+      if (c.curated) facts = c.facts;
+    } catch {
+      /* curation never fails the build: use the facts as extracted */
+    }
+  }
+
   const custom = customisationsSchema.safeParse(mergeCustomisations(args.typed, extracted.custom));
   let html: string;
   try {
-    html = deps.render(args.themeId, extracted.facts, custom.success ? custom.data : NO_CUSTOMISATIONS);
+    html = deps.render(args.themeId, facts, custom.success ? custom.data : NO_CUSTOMISATIONS);
   } catch (e) {
     console.warn("Theme template failed", args.themeId, e instanceof Error ? e.message : e);
     return { kind: "fallback", warning: "This look couldn't be built from your details, so the AI designed your page instead." };
@@ -80,7 +103,7 @@ export async function buildThemedPage(
   const fin = deps.finalize(html);
   if (!fin.ok) return { kind: "fallback", warning: "This look didn't pass our page checks, so the AI designed your page instead." };
   // The facts text is what the template shows; the resume and the user's words are still the reference for numbers.
-  const unsupported = deps.claims(fin.html, `${args.referenceText}\n${factsText(extracted.facts)}`);
+  const unsupported = deps.claims(fin.html, `${args.referenceText}\n${factsText(facts)}`);
   if (unsupported.length > 0) {
     return { kind: "fallback", warning: "Some details in this look weren't found in your resume, so the AI designed your page instead." };
   }

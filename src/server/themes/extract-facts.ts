@@ -1,4 +1,5 @@
 import { findUnsupportedClaims } from "@/server/fact-check";
+import { applyCuration, curationGuidance, type CurateResult } from "./curation-core";
 import type { ProfileLinks } from "@/server/llm";
 import {
   FONT_CHOICES,
@@ -29,6 +30,12 @@ export interface ExtractResult {
   custom: Customisations;
   usedFallback: boolean;
   notes: string[];
+  /** Only with the combined path (options.themeId): the model's fitted copy, already checked. `facts` above is always the plain extraction. */
+  curation?: CurateResult;
+}
+export interface ExtractOptions {
+  /** Ask the same model call to also return a copy of the facts fitted to this theme. If that part fails its checks, `curation` is simply absent. */
+  themeId?: string;
 }
 export type Complete = (system: string, user: string) => Promise<string>;
 
@@ -908,6 +915,40 @@ function sourceOf(input: ExtractInput): string {
   return [input.resumeText ?? "", input.specifics ?? "", ...lb].join("\n");
 }
 
+export interface VerifySource {
+  resumeText: string;
+  specifics?: string;
+  links: ProfileLinks;
+}
+
+/** The one text every fact must be supported by: resume, the user's details and the verified links. */
+export function sourceText(source: VerifySource): string {
+  return sourceOf({ resumeText: source.resumeText, links: source.links, ...opt("specifics", source.specifics) });
+}
+
+/**
+ * Untrusted facts in (from a model, or from a connector's caller), schema-valid and source-supported facts out.
+ * Strings the source does not support are dropped or repaired exactly as in extraction. Never throws.
+ */
+export function verifyFacts(facts: unknown, source: VerifySource): { facts: PortfolioFacts; dropped: string[] } {
+  const fallback = () => portfolioFactsSchema.parse({ name: "Portfolio" });
+  try {
+    const text = sourceText(source);
+    const v = createVerifier(text);
+    const raw: Obj = isObj(facts) ? facts : {};
+    const res = sanitizeFacts({ ...raw, links: arr(raw["links"]) }, v);
+    let out = res.facts;
+    if (!out) {
+      const name = v.verbatim(raw["name"], 80) ?? "Portfolio";
+      out = sanitizeFacts({ name }, createVerifier(`${text}\n${name}`)).facts ?? fallback();
+    }
+    const photo = safePhoto(typeof raw["photoUrl"] === "string" ? raw["photoUrl"] : undefined, []);
+    return { facts: photo ? { ...out, photoUrl: photo } : out, dropped: v.dropped };
+  } catch {
+    return { facts: fallback(), dropped: [] };
+  }
+}
+
 /** Adds the user's verified links and photo, and re-checks everything against the source. Always returns valid facts. */
 function finalise(raw: Obj, input: ExtractInput, notes: string[] = []): PortfolioFacts {
   const source = sourceOf(input);
@@ -934,7 +975,7 @@ export function extractFactsHeuristic(input: ExtractInput): PortfolioFacts {
 // Model path
 // ---------------------------------------------------------------------------------------------------------------------
 
-export async function extractFacts(input: ExtractInput, complete: Complete): Promise<ExtractResult> {
+export async function extractFacts(input: ExtractInput, complete: Complete, options: ExtractOptions = {}): Promise<ExtractResult> {
   const prepared = prepareInput(input);
   const notes = [...prepared.notes];
   const prompt = buildExtractionPrompt(input);
@@ -942,12 +983,23 @@ export async function extractFacts(input: ExtractInput, complete: Complete): Pro
   const heuristicName = (heuristicRaw(input)["name"] as string | undefined) ?? undefined;
   let errors: string[] = [];
   let failure = "";
+  // Combined path: the first attempt also asks for a fitted copy; if it fails, the second attempt is plain extraction.
+  const guidance = options.themeId ? curationGuidance(options.themeId) : undefined;
+  const combinedSystem = guidance
+    ? `${prompt.system}
+
+CURATED COPY: also add a third key "curated": a copy of the full "facts" object with ONLY the allowed text fields reworded to suit the look below. "facts" itself must stay faithful to the resume as above. The reply is {"facts": {...}, "custom": {...}, "curated": {...}}. The "curated" copy is checked separately and discarded if it changes any protected field or adds anything the resume does not say.
+
+${guidance}`
+    : undefined;
 
   for (let attempt = 0; attempt < 2; attempt++) {
+    const useCombined = attempt === 0 && combinedSystem !== undefined;
+    const system = useCombined ? combinedSystem : prompt.system;
     const user = attempt === 0 ? prompt.user : `${prompt.user}\n\nYour previous reply was rejected: ${errors.join("; ")}.\nReply again with ONLY the JSON object {"facts": {...}, "custom": {...}}, using only text from the source.`;
     let reply: string;
     try {
-      reply = await complete(prompt.system, user);
+      reply = await complete(system, user);
     } catch (err) {
       failure = `the model call failed (${err instanceof Error ? err.message : "unknown error"})`;
       break;
@@ -993,7 +1045,8 @@ export async function extractFacts(input: ExtractInput, complete: Complete): Pro
     if (photo) facts = { ...facts, photoUrl: photo };
     else delete (facts as { photoUrl?: string }).photoUrl;
     if (v.dropped.length > 0) notes.push(`Removed ${v.dropped.length} item${v.dropped.length === 1 ? "" : "s"} the resume does not support (for example: "${v.dropped[0]}").`);
-    return { facts, custom: resolveCustom(parsed["custom"], prepared.instructions), usedFallback: false, notes };
+    const curation = useCombined && isObj(parsed["curated"]) ? applyCuration(facts, parsed["curated"], source) : undefined;
+    return { facts, custom: resolveCustom(parsed["custom"], prepared.instructions), usedFallback: false, notes, ...(curation ? { curation } : {}) };
   }
 
   notes.push(`Used the plain reader instead of the model because ${failure || "the model gave no usable result"}. The page shows what the resume says, laid out without rewriting.`);

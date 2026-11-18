@@ -39,6 +39,25 @@ describe("buildThemedPage", () => {
     const r = await buildThemedPage(base({ extract: async () => ({ facts, custom: NO_CUSTOMISATIONS, usedFallback: true, notes: [] }) }), args);
     expect(r.kind === "done" && r.warnings[0]).toMatch(/couldn't read your resume in detail/);
   });
+  it("renders curated facts, and ignores a failing or unchanged curation", async () => {
+    const curated = portfolioFactsSchema.parse({ name: "Ada Lovelace", headline: "Punchy" });
+    const render = vi.fn(() => "<html></html>");
+    const curate = vi.fn(async () => ({ facts: curated, curated: true, notes: [] }));
+    await buildThemedPage(base({ render, curate }), { ...args, input: { ...args.input, instructions: "calm" } });
+    expect(render).toHaveBeenLastCalledWith("t", curated, NO_CUSTOMISATIONS);
+    expect(curate).toHaveBeenCalledWith(expect.objectContaining({ themeId: "t", instructions: "calm" }), expect.any(Function));
+    for (const c of [async () => { throw new Error("boom"); }, async () => ({ facts: curated, curated: false, notes: [] })]) {
+      const r2 = vi.fn(() => "<html></html>");
+      const out = await buildThemedPage(base({ render: r2, curate: c }), args);
+      expect(out.kind).toBe("done");
+      expect(r2).toHaveBeenCalledWith("t", facts, NO_CUSTOMISATIONS);
+    }
+  });
+  it("skips curation when extraction used the plain reader", async () => {
+    const curate = vi.fn();
+    await buildThemedPage(base({ curate, extract: async () => ({ facts, custom: NO_CUSTOMISATIONS, usedFallback: true, notes: [] }) }), args);
+    expect(curate).not.toHaveBeenCalled();
+  });
   it("falls back when the template throws, the check fails or unsupported claims appear", async () => {
     for (const over of [
       { render: () => { throw new Error("boom"); } },
