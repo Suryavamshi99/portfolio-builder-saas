@@ -1,4 +1,5 @@
 import { ThemePicker } from "@/components/theme-picker";
+import { replicaCompanyError, replicaPayload, replicaUiEnabled, replicaUrlError, REPLICA_COMPANY_MAX } from "@/lib/replica-form";
 import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -85,6 +86,10 @@ function OnboardingWizard() {
   const [designIntensity, setDesignIntensity] = React.useState<"minimal" | "bold">("minimal");
   const [themeId, setThemeId] = React.useState<string | null>(null);
   const [themeCustom, setThemeCustom] = React.useState<ThemeCustom | undefined>(undefined);
+  const [replicaOn, setReplicaOn] = React.useState(false);
+  const [replicaUrl, setReplicaUrl] = React.useState("");
+  const [replicaCompany, setReplicaCompany] = React.useState("");
+  const [replicaTouched, setReplicaTouched] = React.useState(false);
 
   // Step 5 & Generation method state
   const [selectedMethod, setSelectedMethod] = React.useState<GenerationMethod>("free");
@@ -368,7 +373,8 @@ function OnboardingWizard() {
         resumeUploadId: resumeUpload.id,
         otherSpecifics: otherSpecifics.trim() || undefined,
         designIntensity,
-        theme: themeId ? { id: themeId, ...(themeCustom ? { custom: themeCustom } : {}) } : undefined,
+        replica: replicaPayload(replicaOn, replicaUrl, replicaCompany),
+        theme: themeId && !replicaOn ? { id: themeId, ...(themeCustom ? { custom: themeCustom } : {}) } : undefined,
         links: {
           linkedin: linkedinUrl.trim() || undefined,
           github: githubProfileUrl.trim() || undefined,
@@ -564,7 +570,64 @@ function OnboardingWizard() {
                 onBusyChange={setUploadBusy}
               />
 
-              <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} />
+              {replicaUiEnabled() && (
+                <div className="space-y-3 rounded-xl border border-border/80 bg-muted/20 p-3.5">
+                  <label className="flex cursor-pointer items-start gap-2.5 text-xs font-semibold text-foreground">
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked={replicaOn}
+                      onChange={(e) => setReplicaOn(e.target.checked)}
+                      className="mt-0.5 size-4 accent-accent"
+                    />
+                    <span>Applying to a specific company? Make my portfolio look like their website.</span>
+                  </label>
+                  {replicaOn && (
+                    <div className="space-y-3 pl-6">
+                      <div className="space-y-1">
+                        <label htmlFor="replica-url" className="text-xs font-semibold text-foreground">Company website address</label>
+                        <Input
+                          id="replica-url"
+                          type="url"
+                          inputMode="url"
+                          placeholder="https://www.example.com"
+                          value={replicaUrl}
+                          onChange={(e) => setReplicaUrl(e.target.value)}
+                          onBlur={() => setReplicaTouched(true)}
+                          aria-invalid={replicaTouched && !!replicaUrlError(replicaUrl)}
+                          aria-describedby="replica-url-error"
+                        />
+                        <p id="replica-url-error" role="alert" className="min-h-4 text-[11px] text-destructive">
+                          {replicaTouched ? replicaUrlError(replicaUrl) : null}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <label htmlFor="replica-company" className="text-xs font-semibold text-foreground">Company name (optional)</label>
+                        <Input
+                          id="replica-company"
+                          value={replicaCompany}
+                          onChange={(e) => setReplicaCompany(e.target.value)}
+                          maxLength={REPLICA_COMPANY_MAX + 20}
+                          aria-invalid={!!replicaCompanyError(replicaCompany)}
+                          aria-describedby="replica-company-error"
+                        />
+                        <p id="replica-company-error" role="alert" className="min-h-4 text-[11px] text-destructive">
+                          {replicaCompanyError(replicaCompany)}
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Add up to 3 screenshots of their site or app using the uploader above. They help most when the site blocks automated reading.
+                        Screenshots only work with your own Gemini key or Claude/ChatGPT, not the free method.
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        We copy the look and layout, not their text, images or logo. Your page will say it is an independent concept and will be hidden from search engines.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!replicaOn && <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} />}
 
               <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5">
                 <div className="text-xs font-semibold text-foreground">Design intensity</div>
@@ -617,8 +680,11 @@ function OnboardingWizard() {
               </Button>
               <Button
                 type="button"
-                disabled={uploadBusy}
-                onClick={() => setCurrentStep(3)}
+                disabled={uploadBusy || (replicaUiEnabled() && replicaOn && (!!replicaUrlError(replicaUrl) || !!replicaCompanyError(replicaCompany)))}
+                onClick={() => {
+                  setReplicaTouched(true);
+                  setCurrentStep(3);
+                }}
                 className="gap-2"
               >
                 {uploadBusy ? "Uploading…" : visualReferences.length > 0 ? "Next: Profile Photo" : "Skip / Next: Profile Photo"}

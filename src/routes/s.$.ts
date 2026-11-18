@@ -8,7 +8,7 @@ export const Route = createFileRoute("/s/$")({
     handlers: {
       GET: async ({ params }) => {
         const res = await serveSite(createSupabaseAdminClient(), params["_splat"] ?? "");
-        return new Response(typeof res.body === "string" ? res.body : new Blob([res.body as BlobPart]), { status: res.status, headers: responseHeaders(res.contentType) });
+        return new Response(typeof res.body === "string" ? res.body : new Blob([res.body as BlobPart]), { status: res.status, headers: responseHeaders(res.contentType, res.noindex) });
       },
     },
   },
