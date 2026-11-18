@@ -67,10 +67,11 @@ flowchart TD
 ### Path B: Claude.ai & ChatGPT Connector (MCP)
 - **Model Context Protocol (MCP):** Connects external AI desktop/chat clients (Claude.ai, ChatGPT) via Streamable HTTP at `/mcp`.
 - **OAuth 2.1 & PKCE:** Dynamic client registration (`/register`), authorization consent screen (`/authorize`), and token grants (`/token`).
-- **Execution:** The user's own subscription runs the model. MCP tools provide context and save results:
-  - `get_portfolio_brief`: Supplies resume text, photo URL, visual references, links, and guardrail rules.
-  - `save_portfolio_html`: Validates and sanitizes the generated HTML through `finalizeHtml()` and fact checking; returns `{ previewUrl }` or specific issues to repair.
-  - `get_portfolio_html`: Retrieves the current HTML for revisions.
+- **Execution:** The user's own subscription runs the model. The first step is always `list_portfolio_themes`; the user picks a look or "Custom". MCP tools provide context and save results:
+  - `list_portfolio_themes`: the looks that have a template, with tier, whether this account can use each (server-side `checkThemeAccess`), supported sections and default accent.
+  - `get_themed_brief` / `build_themed_portfolio` (themed flow): the model does only the text curation. The brief gives resume text, verified links, the `PortfolioFacts` shape with length targets and strict fact rules, and stores `params.theme = { id }` on the MCP job. The model's `facts` and `custom` are untrusted: size-capped (200 KB), run through `verifyFacts` against the resume, details and links, `customisations` validated strictly, photo and links replaced by the server's values, then `renderTheme` and the same `finalizeHtml` and fact check as `save_portfolio_html`. Problems (and dropped facts) come back as a list to fix. On success the tool returns the Studio link and tells the model to ask the user whether to keep the page or change wording, colour/type/sections (`custom`), the look, or go deeper.
+  - `get_portfolio_brief` / `save_portfolio_html` (Custom flow, unchanged): resume text, photo URL, visual references, links and guardrail rules; the saved HTML is validated through `finalizeHtml()` and fact checking.
+  - `get_portfolio_html`: Retrieves the current HTML for revisions (watermarked on the free plan).
 - **Deterrents:** Tool instructions instruct the model to return the Studio preview link rather than pasting the complete HTML in chat; clean exports, watermark removal, and custom domains remain paid.
 
 ### Path D: BYOK Google Gemini Key
