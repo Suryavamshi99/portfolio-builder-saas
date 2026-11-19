@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { COPYRIGHT_EMAIL } from "@/config/notice";
 import { extractHtmlDocument, type ProfileLinks } from "@/server/llm";
 
 export const STORAGE_MARKER_PREFIX = "shipfolio-storage://uploads/";
@@ -453,7 +454,8 @@ function cleanOnce(source: string, input: FinalizeHtmlInput, warnings: string[])
     // 2. mailto:
     if (lowerHref.startsWith("mailto:")) {
       const address = (href.slice("mailto:".length).split("?")[0] ?? "").trim();
-      if (address.length > 0 && refLower.includes(address.toLowerCase())) {
+      // The fixed copyright contact in our design-credit notice is ours, not the user's, so it is not in their resume.
+      if (address.length > 0 && (refLower.includes(address.toLowerCase()) || address.toLowerCase() === COPYRIGHT_EMAIL)) {
         // Drop cc/bcc/to: they would copy the visitor's mail to someone else.
         const query = new URLSearchParams(href.split("?")[1] ?? "");
         const kept = new URLSearchParams();

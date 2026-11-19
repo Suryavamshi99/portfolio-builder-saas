@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { CONTACT_EMAIL, LegalPage, OPERATOR_NAME, Section } from "@/components/legal/LegalPage";
+import { COPYRIGHT_EMAIL } from "@/config/notice";
 import { pricingFor } from "@/config/pricing";
 
 export const Route = createFileRoute("/terms")({
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
 });
 
-const LAST_UPDATED = "15 October 2026";
+const LAST_UPDATED = "19 November 2026";
 
 function TermsPage() {
   const inr = pricingFor("IN");
@@ -105,7 +106,23 @@ function TermsPage() {
         </p>
       </Section>
 
-      <Section title="7. Acceptable use">
+      <Section title="7. Ready-made looks, design references and copyright">
+        <p>
+          Our ready-made looks (templates) were created using designs found on the internet as references. We do not
+          claim those original designs as ours: credit and copyright in any referenced design belong to its creator
+          and owner. Pages built on our looks carry a small &ldquo;Design credit&rdquo; note that says the same.
+        </p>
+        <p>
+          If you are the owner of a design and believe one of our looks uses your work without permission, email{" "}
+          <a className="text-accent underline" href={`mailto:${COPYRIGHT_EMAIL}`}>
+            {COPYRIGHT_EMAIL}
+          </a>{" "}
+          with a link to your work and the look you are concerned about. We will review it promptly and, if the claim
+          holds, remove or change the look. We may also pass a notice on to the people whose pages use that look.
+        </p>
+      </Section>
+
+      <Section title="8. Acceptable use">
         <p>
           You may not use hosted sites to impersonate another person or company, collect passwords or payment details,
           spread malware, host illegal content, or harass anyone. We may take a site offline or close an account that
@@ -113,7 +130,7 @@ function TermsPage() {
         </p>
       </Section>
 
-      <Section title="8. Availability and liability">
+      <Section title="9. Availability and liability">
         <p>
           We work to keep Shipfolio running but do not promise it will be uninterrupted or error-free. To the fullest
           extent the law allows, our total liability for anything arising from the service is limited to the amount
@@ -122,7 +139,7 @@ function TermsPage() {
         </p>
       </Section>
 
-      <Section title="9. Changes and law">
+      <Section title="10. Changes and law">
         <p>
           If we change these terms we will update the date above, and for material changes tell you by email or in the
           app. These terms are governed by the laws of India, and the courts of India have jurisdiction, without

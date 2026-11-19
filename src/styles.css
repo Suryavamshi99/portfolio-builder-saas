@@ -39,6 +39,7 @@
   --color-orange: rgb(var(--orange));
   --color-magenta: rgb(var(--magenta));
 
+  --font-serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Backward-compatible aliases for ported studio code */
@@ -152,8 +153,12 @@ a[role="button"]:active:not(:disabled) {
 
 /* Key terms are highlighted like a marker pen, as in the reference design. */
 .mark {
-  background: linear-gradient(transparent 58%, rgb(var(--lime)) 58%);
-  padding: 0 0.08em;
+  /* Underline in the Shipfolio logo gradient (blue to cyan to mint). */
+  background-image: linear-gradient(90deg, #3457e8 0%, #06b6d4 50%, #34d399 100%);
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 100% 0.2em;
+  padding: 0 0.04em 0.06em;
   border-radius: 2px;
 }
 
