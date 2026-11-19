@@ -20,7 +20,7 @@ function inUi(el){return !!(el.closest&&(el.closest("["+A.ui+"]")||el.closest("s
 function hasOwnText(el){for(var n=el.firstChild;n;n=n.nextSibling){if(n.nodeType===3&&/\S/.test(n.nodeValue))return true;}return false;}
 function onlyInline(el){var d=el.querySelectorAll("*");for(var i=0;i<d.length;i++){var x=d[i];if(x.closest("svg")&&x.tagName.toLowerCase()!=="svg"&&el.contains(x.closest("svg")))continue;if(!INLINE[up(x)])return false;}return true;}
 function isBlock(el){var t=up(el);if(CONTAINER[t]||SKIP[t])return false;return hasOwnText(el)&&onlyInline(el);}
-function skipEl(el){var t=up(el);return !!(SKIP[t]||el.hasAttribute(A.ui)||el.hasAttribute("hidden")||el.getAttribute("aria-hidden")==="true"||el.hasAttribute("data-shipfolio-watermark"));}
+function skipEl(el){var t=up(el);return !!(SKIP[t]||el.hasAttribute(A.ui)||el.hasAttribute("hidden")||el.getAttribute("aria-hidden")==="true"||el.hasAttribute("data-shipfolio-watermark")||el.hasAttribute("data-shipfolio-notice"));}
 function hiddenEl(el,full){var cs,r;try{cs=window.getComputedStyle(el);r=el.getBoundingClientRect();}catch(e){return false;}return hiddenBy(cs,r,window.pageXOffset||0,window.pageYOffset||0,full);}
 function walk(root){for(var c=root.firstElementChild;c;c=c.nextElementSibling){if(skipEl(c)||hiddenEl(c,false))continue;if(c.hasAttribute(A.text)){continue;}if(isBlock(c)){if(!hiddenEl(c,true))mark(c);}else{walk(c);}}}
 function mark(el){var id=String(++nText);el.setAttribute(A.text,id);el.setAttribute("contenteditable",PLAIN?"plaintext-only":"true");ORIG[id]=el.innerHTML;BR[id]=!!el.querySelector("br");}

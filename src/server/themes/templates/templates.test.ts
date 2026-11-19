@@ -37,6 +37,21 @@ describe("theme templates", () => {
       expect(PUBLISHED_SITE_CSP).toContain("connect-src 'none'");
     });
 
+    it("carries one design-credit and copyright notice that survives finalizeHtml with its contact link", () => {
+      const html = render();
+      expect(html.split("data-shipfolio-notice").length - 1).toBe(1);
+      const r = fin(html);
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        const $ = cheerio.load(r.html);
+        expect($("[data-shipfolio-notice]").length).toBe(1);
+        expect($("[data-shipfolio-notice] a").attr("href")).toBe("mailto:contact@shipfolio.xyz");
+        expect($("[data-shipfolio-notice]").text()).toContain("contact@shipfolio.xyz");
+      }
+      // Sparse pages get it too, and a second pass never adds another.
+      expect(render(SPARSE_FACTS).split("data-shipfolio-notice").length - 1).toBe(1);
+    });
+
     it("shows every fact and nothing invented", () => {
       const html = render();
       const text = visibleText(html);

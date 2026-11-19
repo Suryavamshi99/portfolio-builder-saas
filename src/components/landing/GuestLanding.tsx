@@ -290,10 +290,11 @@ export function GuestLanding() {
 
       <PricingSection />
 
-      {/* Privacy, in one plain sentence */}
-      <p className="mx-auto max-w-2xl text-center text-sm leading-relaxed text-muted-foreground">
-        <span className="font-semibold text-foreground">Private by default.</span> We never sell your data. Resumes and
-        reference screenshots are deleted within 48 hours, and location data is stripped from photos.
+      {/* Privacy, in one plain statement */}
+      <p className="mx-auto max-w-3xl text-balance text-center font-[family-name:var(--font-serif)] text-2xl font-normal leading-snug tracking-normal text-foreground/85 sm:text-3xl">
+        <span className="mark font-medium text-foreground">Private by default.</span> We{" "}
+        <span className="mark">never sell your data.</span> Resumes and reference screenshots are deleted within 48
+        hours, and location data is stripped from photos.
       </p>
 
       {/* Closing call to action */}

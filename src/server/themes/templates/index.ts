@@ -1,4 +1,5 @@
 import { customisationsSchema, NO_CUSTOMISATIONS, portfolioFactsSchema, type Customisations, type PortfolioFacts } from "../facts";
+import { withNotice } from "@/config/notice";
 import type { ThemeTemplate } from "./types";
 
 // One file per theme in ./themes/<id>.ts, each with `export default` a ThemeTemplate. A theme without a file falls back to the brief path.
@@ -18,5 +19,6 @@ export function renderTheme(id: string, factsIn: unknown, customIn: unknown = NO
   if (!t) throw new Error(`No template for theme "${id}"`);
   const facts: PortfolioFacts = portfolioFactsSchema.parse(factsIn);
   const custom: Customisations = customisationsSchema.parse(customIn ?? {});
-  return t.render({ facts, custom });
+  // Every look carries the same small design-credit and copyright notice (see src/config/notice.ts).
+  return withNotice(t.render({ facts, custom }));
 }
