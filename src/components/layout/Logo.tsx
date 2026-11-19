@@ -13,7 +13,7 @@ import {
 interface LogoProps {
   className?: string;
   showWordmark?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   /** Override the "ship" half of the wordmark (defaults to text-foreground, a
    *  theme token): needed when the logo sits over content with its own fixed
    *  palette, like a video background. It is applied as the text colour, and
@@ -26,12 +26,14 @@ const LOCKUP_HEIGHT = {
   sm: "h-8",
   md: "h-9 sm:h-10",
   lg: "h-14",
+  xl: "h-20 sm:h-24",
 } as const;
 
 const SYMBOL_SIZE = {
   sm: "size-7",
   md: "size-8 sm:size-9",
   lg: "size-12",
+  xl: "size-20",
 } as const;
 
 /**

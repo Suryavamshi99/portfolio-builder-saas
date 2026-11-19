@@ -2,7 +2,6 @@ import * as React from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
   Sparkles,
   Loader2,
@@ -60,7 +59,7 @@ export function JobProgressView({
           <AlertDescription className="mt-2 space-y-3 text-xs">
             <p className="leading-relaxed">{error.message || "An error occurred during generation."}</p>
             {error.details && error.details.length > 0 && (
-              <ul className="mt-2 list-disc space-y-1 rounded bg-black/20 p-2.5 pl-6 text-xs text-foreground/90">
+              <ul className="mt-2 list-disc space-y-1 rounded bg-foreground/5 p-2.5 pl-6 text-xs text-foreground/90">
                 {error.details.map((detail, idx) => (
                   <li key={idx}>{detail}</li>
                 ))}
@@ -172,11 +171,10 @@ export function JobProgressView({
   const percent = progress && progress.total > 0 ? Math.max(4, Math.round((progress.done / progress.total) * 100)) : null;
 
   return (
-    <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-2xl border border-accent/40 bg-accent/5 p-8 text-center shadow-lg">
+    <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-3xl border border-border bg-card p-8 text-center">
       <div className="relative">
-        <FluidOrb size={170} color="#3457E8" className="shadow-2xl ring-4 ring-accent/20" />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <Sparkles className="size-8 text-white drop-shadow-md animate-pulse" />
+        <div className="flex size-28 items-center justify-center rounded-full bg-lime">
+          <Sparkles className="size-9 animate-pulse text-foreground" />
         </div>
       </div>
       <div className="space-y-1.5 max-w-sm">

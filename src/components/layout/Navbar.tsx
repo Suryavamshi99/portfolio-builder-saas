@@ -4,7 +4,6 @@ import { useAuth } from "@/lib/auth";
 import { canAccessStudio } from "@/lib/portfolio-gate";
 import { getLaunchMode } from "@/config/launch";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/layout/Logo";
 import {
   LayoutTemplate,
@@ -14,6 +13,7 @@ import {
   Lock,
   Menu,
   Settings,
+  User,
   X,
 } from "lucide-react";
 
@@ -30,45 +30,30 @@ export function Navbar() {
     setMobileMenuOpen(false);
   }, [currentPath]);
 
-  // The guest home page's hero is a full-bleed cinematic video that now
-  // reaches all the way up to the header (see index.tsx / HeroOrbIntro).
-  // While unscrolled there, the header goes transparent so it reads as
-  // floating over the video instead of a flat opaque bar sitting on top of
-  // it; past a small threshold it becomes the normal solid header so it
-  // stays legible over ordinary page content.
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const overHero = currentPath === "/" && !loading && !user && !scrolled;
+  const isGuestHome = currentPath === "/" && !loading && !user;
+  const linkBase = "rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors";
 
   return (
     <header
-      className={`sticky top-0 z-40 w-full border-b transition-colors duration-300 ${
-        overHero
-          ? "border-transparent bg-transparent backdrop-blur-[2px]"
-          : "border-border/80 bg-background/90 backdrop-blur-md"
+      className={`sticky top-0 z-40 w-full transition-colors duration-300 ${
+        scrolled ? "bg-background/85 backdrop-blur-md" : "bg-transparent"
       }`}
     >
-      <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto grid h-[72px] max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6">
         <div className="flex items-center gap-6">
           <Link
             to="/"
             className="group flex items-center gap-2 transition-opacity hover:opacity-90"
             aria-label="Shipfolio Home"
           >
-            <Logo size="sm" wordmarkClassName={overHero ? "text-white" : "text-foreground"} />
-            <Badge
-              variant="secondary"
-              className={`hidden lg:inline-flex text-[10px] uppercase font-mono tracking-wider transition-colors duration-300 ${
-                overHero ? "border-white/20 bg-white/10 text-white/90" : "text-muted-foreground"
-              }`}
-            >
-              AI Builder
-            </Badge>
+            <Logo size="lg" />
           </Link>
 
           {user && (
@@ -76,9 +61,9 @@ export function Navbar() {
               {studioUnlocked ? (
                 <Link
                   to="/studio"
-                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
                     currentPath.startsWith("/studio")
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
@@ -91,7 +76,7 @@ export function Navbar() {
                 <Link
                   to="/onboarding"
                   title="Create your portfolio first. Then you can edit it here."
-                  className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground/70 hover:bg-muted hover:text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground/70 hover:bg-muted hover:text-foreground"
                 >
                   <Lock className="size-3" />
                   Edit my portfolio
@@ -99,9 +84,9 @@ export function Navbar() {
               )}
               <Link
                 to="/onboarding"
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
                   currentPath.startsWith("/onboarding")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -112,9 +97,9 @@ export function Navbar() {
               </Link>
               <Link
                 to="/settings"
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
                   currentPath.startsWith("/settings")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -130,23 +115,19 @@ export function Navbar() {
         {/* Center column: marketing nav for guests only — fills the wide
             empty gap logged-out visitors saw on desktop. Authenticated
             users keep their existing nav in the left group untouched. */}
-        {currentPath === "/" && !loading && !user ? (
-          <nav className="hidden items-center justify-center gap-1 md:flex">
+        {isGuestHome ? (
+          <nav className="hidden items-center justify-end gap-1 md:flex" aria-label="Sections">
             {[
               { hash: "how-it-works", label: "How it works" },
-              { hash: "features", label: "Features" },
               { hash: "portfolios", label: "Portfolios" },
+              { hash: "pricing", label: "Pricing" },
             ].map(({ hash, label }) => (
               <Link
                 key={hash}
                 to="/"
                 hash={hash}
                 hashScrollIntoView
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors duration-300 ${
-                  overHero
-                    ? "text-white/80 hover:bg-white/10 hover:text-white"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                className={`${linkBase} text-foreground hover:bg-foreground/5`}
               >
                 {label}
               </Link>
@@ -189,32 +170,25 @@ export function Navbar() {
                 <Button
                   asChild
                   size="sm"
-                  className="h-8 bg-accent px-3.5 text-xs font-semibold text-accent-foreground shadow-xs hover:bg-accent/90"
+                  className="h-10 px-5 text-[13px]"
                 >
                   <Link to="/" hash="waitlist" hashScrollIntoView>
                     Join waitlist
                   </Link>
                 </Button>
               ) : (
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-2">
                   <Button
                     asChild
-                    variant="ghost"
-                    size="sm"
-                    className={`h-8 px-2 text-xs font-medium transition-colors duration-300 sm:px-3 ${
-                      overHero ? "text-white/90 hover:bg-white/10 hover:text-white" : ""
-                    }`}
+                    variant="outline"
+                    size="icon"
+                    className="size-10 border-0 bg-card shadow-sm"
                   >
-                    <Link to="/login" search={{ redirect: currentPath }}>
-                      <LogIn className="mr-1 sm:mr-1.5 size-3.5" />
-                      <span>Sign in</span>
+                    <Link to="/login" search={{ redirect: currentPath }} aria-label="Sign in">
+                      <User className="size-4" />
                     </Link>
                   </Button>
-                  <Button
-                    asChild
-                    size="sm"
-                    className="h-8 bg-accent px-2.5 sm:px-3.5 text-xs font-semibold text-accent-foreground shadow-xs hover:bg-accent/90"
-                  >
+                  <Button asChild size="sm" className="h-10 px-5 text-[13px]">
                     <Link to="/login" search={{ redirect: "/onboarding" }}>
                       <span className="hidden sm:inline">Create portfolio</span>
                       <span className="sm:hidden">Create</span>
@@ -229,7 +203,7 @@ export function Navbar() {
 
       {/* Mobile navigation panel for logged-in users */}
       {user && mobileMenuOpen && (
-        <div className="border-t border-border/80 bg-background/95 backdrop-blur-md px-4 py-3 md:hidden space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 md:hidden space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
           <div className="text-[11px] font-mono text-muted-foreground px-2 py-1 truncate">
             Signed in as {user.email}
           </div>
@@ -240,7 +214,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                   currentPath.startsWith("/studio")
-                    ? "bg-accent/15 text-accent font-semibold"
+                    ? "bg-foreground text-background font-semibold"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -262,7 +236,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                 currentPath.startsWith("/onboarding")
-                  ? "bg-accent/15 text-accent font-semibold"
+                  ? "bg-foreground text-background font-semibold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
@@ -274,7 +248,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                 currentPath.startsWith("/settings")
-                  ? "bg-accent/15 text-accent font-semibold"
+                  ? "bg-foreground text-background font-semibold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >

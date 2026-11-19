@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { FluidOrb } from "@/components/ui/fluid-orb";
 import { ConnectedAppsSection } from "@/components/settings/ConnectedAppsSection";
 import { GitHubSection } from "@/components/settings/GitHubSection";
 import { CustomDomainSection } from "@/components/settings/CustomDomainSection";
@@ -267,11 +266,7 @@ function SettingsContent() {
         </Alert>
       )}
 
-      <Card className="relative overflow-hidden border-border/80 bg-card rounded-2xl shadow-xs">
-        <div className="pointer-events-none absolute -right-10 -top-10 -z-0 opacity-20 blur-2xl">
-          <FluidOrb size={180} color="#3457E8" />
-        </div>
-
+      <Card className="relative overflow-hidden border-border bg-card rounded-3xl">
         <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">

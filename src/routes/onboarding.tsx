@@ -13,7 +13,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { UploadWidget, type UploadItem } from "@/components/upload/UploadWidget";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
   FileText,
   Image as ImageIcon,
@@ -964,10 +963,6 @@ function OnboardingWizard() {
         {currentStep === 6 && generationComplete && (
           <>
             <CardContent className="flex flex-col items-center gap-6 py-12 text-center relative overflow-hidden">
-              <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-0 opacity-20 blur-3xl">
-                <FluidOrb size={260} color="#3457E8" />
-              </div>
-
               <div className="relative z-10 flex flex-col items-center gap-4">
                 <div className="flex size-16 items-center justify-center rounded-full bg-success/20 text-success shadow-lg shadow-success/20">
                   <CheckCircle2 className="size-8" />
