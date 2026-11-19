@@ -134,13 +134,12 @@ describe("company look through the connector", () => {
     expect(r!.content.some((c) => c.type === "image")).toBe(true);
   });
 
-  it("gates on the paid plan and the feature flag", async () => {
+  it("gives free users the company look and gates only on the feature flag", async () => {
     state.jobs = [{ id: "j1", source: "mcp", status: "reading", seq: ++state.seq, params: { replica: { url: "https://acme.com/" } } }];
     state.plan = "free";
-    const paid = await tools.call("get_portfolio_brief", {});
-    expect(paid?.isError).toBe(true);
-    expect(txt(paid)).toMatch(/paid plan/);
-    state.plan = "pro";
+    const free = await tools.call("get_portfolio_brief", {});
+    expect(free?.isError).toBeFalsy();
+    expect((await tools.call("get_company_look", { url: "https://acme.com" }))?.isError).toBeFalsy();
     process.env["REPLICA_ENABLED"] = "false";
     expect((await tools.call("get_portfolio_brief", {}))?.isError).toBe(true);
     expect((await tools.call("get_company_look", { url: "https://acme.com" }))?.isError).toBe(true);
@@ -150,9 +149,8 @@ describe("company look through the connector", () => {
     const bad = await tools.call("get_company_look", { url: "http://10.0.0.1/" });
     expect(bad?.isError).toBe(true);
     expect(state.jobs).toHaveLength(0);
+    // A free user gets the company look too (the preview is free; publishing is what is paid).
     state.plan = "free";
-    expect((await tools.call("get_company_look", { url: "https://acme.com" }))?.isError).toBe(true);
-    state.plan = "pro";
     const ok = await tools.call("get_company_look", { url: "https://acme.com", company: "Acme" });
     expect(txt(ok)).toMatch(/=== COMPANY LOOK/);
     expect(state.jobs[0]?.params["replica"]).toMatchObject({ url: "https://acme.com/", company: "Acme" });

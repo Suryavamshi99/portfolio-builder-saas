@@ -159,9 +159,7 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
   /** The company look the user opted into, checked again now (flag, paid), or a plain message when it can't be used. */
   async function replicaFor(replica: ReplicaParams | null): Promise<{ replica: ReplicaParams } | { error: ToolResult } | null> {
     if (!replica) return null;
-    const appUser = await getOrCreateAppUser(admin, userId);
-    if (!appUser) return { error: text("Could not load the user's account.", true) };
-    const check = checkReplicaRequest({ url: replica.url, ...(replica.company ? { company: replica.company } : {}) }, { enabled: replicaEnabled(), hasTheme: false, paid: hasPaidAccess(appUser) });
+    const check = checkReplicaRequest({ url: replica.url, ...(replica.company ? { company: replica.company } : {}) }, { enabled: replicaEnabled(), hasTheme: false });
     if (!check.ok) {
       return { error: text(`${check.message} The user chose a company look, so do NOT build a generic page instead. Tell the user this and ask how they want to continue.`, true) };
     }
@@ -243,10 +241,8 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
   async function companyLook(args: Record<string, unknown>): Promise<ToolResult> {
     const resumeId = await latestResumeId(admin, userId);
     if (!resumeId) return text(`The user hasn't uploaded a resume yet. Ask them to upload it at ${origin}/onboarding first, then try again.`, true);
-    const appUser = await getOrCreateAppUser(admin, userId);
-    if (!appUser) return text("Could not load the user's account.", true);
     const raw = { url: args["url"], ...(args["company"] !== undefined && args["company"] !== null ? { company: args["company"] } : {}) };
-    const check = checkReplicaRequest(raw, { enabled: replicaEnabled(), hasTheme: false, paid: hasPaidAccess(appUser) });
+    const check = checkReplicaRequest(raw, { enabled: replicaEnabled(), hasTheme: false });
     if (!check.ok) return text(`${check.message} Tell the user, and do not build a generic page instead without asking them.`, true);
     if (!(await ensureMcpJob(admin, userId, resumeId, undefined, check.replica))) {
       return text("Another portfolio generation is already running for this user. Ask them to wait for it to finish, then try again.", true);
