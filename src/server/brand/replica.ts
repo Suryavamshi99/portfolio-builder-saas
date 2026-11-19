@@ -47,19 +47,19 @@ export function parseReplicaRequest(raw: unknown): ReplicaRequest | null {
 
 export type ReplicaCheck =
   | { ok: true; replica: ReplicaRequest }
-  | { ok: false; status: 400 | 402 | 404; code: "not_available" | "invalid_request" | "replica_requires_pro"; message: string };
+  | { ok: false; status: 400 | 404; code: "not_available" | "invalid_request"; message: string };
 
 /**
- * The whole server-side gate for a replica request, in order: feature flag, no theme alongside, valid body, paid plan.
- * Until the separate company add-on exists, the paid gate is the same plan check themes use.
+ * The whole server-side gate for a replica request, in order: feature flag, no theme alongside, valid body.
+ * There is deliberately no plan check: free users get the company-look preview (watermarked in Studio like any
+ * preview); publishing and downloads stay behind the paid plan.
  */
-export function checkReplicaRequest(raw: unknown, ctx: { enabled: boolean; hasTheme: boolean; paid: boolean }): ReplicaCheck {
+export function checkReplicaRequest(raw: unknown, ctx: { enabled: boolean; hasTheme: boolean }): ReplicaCheck {
   if (!ctx.enabled) return { ok: false, status: 404, code: "not_available", message: "This feature isn't available yet." };
   if (ctx.hasTheme) return { ok: false, status: 400, code: "invalid_request", message: "Pick either a ready-made look or a company look, not both." };
   const replica = parseReplicaRequest(raw);
   if (!replica) {
     return { ok: false, status: 400, code: "invalid_request", message: "Enter the company's website address starting with https:// and a name up to 80 characters." };
   }
-  if (!ctx.paid) return { ok: false, status: 402, code: "replica_requires_pro", message: "Matching a company's look is part of the paid plan." };
   return { ok: true, replica };
 }

@@ -57,12 +57,12 @@ export const Route = createFileRoute("/api/generations")({
           if (!access.ok) return errorResponse(access.status, access.code, access.message);
         }
 
-        // A "look like this company" build: behind a flag, never with a theme, paid (see checkReplicaRequest).
+        // A "look like this company" build: behind a flag, never with a theme. Free users get the preview; publishing and downloads stay paid (see checkReplicaRequest).
         // For the connector (mcp) the request is only stored on the user's connector job; their chat reads it before the first build.
         // `replica: null` clears an earlier choice.
         let replica: ReplicaRequest | undefined;
         if (body["replica"] !== undefined && !(source === "mcp" && body["replica"] === null)) {
-          const check = checkReplicaRequest(body["replica"], { enabled: replicaEnabled(), hasTheme: body["theme"] !== undefined, paid: hasPaidAccess(appUser) });
+          const check = checkReplicaRequest(body["replica"], { enabled: replicaEnabled(), hasTheme: body["theme"] !== undefined });
           if (!check.ok) return errorResponse(check.status, check.code, check.message);
           replica = check.replica;
         }

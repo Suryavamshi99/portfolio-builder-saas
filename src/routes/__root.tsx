@@ -11,24 +11,20 @@ import { AuthProvider } from "@/lib/auth";
 import { Navbar } from "@/components/layout/Navbar";
 import { BuildReadyPopup } from "@/components/notify/BuildReadyPopup";
 
-import { FluidOrb } from "@/components/ui/fluid-orb";
 
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
     <div className="relative flex min-h-[65vh] items-center justify-center px-4 overflow-hidden">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 opacity-25 blur-3xl">
-        <FluidOrb size={300} color="#3457E8" />
-      </div>
       <div className="max-w-md text-center space-y-3">
-        <h1 className="text-7xl font-black tracking-tight text-accent">404</h1>
+        <h1 className="text-8xl font-semibold tracking-tighter text-foreground">404</h1>
         <h2 className="text-xl font-bold text-foreground">Page not found</h2>
         <p className="text-sm text-muted-foreground">The page you were looking for doesn't exist.</p>
         <div className="pt-2">
           <Link
             to="/"
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground shadow-md shadow-accent/20 hover:bg-accent/90 active:scale-[0.98]"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-foreground px-6 text-sm font-medium text-background hover:bg-foreground/85 active:scale-[0.98]"
           >
             Go to home
           </Link>
@@ -49,7 +45,7 @@ function ErrorComponent({ error }: { error: unknown }) {
         <div className="pt-2">
           <Link
             to="/"
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground shadow-md shadow-accent/20 hover:bg-accent/90 active:scale-[0.98]"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-foreground px-6 text-sm font-medium text-background hover:bg-foreground/85 active:scale-[0.98]"
           >
             Return to safety
           </Link>
@@ -98,6 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/site.webmanifest" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap",
+      },
       { rel: "stylesheet", href: appCss },
     ],
     // Microsoft Clarity (session replay + heatmaps). Production builds only, so dev sessions don't pollute the data.
@@ -117,9 +119,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    // Dark-only: there's no light theme toggle anymore, so the class is set
-    // on the server-rendered <html> itself (no client effect, no flash).
-    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
+    // Light-only since the 2026-11 revamp (the .dark tokens remain but are unused).
+    <html lang="en" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

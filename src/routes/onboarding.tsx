@@ -13,7 +13,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { UploadWidget, type UploadItem } from "@/components/upload/UploadWidget";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { FluidOrb } from "@/components/ui/fluid-orb";
 import {
   FileText,
   Image as ImageIcon,
@@ -545,7 +544,7 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(2)}
                 className="gap-2 w-full sm:w-auto justify-center"
               >
-                Next: Visual Style
+                Next: Choose a look
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -688,7 +687,7 @@ function OnboardingWizard() {
                 }}
                 className="gap-2"
               >
-                {uploadBusy ? "Uploading…" : visualReferences.length > 0 ? "Next: Profile Photo" : "Skip / Next: Profile Photo"}
+                {uploadBusy ? "Uploading…" : visualReferences.length > 0 ? "Next: Add a photo" : "Skip / Next: Add a photo"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -728,7 +727,7 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(4)}
                 className="gap-2"
               >
-                {uploadBusy ? "Uploading…" : photoUpload ? "Next: Specifics" : "Skip / Next: Specifics"}
+                {uploadBusy ? "Uploading…" : photoUpload ? "Next: Links and details" : "Skip / Next: Links and details"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -893,7 +892,7 @@ function OnboardingWizard() {
                 onClick={() => setCurrentStep(5)}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
-                Next: How to Generate
+                Next: How to build
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -953,7 +952,7 @@ function OnboardingWizard() {
                 }}
                 className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold active:scale-[0.98]"
               >
-                {selectedMethod === "mcp" ? "Proceed to Waiting Panel" : "Next: Review & Generate"}
+                {selectedMethod === "mcp" ? "Continue in Claude or ChatGPT" : "Next: Review and build"}
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -964,10 +963,6 @@ function OnboardingWizard() {
         {currentStep === 6 && generationComplete && (
           <>
             <CardContent className="flex flex-col items-center gap-6 py-12 text-center relative overflow-hidden">
-              <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-0 opacity-20 blur-3xl">
-                <FluidOrb size={260} color="#3457E8" />
-              </div>
-
               <div className="relative z-10 flex flex-col items-center gap-4">
                 <div className="flex size-16 items-center justify-center rounded-full bg-success/20 text-success shadow-lg shadow-success/20">
                   <CheckCircle2 className="size-8" />

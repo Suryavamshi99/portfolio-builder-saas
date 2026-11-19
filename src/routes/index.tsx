@@ -2,25 +2,17 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { canAccessStudio } from "@/lib/portfolio-gate";
-import { getLaunchMode } from "@/config/launch";
-import { WaitlistCta } from "@/components/waitlist/WaitlistCta";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Logo } from "@/components/layout/Logo";
-import { FluidOrb } from "@/components/ui/fluid-orb";
-import { HeroOrbIntro } from "@/components/hero/HeroOrbIntro";
-import { Integration, VisualContainer } from "@/components/ui/integration-card";
-import { Reveal, StaggerGroup, StaggerItem, Magnetic } from "@/components/motion/reveal";
-import { PricingSection } from "@/components/billing/PricingSection";
-import { motion, AnimatePresence } from "motion/react";
+import { StaggerGroup, StaggerItem } from "@/components/motion/reveal";
+import { GuestLanding } from "@/components/landing/GuestLanding";
 import {
   Sparkles,
   KeyRound,
   Globe,
-  ArrowRight,
   ShieldCheck,
   CheckCircle2,
   Lock,
@@ -28,11 +20,6 @@ import {
   HardDrive,
   LayoutTemplate,
   ExternalLink,
-  Zap,
-  Upload,
-  Cpu,
-  Layers,
-  Terminal,
 } from "lucide-react";
 
 interface HomeSearch {
@@ -75,84 +62,16 @@ interface PublishStatus {
   finishedAt?: string;
 }
 
-const ROTATING_WORDS = ["hired.", "interviews.", "top offers.", "noticed."];
-
-const FEATURED_PORTFOLIO = {
-  name: "Maneesh Bichala",
-  url: "https://maneeshbichala.vercel.app/",
-  host: "maneeshbichala.vercel.app",
-};
-
-// The real site is captured at a fixed desktop viewport, then scaled to
-// whatever width the container actually renders at (measured live, not
-// guessed per breakpoint) so the preview always fills its box.
-const PREVIEW_SOURCE_WIDTH = 1440;
-const PREVIEW_SOURCE_HEIGHT = 900;
-
-function LivePortfolioFrame({ url, title }: { url: string; title: string }) {
-  const wrapRef = React.useRef<HTMLDivElement>(null);
-  const [scale, setScale] = React.useState(0.32);
-
-  React.useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const update = () => setScale(el.clientWidth / PREVIEW_SOURCE_WIDTH);
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={wrapRef}
-      className="relative overflow-hidden rounded-xl border border-border/40 bg-background"
-      style={{ aspectRatio: `${PREVIEW_SOURCE_WIDTH} / ${PREVIEW_SOURCE_HEIGHT}` }}
-    >
-      <iframe
-        src={url}
-        title={title}
-        loading="lazy"
-        sandbox="allow-scripts"
-        tabIndex={-1}
-        width={PREVIEW_SOURCE_WIDTH}
-        height={PREVIEW_SOURCE_HEIGHT}
-        style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
-        className="pointer-events-none absolute left-0 top-0 border-0"
-      />
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        className="absolute inset-0"
-        aria-label={`Open ${title} in a new tab`}
-      />
-    </div>
-  );
-}
-
 export function HomePage() {
   const { vercel } = Route.useSearch();
   const navigate = useNavigate();
   const { user, portfolioReady, isAdmin } = useAuth();
   const studioUnlocked = canAccessStudio({ portfolioReady, isAdmin });
-  const launchMode = getLaunchMode();
 
   const [vercelJustConnected, setVercelJustConnected] = React.useState(vercel === "connected");
   const [userData, setUserData] = React.useState<UserRecord | null>(null);
   const [publishStatus, setPublishStatus] = React.useState<PublishStatus | null>(null);
   const [siteData, setSiteData] = React.useState<{ slug: string; url: string; status: string } | null>(null);
-
-  // Dynamic typing / rotating word in hero
-  const [wordIndex, setWordIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const interval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
-    }, 2800);
-    return () => clearInterval(interval);
-  }, []);
 
   React.useEffect(() => {
     if (!user) return;
@@ -222,17 +141,13 @@ export function HomePage() {
       {user ? (
         /* Authenticated Dashboard View */
         <div className="space-y-8">
-          {/* Welcome banner with ambient FluidOrb touch */}
-          <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs">
-            <div className="pointer-events-none absolute -right-12 -top-12 -z-0 opacity-25 dark:opacity-20 blur-xl">
-              <FluidOrb size={200} color="#3457E8" />
-            </div>
+          <div className="relative overflow-hidden rounded-[2rem] border border-border bg-lime p-6 sm:p-8">
 
             <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2.5">
-                  <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-foreground">
-                    Workspace Dashboard
+                  <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl text-foreground">
+                    Your workspace
                   </h1>
                   <Badge variant="accent" className="font-mono text-[10px] uppercase">
                     {userData?.plan ?? "free"} tier
@@ -245,7 +160,7 @@ export function HomePage() {
 
               <div className="flex items-center gap-2.5 pt-2 sm:pt-0">
                 {studioUnlocked ? (
-                  <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-xs">
+                  <Button asChild className="gap-2">
                     <Link to="/studio">
                       <LayoutTemplate className="size-4" /> Open Studio
                     </Link>
@@ -253,7 +168,7 @@ export function HomePage() {
                 ) : null}
                 <Button asChild variant={studioUnlocked ? "outline" : "default"} className="gap-2">
                   <Link to="/onboarding">
-                    <Sparkles className="size-4 text-accent" />
+                    <Sparkles className="size-4" />
                     {studioUnlocked ? "Run AI Wizard" : "Generate Your Portfolio"}
                   </Link>
                 </Button>
@@ -435,631 +350,7 @@ export function HomePage() {
           </div>
         </div>
       ) : (
-        /* Guest View — Elite Modern Landing Page adhering to DESIGN.md & taste-skill */
-        <div className="relative space-y-24 sm:space-y-32">
-          {/* Quiet recurring dot-grid texture behind the whole page, not another glow blob */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none fixed inset-0 -z-30 opacity-[0.05] dark:opacity-[0.08]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, rgb(var(--foreground)) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-          />
-
-          {/* Section 1: Hero — autoplaying orb intro (see HeroOrbIntro.tsx).
-              Fixed dark/light palette independent of the site's light/dark
-              toggle: the orb starts as a light stage, but by the time
-              content fades in it's grown to cover the frame with its own
-              dark navy surface, so the content below is styled for that
-              dark backdrop specifically, not the theme tokens used
-              everywhere else on the page.
-
-              -mt-8 cancels <main>'s own py-8 top padding (the outer wrapper
-              above already drops its top padding for guests) so the video
-              reaches all the way up to the header's bottom edge instead of
-              sitting behind a dead gap of plain page background. */}
-          <HeroOrbIntro className="-mt-8">
-            <div className="mx-auto max-w-5xl space-y-6">
-              {/* Eyebrow: exactly 1 allowed for this section family.
-                  Opaque dark surface + white text (not accent-on-accent/10)
-                  so it stays legible over the busy video background;
-                  "100% BYOK" gets its own solid accent chip for hierarchy. */}
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/45 px-4 py-1.5 text-xs font-semibold text-white shadow-lg shadow-black/30 backdrop-blur-xl">
-                <Sparkles className="size-3.5 text-accent" />
-                <span>Resume to Portfolio in Minutes</span>
-                <span className="h-3 w-px bg-white/20" />
-                <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide text-accent-foreground">
-                  Free to Try
-                </span>
-              </div>
-
-              {/* Display Headline: exactly 2 lines — fixed phrase, then the
-                  rotating word on its own line. Forced with block spans
-                  (not a natural wrap) so the line count can't drift when
-                  the rotating word's length changes. */}
-              <h1
-                className="text-3xl font-black tracking-tight text-white leading-[1.12] drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)] sm:text-5xl sm:leading-[1.1] md:text-6xl lg:text-7xl"
-                style={{ textWrap: "balance" }}
-              >
-                <span className="block">This portfolio builder gets you</span>
-                <span className="relative mt-1 inline-block sm:mt-2">
-                  {/* Soft glow behind the word — gives it presence instead of
-                      sitting flat against the video like plain colored text. */}
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 -z-10 scale-150 rounded-full bg-accent/40 blur-2xl"
-                  />
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={ROTATING_WORDS[wordIndex]}
-                      initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
-                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                      className="inline-block bg-clip-text text-transparent [background-image:var(--hero-word-gradient)]"
-                    >
-                      {ROTATING_WORDS[wordIndex]}
-                    </motion.span>
-                  </AnimatePresence>
-                  <svg
-                    className="absolute -bottom-2 left-0 w-full text-accent/60"
-                    viewBox="0 0 250 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <AnimatePresence mode="wait">
-                      <motion.path
-                        key={`${ROTATING_WORDS[wordIndex]}-underline`}
-                        d="M2 9.5C65 2 185 2 248 9.5"
-                        stroke="currentColor"
-                        strokeWidth="3.5"
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-                      />
-                    </AnimatePresence>
-                  </svg>
-                </span>
-              </h1>
-
-              {/* Subtext: Strict copy constraint (<20 words, max 3 lines) */}
-              <p className="mx-auto max-w-2xl text-base sm:text-xl font-normal text-white/80 leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
-                Turn your resume into a live, interactive portfolio. Ready in minutes with instant hosting or export anywhere.
-              </p>
-
-              {/* Action Buttons: 1 primary + max 1 secondary */}
-              {launchMode === "waitlist" ? (
-                <div className="flex justify-center pt-3">
-                  <WaitlistCta id="waitlist" source="hero" buttonLabel="Join the waitlist" />
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
-                  <Magnetic>
-                    <Button
-                      asChild
-                      size="lg"
-                      className="h-12 px-7 text-sm sm:text-base font-bold shadow-md shadow-accent/20 bg-accent text-accent-foreground hover:bg-accent/90 gap-2 active:scale-[0.98]"
-                    >
-                      <Link to="/login" search={{ redirect: "/onboarding" }}>
-                        Create my portfolio
-                        <ArrowRight className="size-4" />
-                      </Link>
-                    </Button>
-                  </Magnetic>
-
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="h-12 px-6 text-sm sm:text-base font-semibold border-border/80 hover:bg-muted gap-2 active:scale-[0.98]"
-                  >
-                    <Link to="/login" search={{ redirect: "/onboarding" }}>
-                      <Upload className="size-4 text-accent" />
-                      Upload my resume
-                    </Link>
-                  </Button>
-                </div>
-              )}
-
-              {/* Trust & Proof Bar: Placed directly under CTAs, honest claims only, no invented stats */}
-              <div className="pt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-white/80">
-                <div className="flex items-center gap-2">
-                  <Clock className="size-4 text-accent" />
-                  <span className="font-medium">Live in minutes, not weeks</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-4 text-accent" />
-                  <span className="font-medium">Private & secure · your data stays yours</span>
-                </div>
-
-                <Link
-                  to="/"
-                  hash="portfolios"
-                  hashScrollIntoView
-                  className="flex items-center gap-2 font-medium hover:text-white"
-                >
-                  <ExternalLink className="size-4 text-accent" />
-                  <span>See real portfolios</span>
-                </Link>
-              </div>
-            </div>
-          </HeroOrbIntro>
-
-          {/* Section 2: Real Portfolio Preview — an actual Shipfolio output, not a mockup */}
-          <section className="relative">
-            <Reveal delay={0.2} y={32} className="mx-auto mt-12 w-full max-w-5xl space-y-3">
-              <div className="flex items-center justify-between px-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="size-3.5 text-accent" />
-                  A real portfolio, shipped with Shipfolio
-                </span>
-                <a
-                  href={FEATURED_PORTFOLIO.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hidden sm:inline-flex items-center gap-1 font-mono text-[11px] text-accent hover:underline"
-                >
-                  Open live <ExternalLink className="size-3" />
-                </a>
-              </div>
-
-              <motion.div
-                whileHover={{ y: -3 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="w-full rounded-2xl border border-border/80 bg-card p-2 sm:p-4 shadow-xl ring-1 ring-black/5"
-              >
-                {/* Browser chrome header, pointing at a real deployed URL */}
-                <div className="flex items-center gap-2 border-b border-border/60 px-3 sm:px-4 py-2.5">
-                  <div className="size-3 rounded-full bg-destructive/80" />
-                  <div className="size-3 rounded-full bg-warning/80" />
-                  <div className="size-3 rounded-full bg-success/80" />
-                  <div className="ml-2 flex min-w-0 items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-[11px] font-mono text-muted-foreground">
-                    <Lock className="size-3 shrink-0" />
-                    <span className="truncate">{FEATURED_PORTFOLIO.host}</span>
-                  </div>
-                </div>
-
-                {/* Live embed of the real site, scaled to fill the box at any width. Interaction goes through the overlay link so nested scroll never hijacks the page. */}
-                <LivePortfolioFrame
-                  url={FEATURED_PORTFOLIO.url}
-                  title={`${FEATURED_PORTFOLIO.name}'s live portfolio, built with Shipfolio`}
-                />
-              </motion.div>
-            </Reveal>
-        </section>
-
-        {/* Section 3: Real Portfolios Built with Shipfolio (Social Proof) */}
-        <Reveal
-          as="section"
-          id="portfolios"
-          className="mx-auto max-w-5xl scroll-mt-20 rounded-3xl border border-border/80 bg-card p-5 sm:p-10 space-y-6 sm:space-y-8 shadow-xs"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/60 pb-6">
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Real portfolios built on Shipfolio
-            </h3>
-            <div className="text-xs text-muted-foreground font-mono">Shared with permission</div>
-          </div>
-
-          <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-left">
-            {[
-              {
-                quote: "Went from a stack of PDF drafts to a live site in one sitting — genuinely convenient.",
-                name: "Harshit Chebolu",
-                role: "AI Product & Strategy",
-                url: "https://harshit-chebolu.vercel.app/",
-              },
-              {
-                quote: "Turned a few years of experience into something recruiters could click through, not just skim.",
-                name: "Shrividya Ramesh",
-                role: "Sports Management & Gaming, Masters' Union",
-                url: "https://my-personal-portfolio-orpin-six.vercel.app/",
-              },
-              {
-                quote: "Super convenient — I didn't have to think about hosting or design, just my own story.",
-                name: "Maneesh Bichala",
-                role: "Associate Analyst, Deloitte Consulting",
-                url: "https://maneeshbichala.vercel.app/",
-              },
-              {
-                quote: "Loved how fast it was. My numbers finally had a place that looked as sharp as they are.",
-                name: "Atul Sreejil",
-                role: "Sales & Marketing Professional",
-                url: "https://atulsreejilportfolio-drab.vercel.app/",
-              },
-              {
-                quote: "Made turning consulting case work into something presentable way less painful than I expected.",
-                name: "Revathi Iyer",
-                role: "Risk Consultant, now at Masters' Union",
-                url: "https://revathiportfolio-eight.vercel.app/",
-              },
-            ].map((t) => (
-              <StaggerItem
-                key={t.name}
-                whileHover={{ y: -3 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="flex flex-col justify-between space-y-3 rounded-xl bg-muted/40 p-4 border border-border/40 hover:border-accent/30"
-              >
-                <p className="text-xs text-foreground leading-relaxed italic">“{t.quote}”</p>
-                <div className="pt-2">
-                  <div className="font-bold text-xs text-foreground">{t.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{t.role}</div>
-                  <a
-                    href={t.url}
-                    target="_blank"
-                    rel="noopener"
-                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
-                  >
-                    View portfolio <ExternalLink className="size-3" />
-                  </a>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerGroup>
-        </Reveal>
-
-        {/* Section 4: AI Tuning Highlight — The Career Formulation (No Eyebrow) */}
-        <section id="how-it-works" className="mx-auto max-w-5xl space-y-10 scroll-mt-20">
-            <Reveal className="text-center space-y-3">
-              <h2 className="text-3xl font-extrabold sm:text-4xl text-foreground tracking-tight">
-                Turn plain bullets into real impact
-              </h2>
-              <p className="mx-auto max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Shipfolio rewrites your experience into clearer, stronger wording using only what your resume says, and a fact check flags numbers that aren’t in it.
-              </p>
-            </Reveal>
-
-            {/* Pipeline diagram: resume -> AI extraction -> live portfolio. Staggered reveal mirrors the actual processing sequence. */}
-            <StaggerGroup className="flex items-center justify-center gap-2 sm:gap-4">
-              <StaggerItem className="flex flex-col items-center gap-2">
-                <div className="flex size-12 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground sm:size-14">
-                  <Upload className="size-5" />
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground sm:text-xs">Your resume</span>
-              </StaggerItem>
-              <ArrowRight className="size-4 shrink-0 text-border sm:size-5" />
-              <StaggerItem className="flex flex-col items-center gap-2">
-                <motion.div
-                  animate={{ scale: [1, 1.08, 1] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-                  className="flex size-12 items-center justify-center rounded-2xl border border-accent/30 bg-accent/10 text-accent sm:size-14"
-                >
-                  <Sparkles className="size-5" />
-                </motion.div>
-                <span className="text-[11px] font-medium text-accent sm:text-xs">AI extraction</span>
-              </StaggerItem>
-              <ArrowRight className="size-4 shrink-0 text-border sm:size-5" />
-              <StaggerItem className="flex flex-col items-center gap-2">
-                <div className="flex size-12 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground sm:size-14">
-                  <Globe className="size-5" />
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground sm:text-xs">Live portfolio</span>
-              </StaggerItem>
-            </StaggerGroup>
-
-            {/* Before vs After Comparison: opposite-side reveals reinforce the contrast */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Weak Raw Bullet */}
-              <Reveal x={-32} y={0} className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-destructive">
-                    Typical Resume Bullet
-                  </span>
-                  <span className="rounded-full bg-destructive/15 px-2.5 py-0.5 text-[11px] font-bold text-destructive">
-                    Passive & Unclear
-                  </span>
-                </div>
-                <blockquote className="italic text-sm text-muted-foreground border-l-2 border-destructive/50 pl-3">
-                  “Helped with project launches and client presentations. Attended team meetings and updated weekly reports.”
-                </blockquote>
-                <ul className="space-y-1.5 text-xs text-destructive/80">
-                  <li>• Lacks quantifiable results or clear impact</li>
-                  <li>• Passive phrasing undersells what you accomplished</li>
-                  <li>• Hard for hiring managers to quickly assess</li>
-                </ul>
-              </Reveal>
-
-              {/* Shipfolio Tuned */}
-              <Reveal x={32} y={0} delay={0.1} className="rounded-2xl border border-success/30 bg-success/5 p-6 space-y-4 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-success">
-                    Polished with Shipfolio · illustrative example
-                  </span>
-                  <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-bold text-success">
-                    Clear & Impactful
-                  </span>
-                </div>
-                <blockquote className="font-medium text-sm text-foreground border-l-2 border-success pl-3">
-                  “Supported project launches and delivered client presentations; kept the team informed with weekly status reports.”
-                </blockquote>
-                <ul className="space-y-1.5 text-xs text-success/90">
-                  <li>✓ Active wording that says what you did</li>
-                  <li>✓ Structured for quick reading</li>
-                  <li>✓ No invented numbers: figures you didn’t provide are flagged, not added</li>
-                </ul>
-              </Reveal>
-            </div>
-          </section>
-
-          {/* Section 4: Feature Bento Grid with Integrated FluidOrb (Eyebrow allowed: count 2) */}
-          <section id="features" className="mx-auto max-w-5xl space-y-10 scroll-mt-20">
-            <Reveal className="text-center space-y-3">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                <Layers className="size-3.5" />
-                <span>Features</span>
-              </div>
-              <h2 className="text-3xl font-extrabold sm:text-4xl text-foreground tracking-tight">
-                Everything you need to showcase your work
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Fast, private, and effortless. No fragile site builders or complex setup.
-              </p>
-            </Reveal>
-
-            {/* Asymmetric Bento Grid */}
-            <StaggerGroup className="grid gap-6 md:grid-cols-3">
-              {/* Bento Card 1: Autonomous Fluid Dynamics (Span 2 cols) */}
-              <StaggerItem
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="md:col-span-2 relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-accent/5 p-6 sm:p-8 space-y-4"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="space-y-3 max-w-md">
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                      <Cpu className="size-5" />
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground">
-                      Modern, Interactive Design
-                    </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                      Smooth visuals, polished typography, and responsive layouts that look exceptional on phones and laptops.
-                    </p>
-                  </div>
-
-                  <div className="flex justify-center shrink-0">
-                    <div className="rounded-2xl border border-accent/20 bg-background/70 p-3 shadow-lg backdrop-blur-xs">
-                      <FluidOrb size={140} color="#3457E8" />
-                    </div>
-                  </div>
-                </div>
-              </StaggerItem>
-
-              {/* Bento Card 2: Flexible AI Generation */}
-              <StaggerItem
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 space-y-4 hover:border-accent/40"
-              >
-                <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                  <KeyRound className="size-5" />
-                </div>
-                <h3 className="text-xl font-bold text-foreground">Built-in AI & Full Privacy</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Build completely free, or connect Claude, ChatGPT, or Gemini. Encrypted, private, never shared.
-                </p>
-                <div className="pt-2">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
-                    <Lock className="size-3" /> Free to build · Private by default
-                  </span>
-                </div>
-              </StaggerItem>
-
-              {/* Bento Card 3: Instant Hosting & Export */}
-              <StaggerItem
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 sm:p-8 space-y-4 hover:border-accent/40"
-              >
-                <div
-                  className="pointer-events-none absolute inset-0 -z-0"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 100% 100%, rgb(var(--accent) / 0.14), transparent 60%)",
-                  }}
-                />
-                <div className="relative z-10 flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                  <Globe className="size-5" />
-                </div>
-                <h3 className="relative z-10 text-xl font-bold text-foreground">Instant Live Link & Custom Domains</h3>
-                <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Go live instantly with a fast link, connect your own custom domain, or download your website files anytime.
-                </p>
-                <div className="relative z-10 pt-2">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent font-semibold">
-                    <Zap className="size-3" /> Instant link · Custom domain · Export
-                  </span>
-                </div>
-              </StaggerItem>
-
-              {/* Bento Card 4: Smart Skill & Project Taxonomy (Span 2 cols) */}
-              <StaggerItem
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 sm:p-8 space-y-4 md:col-span-2"
-              >
-                <div
-                  className="pointer-events-none absolute inset-0 -z-0 opacity-60"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(circle, rgb(var(--foreground) / 0.12) 1px, transparent 1px)",
-                    backgroundSize: "18px 18px",
-                    maskImage: "linear-gradient(to left, black, transparent 70%)",
-                  }}
-                />
-                <div className="relative z-10 flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                  <Terminal className="size-5" />
-                </div>
-                <h3 className="relative z-10 text-xl font-bold text-foreground">
-                  Highlight Your Skills & Projects
-                </h3>
-                <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Clearly organize your core skills and link them to real case studies and milestones so visitors see undeniable proof of your work.
-                </p>
-                <div className="relative z-10 flex flex-wrap gap-2 pt-1 text-xs">
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Product Strategy</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Marketing & Growth</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Design & UX</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Analytics</span>
-                  <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-foreground">Operations</span>
-                </div>
-              </StaggerItem>
-            </StaggerGroup>
-          </section>
-
-          {/* Section 5: Integrations — Models, Connectors, Hosting & Deployment */}
-          <section className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/80 bg-card shadow-xs">
-            <div className="grid gap-8 md:grid-cols-2 md:items-center">
-              <Reveal x={-24} y={0} className="space-y-4 p-6 sm:p-10">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                  <Layers className="size-3.5" />
-                  <span>Integrations</span>
-                </div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-                  Use your favorite AI. Deploy anywhere.
-                </h2>
-                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Generate your portfolio using free built-in models, connect your Claude or ChatGPT subscription, or bring your own Gemini key. Publish with instant hosting and custom domains, or export directly to GitHub and Vercel.
-                </p>
-                <ul className="space-y-2 text-xs text-muted-foreground sm:text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Free models included, plus Claude, ChatGPT, or Gemini keys
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Keys encrypted at rest with AES-256-GCM and never logged
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                    Instant HTTPS hosting, custom domains, or 1-click export
-                  </li>
-                </ul>
-              </Reveal>
-
-              <Reveal x={24} y={0} delay={0.1}>
-                <VisualContainer className="min-h-72 sm:min-h-96">
-                  <Integration />
-                </VisualContainer>
-              </Reveal>
-            </div>
-          </section>
-
-          {/* Pricing: same numbers and wording as checkout */}
-          <PricingSection />
-
-          {/* Section 6: Privacy & Trust Architecture */}
-          <Reveal
-            as="section"
-            className="mx-auto max-w-4xl rounded-2xl border border-border/80 bg-card p-6 sm:p-8 text-center space-y-4 shadow-xs"
-          >
-            <div className="inline-flex size-10 items-center justify-center rounded-full bg-accent/15 text-accent">
-              <ShieldCheck className="size-5" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground">Privacy-First Architecture</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              We never sell your data. Resumes and reference screenshots are automatically deleted within 48 hours, and location metadata is stripped from photos before saving.
-            </p>
-          </Reveal>
-
-          {/* Section 7: Bottom CTA Banner with FluidOrb Ambient Glow */}
-          <Reveal
-            as="section"
-            y={40}
-            className="relative overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-br from-[#0B0D12] via-[#0B0D12] to-[#14161C] p-6 sm:p-14 text-center text-white shadow-2xl"
-          >
-            {/* Ambient FluidOrb nestled in right-center */}
-            <div className="pointer-events-none absolute -right-16 -top-16 -z-0 opacity-40 blur-2xl">
-              <FluidOrb size={360} color="#3457E8" />
-            </div>
-
-            <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-              <h2 className="text-3xl font-extrabold sm:text-5xl tracking-tight leading-tight">
-                Ready to put your work online?
-              </h2>
-              <p className="text-base text-muted-foreground leading-relaxed">
-                Create a clean, interactive portfolio from your resume in minutes with Shipfolio.
-              </p>
-              <div className="pt-2">
-                {launchMode === "waitlist" ? (
-                  <div className="flex justify-center">
-                    <WaitlistCta
-                      source="bottom-banner"
-                      buttonLabel="Join the waitlist"
-                      buttonClassName="bg-foreground text-background hover:bg-foreground/90 shadow-xl font-bold"
-                    />
-                  </div>
-                ) : (
-                  <Magnetic className="inline-flex justify-center">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="h-12 bg-foreground text-background hover:bg-foreground/90 font-bold px-8 text-base shadow-xl active:scale-[0.98]"
-                    >
-                      <Link to="/login" search={{ redirect: "/onboarding" }}>
-                        Create my portfolio
-                        <ArrowRight className="ml-2 size-4" />
-                      </Link>
-                    </Button>
-                  </Magnetic>
-                )}
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Footer: Single line on desktop */}
-          <footer className="border-t border-border/80 pt-8 pb-6 text-xs text-muted-foreground">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Logo size="sm" />
-                <span className="text-muted-foreground/60">|</span>
-                <span>Resume to live portfolio in minutes</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-                {launchMode === "waitlist" ? (
-                  <Link to="/" hash="waitlist" hashScrollIntoView className="hover:text-foreground">
-                    Join waitlist
-                  </Link>
-                ) : (
-                  <>
-                    <Link to="/login" className="hover:text-foreground">
-                      Sign in
-                    </Link>
-                    <Link to="/login" search={{ redirect: "/onboarding" }} className="hover:text-foreground">
-                      Build Portfolio
-                    </Link>
-                  </>
-                )}
-                <Link to="/settings" className="hover:text-foreground">
-                  Privacy & Keys
-                </Link>
-                <a href="#pricing" className="hover:text-foreground">
-                  Pricing
-                </a>
-                <a href="/terms" className="hover:text-foreground">
-                  Terms
-                </a>
-                <a href="/refund" className="hover:text-foreground">
-                  Refund Policy
-                </a>
-                <a href="/privacy" className="hover:text-foreground">
-                  Privacy Policy
-                </a>
-                <a href="mailto:vamshi.ravi99@gmail.com" className="hover:text-foreground">
-                  Contact
-                </a>
-              </div>
-              <div>
-                © {new Date().getFullYear()} Shipfolio. All rights reserved.
-              </div>
-            </div>
-          </footer>
-        </div>
+        <GuestLanding />
       )}
     </div>
   );
