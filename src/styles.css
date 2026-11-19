@@ -35,11 +35,8 @@
   --color-aurora-blue: rgb(var(--aurora-blue));
   --color-aurora-cyan: rgb(var(--aurora-cyan));
   --color-aurora-mint: rgb(var(--aurora-mint));
-  --color-lime: rgb(var(--lime));
-  --color-orange: rgb(var(--orange));
-  --color-magenta: rgb(var(--magenta));
 
-  --font-serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-display: "Unbounded", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Backward-compatible aliases for ported studio code */
@@ -57,23 +54,20 @@
   --aurora-blue: 52 87 232;
   --aurora-cyan: 6 182 212;
   --aurora-mint: 52 211 153;
-  --lime: 232 255 110;
-  --orange: 240 112 48;
-  --magenta: 200 20 90;
 
   --background: 250 250 250;
   --foreground: 17 17 17;
   --card: 255 255 255;
   --card-foreground: 17 17 17;
   --border: 230 230 230;
-  --ring: 59 46 224;
+  --ring: 52 87 232;
   --muted: 243 243 243;
   --muted-foreground: 102 102 108;
   --primary: 17 17 17;
   --primary-foreground: 255 255 255;
   --secondary: 243 243 243;
   --secondary-foreground: 17 17 17;
-  --accent: 59 46 224;
+  --accent: 52 87 232;
   --accent-foreground: 255 255 255;
   --destructive: 220 38 38;
   --destructive-foreground: 255 255 255;

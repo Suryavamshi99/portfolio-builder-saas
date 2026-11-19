@@ -173,8 +173,8 @@ export function JobProgressView({
   return (
     <div className="relative overflow-hidden flex flex-col items-center justify-center gap-5 rounded-3xl border border-border bg-card p-8 text-center">
       <div className="relative">
-        <div className="flex size-28 items-center justify-center rounded-full bg-lime">
-          <Sparkles className="size-9 animate-pulse text-foreground" />
+        <div className="flex size-28 items-center justify-center rounded-full bg-gradient-to-br from-aurora-blue via-aurora-cyan to-aurora-mint">
+          <Sparkles className="size-9 animate-pulse text-white" />
         </div>
       </div>
       <div className="space-y-1.5 max-w-sm">

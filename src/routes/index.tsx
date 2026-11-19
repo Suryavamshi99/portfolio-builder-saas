@@ -141,7 +141,7 @@ export function HomePage() {
       {user ? (
         /* Authenticated Dashboard View */
         <div className="space-y-8">
-          <div className="relative overflow-hidden rounded-[2rem] border border-border bg-lime p-6 sm:p-8">
+          <div className="relative overflow-hidden rounded-[2rem] border border-border bg-aurora-mint p-6 sm:p-8">
 
             <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1.5">

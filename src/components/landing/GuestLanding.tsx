@@ -29,7 +29,7 @@ const STEPS = [
     n: "2",
     title: "Pick a look",
     body: "Choose from 13 designs, or ask for something one of a kind.",
-    tone: "bg-lime",
+    tone: "bg-aurora-mint",
   },
   {
     n: "3",
@@ -96,7 +96,7 @@ export function GuestLanding() {
       <section className="flex flex-col items-center text-center">
         <Logo size="xl" className="mb-8" />
         <h1
-          className="max-w-4xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.045em] text-foreground sm:text-6xl md:text-7xl"
+          className="max-w-4xl font-display text-[1.9rem] font-medium leading-[1.12] tracking-[-0.03em] text-foreground sm:text-5xl md:text-6xl"
           style={{ textWrap: "balance" }}
         >
           Turn your <span className="mark">resume</span> into a live <span className="mark">website.</span>
@@ -140,7 +140,7 @@ export function GuestLanding() {
       <section id="how-it-works" className="scroll-mt-24 space-y-10">
         <Reveal className="space-y-3 text-center">
           <Eyebrow lead="HOW IT" accent="WORKS" />
-          <h2 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
+          <h2 className="font-display text-2xl font-medium tracking-[-0.03em] sm:text-4xl">
             Three steps. <span className="mark">No design skills.</span>
           </h2>
         </Reveal>
@@ -157,7 +157,7 @@ export function GuestLanding() {
                 {step.n}
               </span>
               <div className="space-y-2">
-                <h3 className="text-2xl font-semibold tracking-[-0.03em]">{step.title}</h3>
+                <h3 className="font-display text-lg font-medium tracking-[-0.02em]">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-foreground/70">{step.body}</p>
               </div>
             </StaggerItem>
@@ -170,7 +170,7 @@ export function GuestLanding() {
       <section id="portfolios" className="scroll-mt-24 space-y-10">
         <Reveal className="space-y-3 text-center">
           <Eyebrow lead="REAL SITES +" accent="13 LOOKS" />
-          <h2 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
+          <h2 className="font-display text-2xl font-medium tracking-[-0.03em] sm:text-4xl">
             See what you could <span className="mark">ship.</span>
           </h2>
         </Reveal>
@@ -191,7 +191,7 @@ export function GuestLanding() {
                   />
                   <span
                     className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                      real ? "bg-lime text-foreground" : "bg-white/90 text-foreground"
+                      real ? "bg-aurora-mint text-foreground" : "bg-white/90 text-foreground"
                     }`}
                   >
                     {real ? "Real site" : "Template"}
@@ -233,15 +233,15 @@ export function GuestLanding() {
         </div>
       </section>
 
-      {/* Lime ticker band */}
-      <section aria-label="Highlights" className="overflow-hidden rounded-[2rem] bg-lime py-8 sm:py-12">
+      {/* Brand-blue ticker band */}
+      <section aria-label="Highlights" className="overflow-hidden rounded-[2rem] bg-aurora-blue text-white py-8 sm:py-12">
         <div className="marquee-track" aria-hidden="true">
           {[0, 1].map((copy) => (
             <div key={copy} className="flex shrink-0 items-center">
               {BAND.map((word) => (
                 <span key={`${copy}-${word}`} className="flex items-center">
-                  <span className="px-6 text-5xl font-semibold tracking-[-0.05em] sm:px-10 sm:text-7xl">{word}</span>
-                  <span className="size-4 rounded-full bg-foreground sm:size-5" />
+                  <span className="px-6 font-display text-3xl font-medium tracking-[-0.04em] sm:px-10 sm:text-5xl">{word}</span>
+                  <span className="size-4 rounded-full bg-white sm:size-5" />
                 </span>
               ))}
             </div>
@@ -252,17 +252,17 @@ export function GuestLanding() {
 
       {/* Two big promises */}
       <section className="grid gap-5 md:grid-cols-2">
-        <Reveal className="flex min-h-96 flex-col justify-end gap-4 rounded-[2rem] bg-magenta p-8 text-white">
-          <h3 className="text-4xl font-semibold leading-[1.02] tracking-[-0.04em]">
+        <Reveal className="flex min-h-96 flex-col justify-end gap-4 rounded-[2rem] bg-aurora-cyan p-8 text-foreground">
+          <h3 className="font-display text-2xl font-medium leading-[1.15] tracking-[-0.03em] sm:text-3xl">
             Build it free.
             <br />
             Pay only to publish.
           </h3>
-          <p className="max-w-xs text-sm leading-relaxed text-white/80">
+          <p className="max-w-xs text-sm leading-relaxed text-foreground/75">
             See the whole portfolio before you spend anything. Your private preview is always free.
           </p>
           <div>
-            <Button asChild className="bg-white text-foreground hover:bg-white/90">
+            <Button asChild>
               <Link to="/login" search={{ redirect: "/onboarding" }}>
                 Start free
               </Link>
@@ -270,7 +270,7 @@ export function GuestLanding() {
           </div>
         </Reveal>
         <Reveal delay={0.1} className="flex min-h-96 flex-col justify-end gap-4 rounded-[2rem] border border-border bg-card p-8">
-          <h3 className="text-4xl font-semibold leading-[1.02] tracking-[-0.04em]">
+          <h3 className="font-display text-2xl font-medium leading-[1.15] tracking-[-0.03em] sm:text-3xl">
             Your link.
             <br />
             Your <span className="mark">own domain.</span>
@@ -291,7 +291,7 @@ export function GuestLanding() {
       <PricingSection />
 
       {/* Privacy, in one plain statement */}
-      <p className="mx-auto max-w-3xl text-balance text-center font-[family-name:var(--font-serif)] text-2xl font-normal leading-snug tracking-normal text-foreground/85 sm:text-3xl">
+      <p className="mx-auto max-w-3xl text-balance text-center font-display text-base font-light leading-relaxed tracking-[-0.01em] text-foreground/85 sm:text-xl">
         <span className="mark font-medium text-foreground">Private by default.</span> We{" "}
         <span className="mark">never sell your data.</span> Resumes and reference screenshots are deleted within 48
         hours, and location data is stripped from photos.
@@ -300,15 +300,15 @@ export function GuestLanding() {
       {/* Closing call to action */}
       <Reveal className="rounded-[2rem] bg-foreground px-6 py-16 text-center text-background sm:py-24">
         <div className="mx-auto max-w-2xl space-y-7">
-          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.045em] sm:text-6xl">
-            Ready to put your work <span className="rounded-md bg-lime px-2 text-foreground">online?</span>
+          <h2 className="font-display text-2xl font-medium leading-[1.15] tracking-[-0.03em] sm:text-5xl">
+            Ready to put your work <span className="rounded-md bg-aurora-mint px-2 text-foreground">online?</span>
           </h2>
           {launchMode === "waitlist" ? (
             <div className="flex justify-center">
               <WaitlistCta source="bottom-banner" buttonLabel="Join the waitlist" />
             </div>
           ) : (
-            <Button asChild size="lg" className="gap-2 bg-lime text-foreground hover:bg-lime/85">
+            <Button asChild size="lg" className="gap-2 bg-aurora-mint text-foreground hover:bg-aurora-mint/85">
               <Link to="/login" search={{ redirect: "/onboarding" }}>
                 Create my portfolio
                 <ArrowRight className="size-4" />
