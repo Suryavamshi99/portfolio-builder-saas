@@ -9,13 +9,13 @@ import { getLaunchMode } from "@/config/launch";
 
 // Seven tilted cards fanned out under the hero headline.
 const FAN = [
-  { id: "two-ink", rotate: -14, lift: 34 },
-  { id: "deal-stage", rotate: -9, lift: 14 },
-  { id: "design-file", rotate: -4, lift: 2 },
-  { id: "stream-shelf", rotate: 0, lift: 0 },
-  { id: "deep-signal", rotate: 4, lift: 2 },
-  { id: "route-board", rotate: 9, lift: 14 },
-  { id: "wheat-brass", rotate: 14, lift: 34 },
+  { id: "real-maneesh", src: "/landing/real-maneesh.jpg", pos: "0% 0%", rotate: -14, lift: 34 },
+  { id: "real-revathi", src: "/landing/real-revathi.jpg", pos: "70% 0%", rotate: -9, lift: 14 },
+  { id: "design-file", src: "/theme-thumbs/design-file.jpg", pos: "50% 50%", rotate: -4, lift: 2 },
+  { id: "stream-shelf", src: "/theme-thumbs/stream-shelf.jpg", pos: "50% 50%", rotate: 0, lift: 0 },
+  { id: "deep-signal", src: "/theme-thumbs/deep-signal.jpg", pos: "50% 50%", rotate: 4, lift: 2 },
+  { id: "route-board", src: "/theme-thumbs/route-board.jpg", pos: "50% 50%", rotate: 9, lift: 14 },
+  { id: "wheat-brass", src: "/theme-thumbs/wheat-brass.jpg", pos: "50% 50%", rotate: 14, lift: 34 },
 ] as const;
 
 const STEPS = [
@@ -109,19 +109,19 @@ export function GuestLanding() {
           {FAN.map((card, i) => (
             <img
               key={card.id}
-              src={`/theme-thumbs/${card.id}.jpg`}
+              src={card.src}
               alt=""
               width={256}
               height={256}
               loading={i === 3 ? "eager" : "lazy"}
               className="-ml-10 size-28 rounded-3xl object-cover shadow-[0_18px_40px_-18px_rgba(0,0,0,0.35)] transition-transform duration-300 first:ml-0 hover:-translate-y-2 sm:-ml-14 sm:size-44"
-              style={{ transform: `translateY(${card.lift}px) rotate(${card.rotate}deg)`, zIndex: i === 3 ? 10 : 7 - Math.abs(3 - i) }}
+              style={{ objectPosition: card.pos, transform: `translateY(${card.lift}px) rotate(${card.rotate}deg)`, zIndex: i === 3 ? 10 : 7 - Math.abs(3 - i) }}
             />
           ))}
         </div>
 
-        <p className="mt-10 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Upload your resume. Pick a look. Share one link. <span className="font-semibold text-foreground">Free to try.</span>
+        <p className="mt-10 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
+          Upload your resume. Pick a look. Share one link. <span className="whitespace-nowrap font-semibold text-foreground">Free to try.</span>
         </p>
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
