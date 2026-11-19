@@ -7,7 +7,7 @@ import { checkReplicaRequest, parseReplicaRequest, replicaEnabled } from "./repl
 import { buildReplicaBrief, closestGoogleFont, resolveReplica, toneWords } from "./replica-brief";
 import { applyReplicaGuard, nameFromResume } from "./replica-guard";
 
-const ok = { enabled: true, hasTheme: false, paid: true };
+const ok = { enabled: true, hasTheme: false };
 
 describe("parseReplicaRequest", () => {
   it("accepts an https address with an optional company", () => {
@@ -37,10 +37,10 @@ describe("checkReplicaRequest", () => {
   it("returns 404 not_available when the flag is off, before anything else", () => {
     expect(checkReplicaRequest({ nonsense: 1 }, { ...ok, enabled: false })).toMatchObject({ ok: false, status: 404, code: "not_available" });
   });
-  it("rejects a theme alongside, bad bodies and unpaid users", () => {
+  it("rejects a theme alongside, and bad bodies, but not the plan", () => {
     expect(checkReplicaRequest({ url: "https://acme.com" }, { ...ok, hasTheme: true })).toMatchObject({ status: 400 });
     expect(checkReplicaRequest({ url: "http://acme.com" }, ok)).toMatchObject({ status: 400 });
-    expect(checkReplicaRequest({ url: "https://acme.com" }, { ...ok, paid: false })).toMatchObject({ status: 402, code: "replica_requires_pro" });
+    // Free users get the company-look preview; only publishing and downloads are paid.
     expect(checkReplicaRequest({ url: "https://acme.com" }, ok)).toEqual({ ok: true, replica: { url: "https://acme.com/" } });
   });
   it("reads the flag at call time", () => {
