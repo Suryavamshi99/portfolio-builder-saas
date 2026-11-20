@@ -15,6 +15,8 @@ interface AuthContextType {
   isAdmin: boolean;
   /** Sourced directly from /api/me's hasPaidAccess field (server-computed by src/server/users.ts, which also honors the PAYMENTS_ENABLED env kill switch) — never recomputed client-side, so there's one source of truth. Gates client-side UI (e.g. Studio's download button); the server enforces its own copy of this check independently on every gated route. */
   hasPaidAccess: boolean;
+  /** From /api/me: ready-made looks are for verified @mastersunion.org accounts (and admins). Everyone else builds Custom. */
+  canUseTemplates: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
@@ -49,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [portfolioReady, setPortfolioReady] = React.useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [hasPaidAccess, setHasPaidAccess] = React.useState(false);
+  const [canUseTemplates, setCanUseTemplates] = React.useState(false);
 
   const client = React.useMemo(() => getBrowserClient(), []);
 
@@ -109,15 +112,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) {
       setIsAdmin(false);
       setHasPaidAccess(false);
+      setCanUseTemplates(false);
       return;
     }
     void (async () => {
       try {
         const res = await fetch("/api/me");
         if (!res.ok) return;
-        const json = (await res.json()) as { isAdmin?: boolean; hasPaidAccess?: boolean };
+        const json = (await res.json()) as { isAdmin?: boolean; hasPaidAccess?: boolean; canUseTemplates?: boolean };
         setIsAdmin(json.isAdmin === true);
         setHasPaidAccess(json.hasPaidAccess === true);
+        setCanUseTemplates(json.canUseTemplates === true);
       } catch {
         // fail closed, not open.
       }
@@ -198,6 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshPortfolioStatus,
         isAdmin,
         hasPaidAccess,
+        canUseTemplates,
         signInWithPassword,
         signUp,
         signInWithGoogle,

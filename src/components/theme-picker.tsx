@@ -12,24 +12,37 @@ export function ThemePicker({
   onChange,
   custom,
   onCustomChange,
+  locked = false,
 }: {
   value: string | null;
   onChange: (id: string | null) => void;
   /** With onCustomChange, a chosen theme shows the "Make it yours" panel. */
   custom?: ThemeCustom | undefined;
   onCustomChange?: ((c: ThemeCustom | undefined) => void) | undefined;
+  /** Ready-made looks are for Masters' Union students: when true, only the Custom option is shown. */
+  locked?: boolean | undefined;
 }) {
   const [themes, setThemes] = React.useState<ThemeSummary[]>([]);
   const [feel, setFeel] = React.useState<(typeof FEELS)[number]>("All");
 
   React.useEffect(() => {
+    if (locked) return;
     let live = true;
     apiClient.getThemes().then((r) => live && setThemes(r.themes)).catch(() => {});
     return () => {
       live = false;
     };
-  }, []);
+  }, [locked]);
 
+  if (locked) {
+    return (
+      <div className="space-y-3 rounded-xl border border-border/80 bg-muted/20 p-3.5">
+        <div className="text-xs font-semibold text-foreground">Your design</div>
+        <Card selected onClick={() => onChange(null)} title="Custom" sub="The AI designs a one-of-a-kind page from your resume." />
+        <p className="text-[11px] text-muted-foreground">Ready-made looks are for Masters' Union students (sign in with your @mastersunion.org email). Everyone gets a custom design, or a page that looks like a company's website.</p>
+      </div>
+    );
+  }
   if (themes.length === 0) return null;
   // Changing the look starts the "Make it yours" choices over: they belong to one theme's layout.
   const pick = (id: string | null) => {

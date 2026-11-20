@@ -31,4 +31,4 @@ Each theme has a rebranded sample site in `public/theme-previews/<id>/` (open `/
 
 ## Free and paid
 
-The server checks the tier on every build (`checkThemeAccess`, called from `POST /api/generations`). Paid themes need paid access, but `hasPaidAccess` is true for everyone while `PAYMENTS_ENABLED` is false, so today every theme is open. The picker does not yet know the user's tier, so a free user can pick a paid card and only see the 402 after the build starts.
+Templates are for Masters' Union students only: a verified `@mastersunion.org` account (or an admin) may use them; everyone else gets Custom or a company look (`src/server/themes/audience.ts`). The server checks this and the tier on every build (`checkThemeAccess`, called from `POST /api/generations` and the connector tools). Paid themes need paid access, but `hasPaidAccess` is true for everyone while `PAYMENTS_ENABLED` is false, so today every theme is open. The picker does not yet know the user's tier, so a free user can pick a paid card and only see the 402 after the build starts.
