@@ -17,7 +17,7 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
 });
 
-const LAST_UPDATED = "20 November 2026";
+const LAST_UPDATED = "21 November 2026";
 
 function TermsPage() {
   const inr = pricingFor("IN");
@@ -106,19 +106,21 @@ function TermsPage() {
         </p>
       </Section>
 
-      <Section title="7. Ready-made looks, design references and copyright">
+      <Section title="7. Page designs, references and copyright">
         <p>
-          Our ready-made looks (templates) are available only to Masters' Union students, meaning accounts with a verified @mastersunion.org email address. Everyone else gets a one-of-a-kind page designed from scratch, or a page that follows a company's website style, which is open to all users. The templates were created using designs found on the internet as references. We do not
-          claim those original designs as ours: credit and copyright in any referenced design belong to its creator
-          and owner. Pages built on our looks carry a small &ldquo;Design credit&rdquo; note that says the same.
+          Every portfolio is a one-of-a-kind page written for you from your resume, or a page that follows the style of
+          a company&rsquo;s website if you ask for that. Our ready-made looks (templates) are switched off at the
+          moment. They were created using designs found on the internet as references, and credit and copyright in any
+          referenced design belong to its creator and owner. Pages built earlier on those looks carry a small
+          &ldquo;Design credit&rdquo; note that says the same.
         </p>
         <p>
-          If you are the owner of a design and believe one of our looks uses your work without permission, email{" "}
+          If you are the owner of a design and believe our work uses it without permission, email{" "}
           <a className="text-accent underline" href={`mailto:${COPYRIGHT_EMAIL}`}>
             {COPYRIGHT_EMAIL}
           </a>{" "}
-          with a link to your work and the look you are concerned about. We will review it promptly and, if the claim
-          holds, remove or change the look. We may also pass a notice on to the people whose pages use that look.
+          with a link to your work. We will review it promptly and, if the claim holds, remove or change it. We may
+          also pass a notice on to the people whose pages use it.
         </p>
       </Section>
 

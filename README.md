@@ -81,6 +81,7 @@ All variables are read inside handlers/functions at runtime, never at module sco
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service-role admin key (privileged server-side operations) |
 | `VITE_SUPABASE_URL` | Yes | Supabase project URL exposed to the browser for Auth SDK |
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anonymous API key exposed to the browser for Auth SDK |
+| `TEMPLATES_ENABLED` | No | Master switch for the ready-made looks (templates). Off unless `true`. While off, none can be built, listed or shown (website and connector); Custom pages and the company look are unaffected. Off since 2026-11-21 (design owner's takedown request) |
 | `ENCRYPTION_KEY` | Yes | 32 random bytes, base64-encoded. Used for envelope encryption (AES-256-GCM) of BYOK Gemini keys and Vercel OAuth access tokens |
 | `APP_ORIGIN` | Yes | Primary public URL of the application (e.g. `https://your-app.vercel.app` or `https://www.shipfolio.xyz`). Used for CSRF Origin checks and OAuth callback URLs |
 | `APP_EXTRA_ORIGINS` | No | Comma-separated list of additional permitted request origins (e.g. `https://www.shipfolio.xyz`) when `APP_ORIGIN` holds the Vercel app domain |

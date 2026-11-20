@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authMiddleware, type AuthedContext } from "@/server/auth-middleware";
+import { templatesEnabled } from "@/config/templates";
 import { canUseTemplates } from "@/server/themes/audience";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
 import { hasHostingAccess } from "@/server/billing";
@@ -49,7 +50,8 @@ export const Route = createFileRoute("/api/me")({
           plan: appUser.plan,
           isAdmin: appUser.isAdmin,
           hasPaidAccess: hasPaidAccess(appUser),
-          canUseTemplates: canUseTemplates(user, appUser.isAdmin),
+          templatesEnabled: templatesEnabled(),
+          canUseTemplates: templatesEnabled() && canUseTemplates(user, appUser.isAdmin),
           hosting: {
             active: hostingActive,
             status: hostingRow?.status ?? null,
