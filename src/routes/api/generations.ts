@@ -5,6 +5,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { PLAN_GENERATIONS_PER_HOUR } from "@/config/plans";
 import { checkHourlyRateLimit } from "@/server/rate-limit";
 import { getOrCreateAppUser, hasPaidAccess } from "@/server/users";
+import { canUseTemplates } from "@/server/themes/audience";
 import { checkThemeAccess } from "@/server/themes/gate";
 import { parseThemeRequest } from "@/server/themes/types";
 import { checkReplicaRequest, replicaEnabled, type ReplicaRequest } from "@/server/brand/replica";
@@ -48,12 +49,12 @@ export const Route = createFileRoute("/api/generations")({
         const appUser = await getOrCreateAppUser(supabase, user.id);
         if (!appUser) return errorResponse(500, "internal_error", "Could not load account");
 
-        // A themed build. Unknown or not-ready themes are rejected; paid themes need paid access (checked here, not in the page).
+        // A themed build. Unknown or not-ready themes are rejected; templates are for Masters' Union students and paid themes need paid access (checked here, not in the page).
         let theme: ReturnType<typeof parseThemeRequest> = null;
         if (body["theme"] !== undefined) {
           theme = parseThemeRequest(body["theme"]);
           if (!theme) return errorResponse(400, "invalid_request", "theme is not valid");
-          const access = checkThemeAccess(theme.id, hasPaidAccess(appUser));
+          const access = checkThemeAccess(theme.id, hasPaidAccess(appUser), canUseTemplates(user, appUser.isAdmin));
           if (!access.ok) return errorResponse(access.status, access.code, access.message);
         }
 

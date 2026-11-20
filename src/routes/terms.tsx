@@ -17,7 +17,7 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
 });
 
-const LAST_UPDATED = "19 November 2026";
+const LAST_UPDATED = "20 November 2026";
 
 function TermsPage() {
   const inr = pricingFor("IN");
@@ -108,7 +108,7 @@ function TermsPage() {
 
       <Section title="7. Ready-made looks, design references and copyright">
         <p>
-          Our ready-made looks (templates) were created using designs found on the internet as references. We do not
+          Our ready-made looks (templates) are available only to Masters' Union students, meaning accounts with a verified @mastersunion.org email address. Everyone else gets a one-of-a-kind page designed from scratch, or a page that follows a company's website style, which is open to all users. The templates were created using designs found on the internet as references. We do not
           claim those original designs as ours: credit and copyright in any referenced design belong to its creator
           and owner. Pages built on our looks carry a small &ldquo;Design credit&rdquo; note that says the same.
         </p>

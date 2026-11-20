@@ -14,6 +14,7 @@ import { companyNameFor, resolveReplica, DISCLAIMER_TEXT } from "@/server/brand/
 import { applyReplicaGuard, nameFromResume } from "@/server/brand/replica-guard";
 import { activeMcpJob, activeReplica } from "./replica-job";
 import { registry } from "@/server/themes/registry";
+import { canUseTemplatesById } from "@/server/themes/audience";
 import { checkThemeAccess } from "@/server/themes/gate";
 import { getTemplate, renderTheme } from "@/server/themes/templates";
 import { customisationsSchema, portfolioFactsSchema } from "@/server/themes/facts";
@@ -337,12 +338,20 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
     }
     const appUser = await getOrCreateAppUser(admin, userId);
     if (!appUser) return text("Could not load the user's account.", true);
+    if (!(await canUseTemplatesById(admin, userId, appUser.isAdmin))) {
+      return text(
+        [
+          "Ready-made looks are only for Masters' Union students (a verified @mastersunion.org account), and this account is not one. Do not show or offer any ready-made look.",
+          "Tell the user in one friendly line that their portfolio will be a one-of-a-kind custom design, then call get_portfolio_brief now. (If they ask for a particular company's look, call get_company_look; that is open to everyone.)",
+        ].join("\n"),
+      );
+    }
     const paid = hasPaidAccess(appUser);
     const lines: string[] = [];
     for (const theme of registry.list()) {
       const template = getTemplate(theme.id);
       if (!template) continue;
-      lines.push(describeTheme(theme, template, checkThemeAccess(theme.id, paid).ok));
+      lines.push(describeTheme(theme, template, checkThemeAccess(theme.id, paid, true).ok));
     }
     return text(
       [
@@ -364,9 +373,11 @@ export function buildTools(ctx: { admin: SupabaseClient; userId: string; origin:
     if (typeof id !== "string" || !THEME_ID_PATTERN.test(id)) return { error: text("themeId must be one of the ids from list_portfolio_themes.", true) } as const;
     const appUser = await getOrCreateAppUser(admin, userId);
     if (!appUser) return { error: text("Could not load the user's account.", true) } as const;
-    const access = checkThemeAccess(id, hasPaidAccess(appUser));
+    const access = checkThemeAccess(id, hasPaidAccess(appUser), await canUseTemplatesById(admin, userId, appUser.isAdmin));
     if (!access.ok) {
-      const msg = access.code === "theme_requires_pro"
+      const msg = access.code === "templates_muy_only"
+        ? "Ready-made looks are only for Masters' Union students and this account is not one. Tell the user, and build a Custom design with get_portfolio_brief instead."
+        : access.code === "theme_requires_pro"
         ? "That look is part of the paid plan and this account is on the free plan. Tell the user, and offer a free look from list_portfolio_themes or Custom."
         : "That look isn't available. Call list_portfolio_themes and ask the user to pick one of those.";
       return { error: text(msg, true) } as const;

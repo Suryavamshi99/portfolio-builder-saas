@@ -71,7 +71,7 @@ const STEPS = [
 
 function OnboardingWizard() {
   const navigate = useNavigate();
-  const { refreshPortfolioStatus, portfolioReady } = useAuth();
+  const { refreshPortfolioStatus, portfolioReady, canUseTemplates } = useAuth();
 
   const [currentStep, setCurrentStep] = React.useState<StepIndex>(1);
   const [resumeUpload, setResumeUpload] = React.useState<UploadItem | null>(null);
@@ -374,7 +374,7 @@ function OnboardingWizard() {
         otherSpecifics: otherSpecifics.trim() || undefined,
         designIntensity,
         replica: replicaPayload(replicaOn, replicaUrl, replicaCompany),
-        theme: themeId && !replicaOn ? { id: themeId, ...(themeCustom ? { custom: themeCustom } : {}) } : undefined,
+        theme: themeId && !replicaOn && canUseTemplates ? { id: themeId, ...(themeCustom ? { custom: themeCustom } : {}) } : undefined,
         links: {
           linkedin: linkedinUrl.trim() || undefined,
           github: githubProfileUrl.trim() || undefined,
@@ -627,7 +627,7 @@ function OnboardingWizard() {
                 </div>
               )}
 
-              {!replicaOn && <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} />}
+              {!replicaOn && <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} locked={!canUseTemplates} />}
 
               <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5">
                 <div className="text-xs font-semibold text-foreground">Design intensity</div>

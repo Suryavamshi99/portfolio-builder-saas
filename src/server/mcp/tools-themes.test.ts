@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const state = vi.hoisted(() => ({ plan: "free", saved: [] as Array<{ html: string }>, jobs: [] as unknown[] }));
+const state = vi.hoisted(() => ({ email: "student@mastersunion.org", plan: "free", saved: [] as Array<{ html: string }>, jobs: [] as unknown[] }));
 
 vi.mock("@/lib/supabase/env", () => ({ getSupabaseEnv: () => ({ url: "https://x.supabase.co" }) }));
 vi.mock("@/server/users", () => ({
@@ -54,6 +54,7 @@ import { templateIds } from "@/server/themes/templates";
 
 // uploads has a resume; no job is running.
 const admin = {
+  auth: { admin: { getUserById: async () => ({ data: { user: { email: state.email, email_confirmed_at: "2026-01-01T00:00:00Z" } } }) } },
   from: (table: string) => {
     const chain: Record<string, unknown> = {};
     for (const m of ["select", "eq", "in", "order", "limit", "update"]) chain[m] = () => chain;
@@ -75,6 +76,7 @@ const goodFacts = () => ({
 });
 
 beforeEach(() => {
+  state.email = "student@mastersunion.org";
   state.plan = "free";
   state.saved = [];
   state.jobs = [];
@@ -104,6 +106,21 @@ describe("themed MCP tools", () => {
     expect(out).toMatch(/ask the user which look/);
     state.plan = "pro";
     expect(txt(await tools.call("list_portfolio_themes", {}))).not.toMatch(/can use it: no/);
+  });
+
+  it("shows no ready-made look to an account outside Masters' Union and sends the chat to Custom", async () => {
+    state.email = "someone@gmail.com";
+    const out = txt(await tools.call("list_portfolio_themes", {}));
+    expect(out).toMatch(/only for Masters' Union/);
+    expect(out).toMatch(/get_portfolio_brief/);
+    expect(out).not.toContain(`id: ${free.id}`);
+    const refused = await tools.call("get_themed_brief", { themeId: free.id });
+    expect(refused?.isError).toBe(true);
+    expect(txt(refused)).toMatch(/Masters' Union/);
+    expect(state.jobs).toHaveLength(0);
+    const build = await tools.call("build_themed_portfolio", { themeId: free.id, facts: goodFacts() });
+    expect(build?.isError).toBe(true);
+    expect(state.saved).toHaveLength(0);
   });
 
   it("get_themed_brief rejects unknown and gated themes, and stores the theme on the job", async () => {
