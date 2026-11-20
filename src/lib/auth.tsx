@@ -17,6 +17,8 @@ interface AuthContextType {
   hasPaidAccess: boolean;
   /** From /api/me: ready-made looks are for verified @mastersunion.org accounts (and admins). Everyone else builds Custom. */
   canUseTemplates: boolean;
+  /** From /api/me: the server-side TEMPLATES_ENABLED switch. Off means no ready-made looks are shown at all. */
+  templatesEnabled: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; user: User | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
@@ -52,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [hasPaidAccess, setHasPaidAccess] = React.useState(false);
   const [canUseTemplates, setCanUseTemplates] = React.useState(false);
+  const [templatesEnabled, setTemplatesEnabled] = React.useState(false);
 
   const client = React.useMemo(() => getBrowserClient(), []);
 
@@ -113,16 +116,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAdmin(false);
       setHasPaidAccess(false);
       setCanUseTemplates(false);
+      setTemplatesEnabled(false);
       return;
     }
     void (async () => {
       try {
         const res = await fetch("/api/me");
         if (!res.ok) return;
-        const json = (await res.json()) as { isAdmin?: boolean; hasPaidAccess?: boolean; canUseTemplates?: boolean };
+        const json = (await res.json()) as { isAdmin?: boolean; hasPaidAccess?: boolean; canUseTemplates?: boolean; templatesEnabled?: boolean };
         setIsAdmin(json.isAdmin === true);
         setHasPaidAccess(json.hasPaidAccess === true);
         setCanUseTemplates(json.canUseTemplates === true);
+        setTemplatesEnabled(json.templatesEnabled === true);
       } catch {
         // fail closed, not open.
       }
@@ -204,6 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         hasPaidAccess,
         canUseTemplates,
+        templatesEnabled,
         signInWithPassword,
         signUp,
         signInWithGoogle,

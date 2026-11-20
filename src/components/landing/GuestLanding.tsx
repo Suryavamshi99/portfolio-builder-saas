@@ -7,15 +7,13 @@ import { PricingSection } from "@/components/billing/PricingSection";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/reveal";
 import { getLaunchMode } from "@/config/launch";
 
-// Seven tilted cards fanned out under the hero headline.
+// Five tilted cards fanned out under the hero headline: real people's live sites.
 const FAN = [
-  { id: "real-maneesh", src: "/landing/real-maneesh.jpg", pos: "0% 0%", rotate: -14, lift: 34 },
-  { id: "real-revathi", src: "/landing/real-revathi.jpg", pos: "70% 0%", rotate: -9, lift: 14 },
-  { id: "design-file", src: "/theme-thumbs/design-file.jpg", pos: "50% 50%", rotate: -4, lift: 2 },
-  { id: "stream-shelf", src: "/theme-thumbs/stream-shelf.jpg", pos: "50% 50%", rotate: 0, lift: 0 },
-  { id: "deep-signal", src: "/theme-thumbs/deep-signal.jpg", pos: "50% 50%", rotate: 4, lift: 2 },
-  { id: "route-board", src: "/theme-thumbs/route-board.jpg", pos: "50% 50%", rotate: 9, lift: 14 },
-  { id: "wheat-brass", src: "/theme-thumbs/wheat-brass.jpg", pos: "50% 50%", rotate: 14, lift: 34 },
+  { id: "real-maneesh", src: "/landing/real-maneesh.jpg", pos: "0% 0%", rotate: -12, lift: 24 },
+  { id: "real-revathi", src: "/landing/real-revathi.jpg", pos: "70% 0%", rotate: -6, lift: 6 },
+  { id: "real-harshit", src: "/landing/real-harshit.jpg", pos: "50% 0%", rotate: 0, lift: 0 },
+  { id: "real-shrividya", src: "/landing/real-shrividya.jpg", pos: "50% 0%", rotate: 6, lift: 6 },
+  { id: "real-atul", src: "/landing/real-atul.jpg", pos: "50% 0%", rotate: 12, lift: 24 },
 ] as const;
 
 const STEPS = [
@@ -27,8 +25,8 @@ const STEPS = [
   },
   {
     n: "2",
-    title: "Pick a look",
-    body: "Choose from 13 designs, or ask for something one of a kind.",
+    title: "Tell us the style",
+    body: "Get a one-of-a-kind design, or ask for the look of a company you admire.",
     tone: "bg-aurora-mint",
   },
   {
@@ -39,24 +37,21 @@ const STEPS = [
   },
 ] as const;
 
-// Real people's live sites mixed with the ready-made looks. Screenshots live in public/landing.
-type Tile =
-  | { kind: "real"; img: string; name: string; role: string; quote: string; url: string }
-  | { kind: "look"; img: string; name: string };
+// Real people's live sites. Screenshots live in public/landing.
+interface Tile {
+  img: string;
+  name: string;
+  role: string;
+  quote: string;
+  url: string;
+}
 
 const GALLERY: Tile[] = [
-  { kind: "real", img: "real-maneesh", name: "Maneesh Bichala", role: "Associate Analyst, Deloitte", quote: "I didn't have to think about hosting or design, just my own story.", url: "https://maneeshbichala.vercel.app/" },
-  { kind: "look", img: "tpl-two-ink", name: "Poster Pop" },
-  { kind: "look", img: "tpl-deep-signal", name: "Data Glow" },
-  { kind: "real", img: "real-harshit", name: "Harshit Chebolu", role: "AI Product & Strategy", quote: "From a stack of PDF drafts to a live site in one sitting.", url: "https://harshit-chebolu.vercel.app/" },
-  { kind: "look", img: "tpl-design-file", name: "Design Canvas" },
-  { kind: "look", img: "tpl-stream-shelf", name: "Binge Shelf" },
-  { kind: "real", img: "real-shrividya", name: "Shrividya Ramesh", role: "Sports Management & Gaming", quote: "Something recruiters could click through, not just skim.", url: "https://my-personal-portfolio-orpin-six.vercel.app/" },
-  { kind: "look", img: "tpl-atlas-desk", name: "Map View" },
-  { kind: "look", img: "tpl-mascot-guide", name: "Mascot" },
-  { kind: "real", img: "real-atul", name: "Atul Sreejil", role: "Sales & Marketing", quote: "My numbers finally had a place that looked as sharp as they are.", url: "https://atulsreejilportfolio-drab.vercel.app/" },
-  { kind: "look", img: "tpl-grid-ledger", name: "Spreadsheet" },
-  { kind: "real", img: "real-revathi", name: "Revathi Iyer", role: "Risk Consultant", quote: "Made turning case work into something presentable way less painful.", url: "https://revathiportfolio-eight.vercel.app/" },
+  { img: "real-maneesh", name: "Maneesh Bichala", role: "Associate Analyst, Deloitte", quote: "I didn't have to think about hosting or design, just my own story.", url: "https://maneeshbichala.vercel.app/" },
+  { img: "real-harshit", name: "Harshit Chebolu", role: "AI Product & Strategy", quote: "From a stack of PDF drafts to a live site in one sitting.", url: "https://harshit-chebolu.vercel.app/" },
+  { img: "real-shrividya", name: "Shrividya Ramesh", role: "Sports Management & Gaming", quote: "Something recruiters could click through, not just skim.", url: "https://my-personal-portfolio-orpin-six.vercel.app/" },
+  { img: "real-atul", name: "Atul Sreejil", role: "Sales & Marketing", quote: "My numbers finally had a place that looked as sharp as they are.", url: "https://atulsreejilportfolio-drab.vercel.app/" },
+  { img: "real-revathi", name: "Revathi Iyer", role: "Risk Consultant", quote: "Made turning case work into something presentable way less painful.", url: "https://revathiportfolio-eight.vercel.app/" },
 ];
 
 const BAND = ["Resume in", "Portfolio out", "Free to try", "Live in minutes", "Your own domain"] as const;
@@ -113,15 +108,15 @@ export function GuestLanding() {
               alt=""
               width={256}
               height={256}
-              loading={i === 3 ? "eager" : "lazy"}
+              loading={i === 2 ? "eager" : "lazy"}
               className="-ml-10 size-28 rounded-3xl object-cover shadow-[0_18px_40px_-18px_rgba(0,0,0,0.35)] transition-transform duration-300 first:ml-0 hover:-translate-y-2 sm:-ml-14 sm:size-44"
-              style={{ objectPosition: card.pos, transform: `translateY(${card.lift}px) rotate(${card.rotate}deg)`, zIndex: i === 3 ? 10 : 7 - Math.abs(3 - i) }}
+              style={{ objectPosition: card.pos, transform: `translateY(${card.lift}px) rotate(${card.rotate}deg)`, zIndex: i === 2 ? 10 : 6 - Math.abs(2 - i) }}
             />
           ))}
         </div>
 
         <p className="mt-10 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Upload your resume. Pick a look. Share one link. <span className="whitespace-nowrap font-semibold text-foreground">Free to try.</span>
+          Upload your resume. Get your site. Share one link. <span className="whitespace-nowrap font-semibold text-foreground">Free to try.</span>
         </p>
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
@@ -166,71 +161,41 @@ export function GuestLanding() {
         <div className="hidden md:block md:h-20" aria-hidden="true" />
       </section>
 
-      {/* Portfolios: real people's sites mixed with the ready-made looks */}
+      {/* Portfolios: real people's sites */}
       <section id="portfolios" className="scroll-mt-24 space-y-10">
         <Reveal className="space-y-3 text-center">
-          <Eyebrow lead="REAL SITES +" accent="13 LOOKS" />
+          <Eyebrow lead="REAL" accent="SITES" />
           <h2 className="font-display text-2xl font-medium tracking-[-0.03em] sm:text-4xl">
             See what you could <span className="mark">ship.</span>
           </h2>
         </Reveal>
 
         <StaggerGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {GALLERY.map((tile) => {
-            const real = tile.kind === "real";
-            const card = (
-              <>
+          {GALLERY.map((tile) => (
+            <StaggerItem key={tile.img}>
+              <a href={tile.url} target="_blank" rel="noopener" className="group block">
                 <div className="relative overflow-hidden rounded-[1.75rem] border border-border bg-card">
                   <img
                     src={`/landing/${tile.img}.jpg`}
-                    alt={real ? `${tile.name}'s live portfolio` : `${tile.name} look`}
+                    alt={`${tile.name}'s live portfolio`}
                     width={1440}
                     height={900}
                     loading="lazy"
                     className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                   />
-                  <span
-                    className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                      real ? "bg-aurora-mint text-foreground" : "bg-white/90 text-foreground"
-                    }`}
-                  >
-                    {real ? "Real site" : "Template"}
-                  </span>
+                  <span className="absolute left-3 top-3 rounded-full bg-aurora-mint px-3 py-1 text-[11px] font-semibold text-foreground">Real site</span>
                 </div>
                 <div className="space-y-0.5 px-2 pt-3">
                   <p className="flex items-center gap-1.5 text-base font-semibold tracking-[-0.02em]">
                     {tile.name}
-                    {real && <ExternalLink className="size-3.5 text-muted-foreground" />}
+                    <ExternalLink className="size-3.5 text-muted-foreground" />
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {real ? `${tile.role} · “${tile.quote}”` : "Ready-made look, built from your resume"}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{`${tile.role} · “${tile.quote}”`}</p>
                 </div>
-              </>
-            );
-            return (
-              <StaggerItem key={tile.img}>
-                {real ? (
-                  <a href={tile.url} target="_blank" rel="noopener" className="group block">
-                    {card}
-                  </a>
-                ) : (
-                  <Link to="/themes" className="group block">
-                    {card}
-                  </Link>
-                )}
-              </StaggerItem>
-            );
-          })}
+              </a>
+            </StaggerItem>
+          ))}
         </StaggerGroup>
-
-        <div className="flex justify-center">
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link to="/themes">
-              Browse all 13 looks <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </div>
       </section>
 
       {/* Brand-blue ticker band */}

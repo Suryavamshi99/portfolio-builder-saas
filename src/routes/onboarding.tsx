@@ -71,7 +71,7 @@ const STEPS = [
 
 function OnboardingWizard() {
   const navigate = useNavigate();
-  const { refreshPortfolioStatus, portfolioReady, canUseTemplates } = useAuth();
+  const { refreshPortfolioStatus, portfolioReady, canUseTemplates, templatesEnabled } = useAuth();
 
   const [currentStep, setCurrentStep] = React.useState<StepIndex>(1);
   const [resumeUpload, setResumeUpload] = React.useState<UploadItem | null>(null);
@@ -557,8 +557,9 @@ function OnboardingWizard() {
             <CardHeader>
               <CardTitle className="text-lg">Step 2 of 6: Choose a look (optional)</CardTitle>
               <CardDescription>
-                Pick a ready-made look below, or upload up to 3 screenshots of designs you like. You can skip this.
-                Your look sets how the page is laid out. Your resume still provides every fact.
+                {templatesEnabled
+                  ? "Pick a ready-made look below, or upload up to 3 screenshots of designs you like. You can skip this. Your look sets how the page is laid out. Your resume still provides every fact."
+                  : "Upload up to 3 screenshots of designs you like, or turn on the company look below. You can skip this. Your resume still provides every fact."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -627,7 +628,7 @@ function OnboardingWizard() {
                 </div>
               )}
 
-              {!replicaOn && <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} locked={!canUseTemplates} />}
+              {!replicaOn && templatesEnabled && <ThemePicker value={themeId} onChange={setThemeId} custom={themeCustom} onCustomChange={setThemeCustom} locked={!canUseTemplates} />}
 
               <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5">
                 <div className="text-xs font-semibold text-foreground">Design intensity</div>

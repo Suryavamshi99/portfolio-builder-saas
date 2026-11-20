@@ -76,6 +76,7 @@ const goodFacts = () => ({
 });
 
 beforeEach(() => {
+  vi.stubEnv("TEMPLATES_ENABLED", "true");
   state.email = "student@mastersunion.org";
   state.plan = "free";
   state.saved = [];
@@ -106,6 +107,18 @@ describe("themed MCP tools", () => {
     expect(out).toMatch(/ask the user which look/);
     state.plan = "pro";
     expect(txt(await tools.call("list_portfolio_themes", {}))).not.toMatch(/can use it: no/);
+  });
+
+  it("shows no ready-made look and builds none while the switch is off, even for an eligible account", async () => {
+    vi.stubEnv("TEMPLATES_ENABLED", "false");
+    const out = txt(await tools.call("list_portfolio_themes", {}));
+    expect(out).toMatch(/switched off/);
+    expect(out).toMatch(/get_portfolio_brief/);
+    expect(out).not.toContain(`id: ${free.id}`);
+    expect((await tools.call("get_themed_brief", { themeId: free.id }))?.isError).toBe(true);
+    expect((await tools.call("build_themed_portfolio", { themeId: free.id, facts: goodFacts() }))?.isError).toBe(true);
+    expect(state.jobs).toHaveLength(0);
+    expect(state.saved).toHaveLength(0);
   });
 
   it("shows no ready-made look to an account outside Masters' Union and sends the chat to Custom", async () => {

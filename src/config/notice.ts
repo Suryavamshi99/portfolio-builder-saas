@@ -1,6 +1,6 @@
 /**
  * The design-credit and copyright notice shown on every page built on one of our
- * ready-made looks (and on the sample sites in public/theme-previews). Same wording as Terms section 7.
+ * ready-made looks. Same wording as Terms section 7. (The looks are switched off by TEMPLATES_ENABLED.)
  * No digits on purpose: the numbers fact check reads visible text.
  */
 export const COPYRIGHT_EMAIL = "contact@shipfolio.xyz";
